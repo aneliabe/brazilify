@@ -1,0 +1,14 @@
+$brand: #1f6feb;  // blue
+$accent: #2c7a7b; // teal
+$dark: #0b1220;
+
+.navbar {
+  border-radius: 18px;
+  .navbar-brand { color: $brand; }
+  .nav-link { color: #394150; &:hover{ color: $brand; } }
+  .btn-primary { background:$brand; border-color:$brand; }
+  .btn-outline-primary { color:$brand; border-color:$brand; &:hover{ background:$brand; color:#fff; } }
+}
+.brand-logo{ width:14px;height:14px;border:2px solid $accent;border-radius:3px;display:inline-block;}
+.brand-gradient{ height:6px; margin:0 12px 16px; border-radius:4px;
+  background: linear-gradient(90deg, $accent, $brand); }

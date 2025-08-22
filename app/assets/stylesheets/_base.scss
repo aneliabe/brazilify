@@ -1,0 +1,51 @@
+$brand:#2c7a7b;$accent:#f28c38;$bg:#f7faf9;$text:#2c3e50;
+
+body{background:$bg;color:$text;font-family:system-ui,-apple-system,Segoe UI,Roboto}
+.container h1{font-size:2rem;margin:0}
+h2{font-size:1.1rem;margin:1rem 0}
+
+.btn{padding:.6rem 1rem;border-radius:.6rem;border:1px solid #dcdcdc;background:#fff;cursor:pointer;
+  &.active{border-color:$brand;box-shadow:0 0 0 3px rgba($brand,.2)}
+  &.accent{background:$accent;color:#fff;border-color:$accent}
+}
+.grid{display:grid;gap:12px;&.cols-2{grid-template-columns:repeat(2,1fr)}&.cols-4{grid-template-columns:repeat(4,1fr)}}
+.card{background:#fff;border:1px solid #e6e6e6;border-radius:12px;padding:16px;box-shadow:0 4px 12px rgba(0,0,0,.05)}
+.info-bar{background:linear-gradient(90deg,#2c7a7b,#1f6feb);color:#fff;.small{font-size:.9rem}i{font-size:1rem}}
+
+
+.site-footer {
+  background: linear-gradient(90deg, $brand, #1f6feb);
+  color: #f1f5f9;
+  margin-top: 3rem;
+  font-size: .95rem;
+
+  .footer-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 20px;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1rem 1rem;
+
+    @media(max-width:768px){ grid-template-columns: 1fr 1fr; }
+    @media(max-width:500px){ grid-template-columns: 1fr; text-align: center; }
+  }
+
+  .brand .logo { font-weight:700; font-size:1.2rem; color:#fff; text-decoration:none; }
+  .brand p { margin-top:.3rem; color:#e2e8f0; }
+
+  .links h5, .social h5 { font-size:1rem; margin-bottom:.5rem; }
+  .links ul { list-style:none; padding:0; margin:0; }
+  .links li { margin:.3rem 0; }
+  .links a { color:#e2e8f0; text-decoration:none; &:hover{ color:#fff; } }
+
+  .social .icons a { margin-right:10px; font-size:1.2rem; color:#e2e8f0; &:hover{color:#fff;} }
+
+  .footer-bottom {
+    border-top: 1px solid rgba(255,255,255,.2);
+    text-align: center;
+    padding: 0.5rem;
+    color: #e2e8f0;
+    font-size: .85rem;
+  }
+}

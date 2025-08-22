@@ -1,0 +1,31 @@
+<div class="container" style="max-width:1100px;margin:2rem auto;padding:0 1rem;">
+  <h2>Resultados em <%= @city.presence || "todas as cidades" %></h2>
+
+  <% if @workers.blank? %>
+    <p>Nenhum profissional encontrado.</p>
+    <%= link_to "Voltar para a Home", root_path, class:"btn btn-outline-primary" %>
+  <% else %>
+    <div class="grid cols-2" style="margin-top:1rem;">
+      <% @workers.each do |w| %>
+        <div class="card">
+          <div style="display:flex;gap:12px;align-items:center;">
+            <img src="<%= w.avatar.presence || 'https://placehold.co/64x64' %>" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover;">
+            <div>
+              <h3 style="margin:0;"><%= w.full_name %></h3>
+              <small><i class="fa-solid fa-location-dot"></i> <%= [w.city, w.country].compact.join(", ") %></small>
+            </div>
+          </div>
+          <p style="margin:.7rem 0 0;"><%= w.description.to_s.truncate(120) %></p>
+          <div style="margin-top:.6rem;display:flex;gap:8px;flex-wrap:wrap;">
+            <% w.services.each do |ws| %>
+              <span class="btn" style="padding:.3rem .6rem;"><%= ws.service.name %></span>
+            <% end %>
+          </div>
+          <div style="margin-top:.8rem;">
+            <%= link_to "Ver perfil", "#", class:"btn btn-accent" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
