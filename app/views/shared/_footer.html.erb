@@ -1,0 +1,38 @@
+<footer class="site-footer">
+  <div class="container footer-content">
+    <div class="brand">
+      <%= link_to "Brazilify", root_path, class: "logo" %>
+      <p>Conectando brasileiros qualificados pelo mundo 🌎</p>
+    </div>
+
+    <div class="links">
+      <h5>Descubra</h5>
+      <ul>
+        <li><%= link_to "Serviços Populares", "#" %></li>
+        <li><%= link_to "Prestadores", "#" %></li>
+        <li><%= link_to "Ajuda", "#" %></li>
+      </ul>
+    </div>
+
+    <div class="links">
+      <h5>Conta</h5>
+      <ul>
+        <li><%= link_to "Entrar", new_user_session_path %></li>
+        <li><%= link_to "Cadastrar", new_user_registration_path %></li>
+      </ul>
+    </div>
+
+    <div class="social">
+      <h5>Siga-nos</h5>
+      <div class="icons">
+        <a href="#"><i class="fa-brands fa-instagram"></i></a>
+        <a href="#"><i class="fa-brands fa-facebook"></i></a>
+        <a href="#"><i class="fa-brands fa-linkedin"></i></a>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>&copy; <%= Time.current.year %> Brazilify — Todos os direitos reservados.</p>
+  </div>
+</footer>
