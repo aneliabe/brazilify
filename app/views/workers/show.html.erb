@@ -18,8 +18,12 @@
     <p class="worker-desc"><%= @worker.description %></p>
 
     <div class="worker-tags">
-      <% @worker.services.each do |s| %>
-        <span class="btn"><%= s.name %></span>
+      <% if @worker.services.any? %>
+        <% @worker.services.each do |s| %>
+          <span class="btn"><%= s.name %></span>
+        <% end %>
+      <% else %>
+        <small>Sem serviços cadastrados ainda.</small>
       <% end %>
     </div>
 
