@@ -1,4 +1,5 @@
 class WorkersController < ApplicationController
+
   skip_before_action :authenticate_user!, only: [:index, :show]
 
   def index
@@ -24,6 +25,7 @@ class WorkersController < ApplicationController
 
     @workers = scope.order("users.full_name ASC").references(:user)
   end
+
 
   def show
     # TEMP: mock until DB is ready
