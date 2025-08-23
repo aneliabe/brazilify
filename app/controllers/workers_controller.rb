@@ -5,6 +5,8 @@ class WorkersController < ApplicationController
     @city = params[:city].to_s.strip
     @svc  = params[:service_id].to_s
 
+    @filters_applied = @city.present? || @svc.present?
+
     @services = Service.order(:name) # for the select
 
     scope = WorkerProfile.includes(:user, :services)
