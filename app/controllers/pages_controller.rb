@@ -2,29 +2,35 @@ class PagesController < ApplicationController
   skip_before_action :authenticate_user!, only: [ :home ]
 
   def home
-    @popular_services = [
-      { name: "Limpeza Doméstica" },
-      { name: "Beleza" },
-      { name: "Saúde" },
-      { name: "Pet Sitter" },
-      { name: "Serviços Automotivos" },
-      { name: "Manutenção residencial" }
-    ]
+    # real services for the chips
+    @popular_services = Service.order("RANDOM()").limit(8)
 
-    @best_workers = [
-      { name: "João", role: "Eletricista", city: "Boston", dist: "500m", rating: 4.9, avatar: nil },
-      { name: "Maria", role: "Manicure", city: "Miami", dist: "1.2km", rating: 4.8, avatar: nil },
-      { name: "Carlos", role: "Mecânico", city: "NYC", dist: "800m", rating: 5.0, avatar: nil },
-      { name: "Ana", role: "Limpeza", city: "LA", dist: "2km", rating: 4.7, avatar: nil },
-      { name: "Paulo", role: "Pintor", city: "SF", dist: "1km", rating: 4.9, avatar: nil },
-      { name: "Luiza", role: "Pet Sitter", city: "Chicago", dist: "700m", rating: 4.8, avatar: nil }
-    ]
+    # real workers for the cards
+    @top_workers = WorkerProfile
+      .includes(:user, :services)
+      .order("RANDOM()")
+      .limit(6)
   end
 
   def search
     @city = params[:city].to_s.strip
-    @workers = Worker
-              .where("LOWER(city) LIKE ?", "%#{@city.downcase}%")
-              .includes(:services)
+    @q    = params[:q].to_s.strip
+
+    scope = WorkerProfile.includes(:user, :services)
+
+    # filter by city (on users table)
+    if @city.present?
+      scope = scope.joins(:user)
+                   .where("LOWER(users.city) LIKE ?", "%#{@city.downcase}%")
+    end
+
+    # filter by service name
+    if @q.present?
+      scope = scope.joins(:services)
+                   .where("LOWER(services.name) LIKE ?", "%#{@q.downcase}%")
+                   .distinct
+    end
+
+    @workers = scope
   end
 end

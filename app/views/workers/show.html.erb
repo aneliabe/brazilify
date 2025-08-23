@@ -1,22 +1,26 @@
 <div class="worker-show">
   <div class="card worker-card">
     <div class="worker-header">
-      <img src="<%= @worker[:avatar] || 'https://placehold.co/96x96' %>" class="worker-avatar">
+      <img src="<%= @worker.user.avatar.presence || 'https://placehold.co/96x96' %>" class="worker-avatar">
       <div>
-        <h2 class="worker-name"><%= @worker[:name] %></h2>
-        <small class="worker-sub"><%= @worker[:role] %> ·
-          <i class="fa-solid fa-location-dot"></i> <%= @worker[:city] %></small><br>
+        <h2 class="worker-name"><%= @worker.user.full_name %></h2>
+        <small class="worker-sub">
+          <i class="fa-solid fa-location-dot"></i>
+          <%= [@worker.user.city, @worker.user.country].compact.join(", ") %>
+        </small><br>
         <div class="worker-stats">
-          <i class="fa-solid fa-star" style="color:#f5b301"></i> <%= @worker[:rating] %>
-          (<%= @worker[:reviews] %> reviews)
+          <i class="fa-solid fa-star" style="color:#f5b301"></i>
+          <%= @worker.rating || 0 %> (0 reviews)
         </div>
       </div>
     </div>
 
-    <p class="worker-desc"><%= @worker[:description] %></p>
+    <p class="worker-desc"><%= @worker.description %></p>
 
     <div class="worker-tags">
-      <% @worker[:services].each do |s| %><span class="btn"><%= s %></span><% end %>
+      <% @worker.services.each do |s| %>
+        <span class="btn"><%= s.name %></span>
+      <% end %>
     </div>
 
     <div class="worker-cta">
