@@ -1,0 +1,54 @@
+<div class="container" style="max-width:1100px;margin:2rem auto;padding:0 1rem;">
+  <h2>Prestadores</h2>
+
+  <!-- Filters -->
+  <%= form_with url: workers_path, method: :get, local: true,
+                html: { style: "display:flex;gap:8px;align-items:center;margin:1rem 0;flex-wrap:wrap;" } do %>
+    <input type="text" name="city" value="<%= @city %>" placeholder="Cidade (ex: Boston)"
+           style="padding:.5rem .7rem;border:1px solid #ddd;border-radius:8px;"/>
+    <select name="service_id" style="padding:.5rem;border:1px solid #ddd;border-radius:8px;">
+      <option value="">Todos os serviços</option>
+      <% @services.each do |s| %>
+        <option value="<%= s.id %>" <%= "selected" if s.id.to_s == @svc %>><%= s.name %></option>
+      <% end %>
+    </select>
+    <button class="btn btn-accent" type="submit">
+      <i class="fa-solid fa-magnifying-glass"></i> Filtrar
+    </button>
+    <% if @filters_applied %>
+      <%= link_to "Limpar filtros", workers_path, class: "btn btn-outline-primary" %>
+    <% end %>
+  <% end %>
+
+  <% if @workers.blank? %>
+    <p>Nenhum profissional encontrado.</p>
+  <% else %>
+    <div class="grid cols-2" style="margin-top:1rem;">
+      <% @workers.each do |w| %>
+        <div class="card">
+          <div style="display:flex;gap:12px;align-items:center;">
+            <img src="<%= w.user.avatar.presence || 'https://placehold.co/64x64' %>" alt=""
+                 style="width:64px;height:64px;border-radius:50%;object-fit:cover;">
+            <div>
+              <h3 style="margin:0;"><%= w.user.full_name %></h3>
+              <small><i class="fa-solid fa-location-dot"></i>
+                <%= [w.user.city, w.user.country].compact.join(", ") %></small>
+            </div>
+          </div>
+
+          <p style="margin:.7rem 0 0;"><%= w.description.to_s.truncate(120) %></p>
+
+          <div style="margin-top:.6rem;display:flex;gap:8px;flex-wrap:wrap;">
+            <% w.services.limit(5).each do |svc| %>
+              <span class="btn" style="padding:.3rem .6rem;"><%= svc.name %></span>
+            <% end %>
+          </div>
+
+          <div style="margin-top:.8rem;">
+            <%= link_to "Ver perfil", worker_path(w), class:"btn btn-accent" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

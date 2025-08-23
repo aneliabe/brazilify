@@ -4,7 +4,7 @@ Rails.application.routes.draw do
   devise_for :users
   root to: "pages#home"
   get "search", to: "pages#search", as: :search
-  resources :workers, only: :show
+  resources :workers, only: [:index, :show]
   resources :categories, only: [:index]
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html

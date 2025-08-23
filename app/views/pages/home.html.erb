@@ -59,7 +59,11 @@
         </div>
         <p class="desc"><%= (w.description || "Profissional qualificado e bem avaliado.").truncate(120) %></p>
         <div class="meta">
-          <span class="rating"><i class="fa-solid fa-star"></i> <%= w.rating || 0 %></span>
+          <span class="rating">
+            <i class="fa-solid fa-star"></i> <%= w.average_rating %>
+          </span>
+          <span class="dot">•</span>
+          <span class="reviews"><%= pluralize(w.reviews.size, "avaliação", "avaliações") %></span>
         </div>
         <div class="worker-cta" style="margin-top: .8rem;">
           <%= link_to "Ver perfil", worker_path(w), class: "btn btn-accent" %>

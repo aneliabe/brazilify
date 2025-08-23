@@ -10,7 +10,7 @@
         </small><br>
         <div class="worker-stats">
           <i class="fa-solid fa-star" style="color:#f5b301"></i>
-          <%= @worker.rating || 0 %> (0 reviews)
+          <%= @worker.average_rating %> (<%= @worker.reviews.count %> avaliações)
         </div>
       </div>
     </div>
@@ -18,13 +18,36 @@
     <p class="worker-desc"><%= @worker.description %></p>
 
     <div class="worker-tags">
-      <% @worker.services.each do |s| %>
-        <span class="btn"><%= s.name %></span>
+      <% if @worker.services.any? %>
+        <% @worker.services.each do |s| %>
+          <span class="btn"><%= s.name %></span>
+        <% end %>
+      <% else %>
+        <small>Sem serviços cadastrados ainda.</small>
       <% end %>
     </div>
 
+    <hr class="my-3">
+
+    <h3>Avaliações (<%= @worker.reviews.count %>)</h3>
+    <% if @worker.reviews.any? %>
+      <div class="reviews" style="display:flex;flex-direction:column;gap:.8rem;">
+        <% @worker.reviews.order(created_at: :desc).each do |r| %>
+          <div class="card" style="padding:.8rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <strong><%= r.user.full_name %></strong>
+              <span><i class="fa-solid fa-star" style="color:#f5b301"></i> <%= r.rating %>/5</span>
+            </div>
+            <p style="margin:.4rem 0 0;"><%= r.comment %></p>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <small>Sem avaliações ainda.</small>
+    <% end %>
+
     <div class="worker-cta">
-      <a href="#" class="see-all-btn">Entrar em contato</a>
+      <%= mail_to @worker.user.email, "Entrar em contato", class: "see-all-btn" %>
     </div>
   </div>
 </div>
