@@ -9,20 +9,25 @@
       <% @workers.each do |w| %>
         <div class="card">
           <div style="display:flex;gap:12px;align-items:center;">
-            <img src="<%= w.avatar.presence || 'https://placehold.co/64x64' %>" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover;">
+            <img src="<%= w.user.avatar.presence || 'https://placehold.co/64x64' %>" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover;">
             <div>
-              <h3 style="margin:0;"><%= w.full_name %></h3>
-              <small><i class="fa-solid fa-location-dot"></i> <%= [w.city, w.country].compact.join(", ") %></small>
+              <h3 style="margin:0;"><%= w.user.full_name %></h3>
+              <small><i class="fa-solid fa-location-dot"></i> <%= [w.user.city, w.user.country].compact.join(", ") %></small>
             </div>
           </div>
+
           <p style="margin:.7rem 0 0;"><%= w.description.to_s.truncate(120) %></p>
+
           <div style="margin-top:.6rem;display:flex;gap:8px;flex-wrap:wrap;">
-            <% w.services.each do |ws| %>
-              <span class="btn" style="padding:.3rem .6rem;"><%= ws.service.name %></span>
+            <% w.services.each do |svc| %>
+              <span class="btn" style="padding:.3rem .6rem;"><%= svc.name %></span>
             <% end %>
           </div>
+
           <div style="margin-top:.8rem;">
-            <%= link_to "Ver perfil", "#", class:"btn btn-accent" %>
+            <%# If you set routes like: resources :worker_profiles, only: :show %>
+            <%# <%= link_to "Ver perfil", worker_profile_path(w), class:"btn btn-accent" %>
+            <%= link_to "Ver perfil", worker_path(w), class:"btn btn-accent" %>
           </div>
         </div>
       <% end %>
