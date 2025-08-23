@@ -1,0 +1,17 @@
+<h1>Categories of Services</h1>
+
+<div data-controller="categories">
+  <% @categories.each do |category| %>
+    <div class="category">
+      <!-- Link to toggle only its own services -->
+      <%= link_to category.name, "#", data: { action: "click->categories#toggle" } %>
+
+      <!-- Hidden list of services -->
+      <ul data-categories-target="services" style="display: none;">
+        <% category.services.each do |service| %>
+          <li><%= service.name %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+</div>
