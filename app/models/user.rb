@@ -7,4 +7,5 @@ class User < ApplicationRecord
   enum role: { client: 0, worker: 1, admin: 2 }
 
   has_one :worker_profile, dependent: :destroy
+  has_many :reviews, dependent: :nullify
 end
