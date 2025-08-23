@@ -27,6 +27,6 @@ class WorkersController < ApplicationController
 
   def show
     # TEMP: mock until DB is ready
-    @worker = WorkerProfile.includes(:services, :user).find(params[:id])
+    @worker = WorkerProfile.includes(:user, :services, reviews: :user).find(params[:id])
   end
 end
