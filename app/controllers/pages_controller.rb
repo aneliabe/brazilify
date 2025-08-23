@@ -7,7 +7,7 @@ class PagesController < ApplicationController
 
     # real workers for the cards
     @top_workers = WorkerProfile
-      .includes(:user, :services)
+      .includes(:user, :services, :reviews)
       .order("RANDOM()")
       .limit(6)
   end

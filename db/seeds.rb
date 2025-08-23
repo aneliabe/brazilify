@@ -50,6 +50,23 @@ end
   # assign random services
   Service.order("RANDOM()").limit(3).each do |svc|
     WorkerService.create!(worker_profile: profile, service: svc)
+
+  puts "Seeding reviews..."
+    Review.destroy_all   # or delete_all if you don't need callbacks
+
+    WorkerProfile.find_each do |wp|
+      # pick 1–3 UNIQUE reviewers that are NOT the worker themself
+      reviewers = User.where.not(id: wp.user_id).to_a.sample(rand(1..3))
+
+      reviewers.each do |author|
+        review = Review.find_or_initialize_by(user: author, worker_profile: wp)
+        review.rating  ||= [3, 4, 5].sample
+        review.comment ||= ["Muito bom!", "Atencioso e pontual.", "Serviço de qualidade.", "Recomendo!", "Excelente profissional."].sample
+        review.save!
+      end
+    end
+
+    puts "✅ Reviews seeded"
   end
 end
 
