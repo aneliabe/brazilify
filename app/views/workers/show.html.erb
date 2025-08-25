@@ -47,7 +47,7 @@
     <% end %>
 
     <div class="worker-cta">
-      <%= mail_to @worker.user.email, "Entrar em contato", class: "see-all-btn" %>
+      <%= link_to "Entrar em contato", contact_worker_path(@worker), class: "see-all-btn" %>
     </div>
   </div>
 </div>
