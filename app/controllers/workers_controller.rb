@@ -1,5 +1,5 @@
 class WorkersController < ApplicationController
-
+  before_action :authenticate_user!, only: :contact
   skip_before_action :authenticate_user!, only: [:index, :show]
 
   def index
@@ -26,6 +26,11 @@ class WorkersController < ApplicationController
     @workers = scope.order("users.full_name ASC").references(:user)
   end
 
+  # Clients can only click be redirected to the contact if logged in.
+  def contact
+    @worker = User.find(params[:id])
+    render :contact
+  end
 
   def show
     # TEMP: mock until DB is ready

@@ -4,7 +4,11 @@ Rails.application.routes.draw do
   root to: "pages#home"
 
   get "search", to: "pages#search", as: :search
-  resources :workers, only: [:index, :show]
+  resources :workers, only: [:index, :show] do
+    member do
+      get :contact
+    end
+  end
   resources :categories, only: [:index]
 
   resources :users, only: :show do
