@@ -1,0 +1,15 @@
+class Appointment < ApplicationRecord
+  belongs_to :user
+  belongs_to :worker_profile
+
+  has_many :messages, dependent: :destroy
+
+  validates :starts_at, :ends_at, presence: true
+  validate :ends_after_starts
+
+  private
+  def ends_after_starts
+    return if starts_at.blank? || ends_at.blank?
+    errors.add(:ends_at, "must be after start") if ends_at <= starts_at
+  end
+end

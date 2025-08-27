@@ -1,0 +1,25 @@
+<%= turbo_stream_from "appointment_#{@appointment.id}_messages" %>
+
+<div class="container chat">
+  <h1>Your appointment for <%= @appointment.worker_profile.user.full_name %></h1>
+
+  <div id="messages" class="messages">
+    <% @appointment.messages.order(:created_at).each do |message| %>
+      <%= render "messages/message", message: message, user: current_user %>
+    <% end %>
+  </div>
+
+<% other_user = current_user == @appointment.worker_profile.user ? @appointment.user : @appointment.worker_profile.user %>
+
+<%= simple_form_for [@appointment, @message],
+  html: {
+    class: "d-flex",
+    data: { controller: "reset-form", action: "turbo:submit-end->reset-form#reset" }
+  } do |f| %>
+  <% other_user = current_user == @appointment.worker_profile.user ? @appointment.user : @appointment.worker_profile.user %>
+  <%= f.input :content,
+      label: false,
+      placeholder: "Message #{other_user.full_name}",
+      wrapper_html: { class: "flex-grow-1" } %>
+  <%= f.submit "Send", class: "btn btn-primary mb-3" %>
+<% end %>

@@ -47,7 +47,23 @@
     <% end %>
 
     <div class="worker-cta">
-      <%= link_to "Entrar em contato", contact_worker_path(@worker), class: "see-all-btn" %>
+      <h2>Book this <%= @worker.user.full_name %></h2>
+
+      <%= simple_form_for @appointment, url: worker_appointments_path(@worker) do |f| %>
+        <%= f.input :starts_at, as: :datetime, label: "Start" %>
+        <%= f.input :ends_at,   as: :datetime, label: "End" %>
+        <%= f.submit "Book", class: "btn btn-primary" %>
+      <% end %>
     </div>
+    <% if @appointments.exists? %>
+      <h2>Your appointments</h2>
+      <ul>
+        <% @appointments.each do |appointment| %>
+          <li>
+            <%= link_to appointment.starts_at.strftime("%a %b %e at %l:%M %p"), appointment %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
   </div>
 </div>

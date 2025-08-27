@@ -5,10 +5,16 @@ Rails.application.routes.draw do
 
   get "search", to: "pages#search", as: :search
   resources :workers, only: [:index, :show] do
+    resources :appointments, only: [:create]
     member do
       get :contact
     end
   end
+
+  resources :appointments, only: [:show] do
+    resources :messages, only: [:create]
+  end
+  
   resources :categories, only: [:index]
 
   resources :users, only: :show do
