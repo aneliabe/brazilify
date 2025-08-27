@@ -9,7 +9,9 @@ Rails.application.routes.draw do
       get :contact
     end
   end
-  resources :categories, only: [:index]
+  resources :categories, only: [:index, :show] do
+    get :services, on: :member
+  end
 
   resources :users, only: :show do
     member do

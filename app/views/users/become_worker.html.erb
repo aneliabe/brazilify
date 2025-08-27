@@ -3,6 +3,39 @@
   <div class="card shadow-sm border-0">
     <div class="card-header bg-light">
       <h1 class="h4 m-0"><%= title_text %></h1>
+
+      <h1>Seja um Prestador de Serviços</h1>
+
+      <%= form_with model: @worker_profile, url: become_worker_user_path(@user), method: :post, data: { controller: "worker-form" } do |f| %>
+
+        <div>
+          <%= f.label :category_id, "Categoria" %>
+          <%= f.collection_select :category_id, @categories, :id, :name,
+                { prompt: "Selecione uma categoria" }, # options hash
+                { 
+                  data: { action: "change->worker-form#updateServices", worker_form_target: "category" } 
+                } # html_options hash
+          %>
+        </div>
+
+        <div>
+          <%= f.label :service_id, "Serviço" %>
+          <%= f.collection_select :service_id, [], :id, :name,
+                { prompt: "Selecione um serviço" },
+                { data: { worker_form_target: "service" } } 
+          %>
+        </div>
+
+        <div>
+          <%= f.label :service_type, "Tipo de serviço" %>
+          <%= f.select :service_type, options_for_select(@service_types.map { |s| [s.humanize, s] }), prompt: "Selecione o tipo de serviço" %>
+        </div>
+
+        <%= f.submit "Ativar perfil de prestador" %>
+      <% end %>
+
+
+
     </div>
     <div class="card-body p-4">
       <%= render "worker_form" %>

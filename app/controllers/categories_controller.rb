@@ -4,4 +4,9 @@ class CategoriesController < ApplicationController
   def index
     @categories = Category.includes(:services)
   end
+
+    def services
+    category = Category.find(params[:id])
+    render json: category.services.select(:id, :name)
+  end
 end
