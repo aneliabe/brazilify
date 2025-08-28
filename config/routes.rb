@@ -5,6 +5,7 @@ Rails.application.routes.draw do
 
   get "search", to: "pages#search", as: :search
   resources :workers, only: [:index, :show] do
+    resources :appointments, only: [:create]
     member do
       get :contact
     end
@@ -12,6 +13,16 @@ Rails.application.routes.draw do
   resources :categories, only: [:index, :show] do
     get :services, on: :member
   end
+
+  resources :appointments, only: [:show] do
+    resources :messages, only: [:create]
+    member do
+      patch :accept
+      patch :decline
+    end
+  end
+
+  resources :categories, only: [:index]
 
   resources :users, only: :show do
     member do
@@ -21,6 +32,8 @@ Rails.application.routes.draw do
     end
   end
 
+  get "my/appointments", to: "appointments#index", as: :my_appointments
+  get "my/requests",     to: redirect("/my/appointments?as=worker&status=pending"), as: :my_requests
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

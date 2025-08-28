@@ -1,16 +1,16 @@
 <div class="worker-show">
   <div class="card worker-card">
     <div class="worker-header">
-      <img src="<%= @worker.user.avatar.presence || 'https://placehold.co/96x96' %>" class="worker-avatar">
-      <div>
+      <img src="<%= @worker.user.avatar.presence || 'https://placehold.co/96x96' %>" class="worker-avatar" alt="">
+      <div class="worker-headings">
         <h2 class="worker-name"><%= @worker.user.full_name %></h2>
         <small class="worker-sub">
           <i class="fa-solid fa-location-dot"></i>
           <%= [@worker.user.city, @worker.user.country].compact.join(", ") %>
-        </small><br>
+        </small>
         <div class="worker-stats">
-          <i class="fa-solid fa-star" style="color:#f5b301"></i>
-          <%= @worker.average_rating %> (<%= @worker.reviews.count %> avaliações)
+          <i class="fa-solid fa-star"></i>
+          <span><%= @worker.average_rating %> (<%= @worker.reviews.count %> avaliações)</span>
         </div>
       </div>
     </div>
@@ -20,34 +20,69 @@
     <div class="worker-tags">
       <% if @worker.services.any? %>
         <% @worker.services.each do |s| %>
-          <span class="btn"><%= s.name %></span>
+          <span class="tag"><%= s.name %></span>
         <% end %>
       <% else %>
         <small>Sem serviços cadastrados ainda.</small>
       <% end %>
     </div>
 
-    <hr class="my-3">
+    <hr class="divider">
 
-    <h3>Avaliações (<%= @worker.reviews.count %>)</h3>
-    <% if @worker.reviews.any? %>
-      <div class="reviews" style="display:flex;flex-direction:column;gap:.8rem;">
-        <% @worker.reviews.order(created_at: :desc).each do |r| %>
-          <div class="card" style="padding:.8rem;">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <strong><%= r.user.full_name %></strong>
-              <span><i class="fa-solid fa-star" style="color:#f5b301"></i> <%= r.rating %>/5</span>
-            </div>
-            <p style="margin:.4rem 0 0;"><%= r.comment %></p>
+    <div class="worker-cta">
+      <h3>Solicitar horário com <%= @worker[:name] %></h3>
+
+      <button type="button" class="see-all-btn" data-bs-toggle="modal" data-bs-target="#requestTimeModal">
+        Solicitar horário
+      </button>
+
+      <p class="hint">
+        Você escolhe a data/hora preferida. O profissional confirma ou sugere outro.
+      </p>
+    </div>
+    <!-- 🔄 CHANGE ENDS HERE -->
+  </div>
+</div>
+
+<!-- ✅ NEW: Modal with form -->
+<div class="modal fade" id="requestTimeModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Solicitar horário</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+
+      <div class="modal-body">
+        <%= form_with url: worker_appointments_path(@worker), method: :post, html: { class: "appointment-request-form" } do %>
+          <div class="mb-3">
+            <label class="form-label">Dia e hora</label>
+            <input
+              type="text"
+              name="appointment[starts_at]"
+              id="appointment_starts_at"
+              class="form-control"
+              placeholder="Selecione dia e hora"
+              autocomplete="off"
+              data-controller="flatpickr"
+              data-flatpickr-enable-time-value="true"
+              data-flatpickr-time-24hr-value="true"
+              data-flatpickr-minute-increment-value="15"
+              data-flatpickr-date-format-value="Y-m-d H:i"
+            >
+            <small class="text-muted">Você poderá combinar a duração no chat.</small>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Mensagem (opcional)</label>
+            <textarea name="message" class="form-control" rows="3" placeholder="Descreva o serviço, endereço/online, urgência…"></textarea>
+          </div>
+
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary">Enviar solicitação</button>
           </div>
         <% end %>
       </div>
-    <% else %>
-      <small>Sem avaliações ainda.</small>
-    <% end %>
-
-    <div class="worker-cta">
-      <%= link_to "Entrar em contato", contact_worker_path(@worker), class: "see-all-btn" %>
     </div>
   </div>
 </div>

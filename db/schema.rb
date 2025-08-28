@@ -11,14 +11,42 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[7.1].define(version: 2025_08_26_224409) do
+ActiveRecord::Schema[7.1].define(version: 2025_08_28_215348) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "appointments", force: :cascade do |t|
+    t.datetime "starts_at"
+    t.datetime "ends_at"
+    t.string "status"
+    t.bigint "user_id", null: false
+    t.bigint "worker_profile_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "client_last_read_at"
+    t.datetime "worker_last_read_at"
+    t.index ["status"], name: "index_appointments_on_status"
+    t.index ["user_id", "created_at"], name: "index_appointments_on_user_id_and_created_at"
+    t.index ["user_id"], name: "index_appointments_on_user_id"
+    t.index ["worker_profile_id", "starts_at"], name: "index_appointments_on_worker_profile_id_and_starts_at"
+    t.index ["worker_profile_id"], name: "index_appointments_on_worker_profile_id"
+  end
 
   create_table "categories", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_categories_on_name", unique: true
+  end
+
+  create_table "messages", force: :cascade do |t|
+    t.text "content"
+    t.bigint "user_id", null: false
+    t.bigint "appointment_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["appointment_id"], name: "index_messages_on_appointment_id"
+    t.index ["user_id"], name: "index_messages_on_user_id"
   end
 
   create_table "reviews", force: :cascade do |t|
@@ -41,6 +69,15 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_26_224409) do
     t.string "service_type"
     t.index ["category_id", "name"], name: "index_services_on_category_id_and_name", unique: true
     t.index ["category_id"], name: "index_services_on_category_id"
+  end
+
+  create_table "solid_cable_messages", force: :cascade do |t|
+    t.text "channel"
+    t.text "payload"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["channel"], name: "index_solid_cable_messages_on_channel"
+    t.index ["created_at"], name: "index_solid_cable_messages_on_created_at"
   end
 
   create_table "users", force: :cascade do |t|
@@ -83,6 +120,10 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_26_224409) do
     t.index ["worker_profile_id"], name: "index_worker_services_on_worker_profile_id"
   end
 
+  add_foreign_key "appointments", "users"
+  add_foreign_key "appointments", "worker_profiles"
+  add_foreign_key "messages", "appointments"
+  add_foreign_key "messages", "users"
   add_foreign_key "reviews", "users"
   add_foreign_key "reviews", "worker_profiles"
   add_foreign_key "services", "categories"
