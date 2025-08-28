@@ -8,4 +8,6 @@ class User < ApplicationRecord
 
   has_one :worker_profile, dependent: :destroy
   has_many :reviews, dependent: :nullify
+  has_many :appointments, dependent: :destroy
+  has_many :messages, dependent: :destroy
 end
