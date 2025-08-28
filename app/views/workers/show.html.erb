@@ -30,64 +30,59 @@
     <hr class="divider">
 
     <div class="worker-cta">
-      <h3>Agendar com <%= @worker.user.full_name %></h3>
+      <h3>Solicitar horário com <%= @worker[:name] %></h3>
 
-      <%= simple_form_for @appointment, url: worker_appointments_path(@worker), html: { class: "appointment-form pretty" } do |f| %>
-        <div class="row">
-          <div class="field with-icon start">
-            <%= f.input :starts_at,
-              as: :string, label: false, placeholder: "Início",
-              input_html: {
-                id: "appointment_starts_at",
-                data: { controller: "flatpickr", flatpickr_enable_time_value: true }
-              } %>
-          </div>
+      <button type="button" class="see-all-btn" data-bs-toggle="modal" data-bs-target="#requestTimeModal">
+        Solicitar horário
+      </button>
 
-          <div class="field with-icon end">
-            <%= f.input :ends_at,
-              as: :string, label: false, placeholder: "Fim",
-              input_html: {
-                data: {
-                  controller: "flatpickr",
-                  flatpickr_enable_time_value: true,
-                  flatpickr_link_to_value: "#appointment_starts_at"
-                }
-              } %>
-          </div>
-          <div class="actions">
-            <%= f.submit "Agendar", class: "btn btn-primary" %>
-          </div>
-        </div>
-        <p class="hint">Escolha o intervalo de horário. Você poderá conversar com o profissional após criar o agendamento.</p>
-      <% end %>
+      <p class="hint">
+        Você escolhe a data/hora preferida. O profissional confirma ou sugere outro.
+      </p>
     </div>
+    <!-- 🔄 CHANGE ENDS HERE -->
+  </div>
+</div>
 
-    <% if @appointments.exists? %>
-      <div class="worker-appointments">
-        <h3>Seus agendamentos</h3>
-        <div class="appt-list">
-          <% @appointments.order(starts_at: :desc).each do |appointment| %>
-            <%= link_to appointment, class: "appt-card" do %>
-              <div class="date-badge">
-                <div class="day"><%= appointment.starts_at.strftime("%d") %></div>
-                <div class="mon"><%= appointment.starts_at.strftime("%b").upcase %></div>
-              </div>
-
-              <div class="appt-info">
-                <div class="title">
-                  <i class="fa-regular fa-clock"></i>
-                  <span><%= appointment.starts_at.strftime("%H:%M") %>–<%= appointment.ends_at.strftime("%H:%M") %></span>
-                </div>
-                <div class="meta">
-                  com <strong><%= @worker.user.full_name %></strong>
-                </div>
-              </div>
-
-              <div class="chev"><i class="fa-solid fa-chevron-right"></i></div>
-            <% end %>   <!-- closes link_to block -->
-          <% end %>     <!-- closes .each loop -->
-        </div>
+<!-- ✅ NEW: Modal with form -->
+<div class="modal fade" id="requestTimeModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Solicitar horário</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
-    <% end %>
+
+      <div class="modal-body">
+        <%= form_with url: worker_appointments_path(@worker), method: :post, html: { class: "appointment-request-form" } do %>
+          <div class="mb-3">
+            <label class="form-label">Dia e hora</label>
+            <input
+              type="text"
+              name="appointment[starts_at]"
+              id="appointment_starts_at"
+              class="form-control"
+              placeholder="Selecione dia e hora"
+              autocomplete="off"
+              data-controller="flatpickr"
+              data-flatpickr-enable-time-value="true"
+              data-flatpickr-time-24hr-value="true"
+              data-flatpickr-minute-increment-value="15"
+              data-flatpickr-date-format-value="Y-m-d H:i"
+            >
+            <small class="text-muted">Você poderá combinar a duração no chat.</small>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Mensagem (opcional)</label>
+            <textarea name="message" class="form-control" rows="3" placeholder="Descreva o serviço, endereço/online, urgência…"></textarea>
+          </div>
+
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary">Enviar solicitação</button>
+          </div>
+        <% end %>
+      </div>
+    </div>
   </div>
 </div>

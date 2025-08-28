@@ -1,0 +1,179 @@
+<!-- app/views/appointments/index.html.erb -->
+<style>
+@keyframes pulse {0%{box-shadow:0 0 0 0 rgba(25,135,84,.7)}70%{box-shadow:0 0 0 10px rgba(25,135,84,0)}100%{box-shadow:0 0 0 0 rgba(25,135,84,0)}}
+.btn.pulse {animation:pulse 1.5s infinite}
+</style>
+
+<div class="container" style="max-width:900px;margin:2rem auto;">
+  <h2 class="mb-3">Meus agendamentos</h2>
+
+  <%# ------- Filters ------- %>
+  <% active_as     = params[:as].to_s %>
+  <% active_status = params[:status].to_s %>
+
+  <!-- Role filter -->
+  <ul class="nav nav-pills gap-2 mb-2">
+    <li class="nav-item">
+      <%= link_to "Todos (cliente + profissional)",
+          my_appointments_path(status: active_status.presence),
+          class: "nav-link #{active_as.blank? ? 'active' : ''}" %>
+    </li>
+    <li class="nav-item">
+      <%= link_to "Como cliente",
+          my_appointments_path(as: "client", status: active_status.presence),
+          class: "nav-link #{active_as == 'client' ? 'active' : ''}" %>
+    </li>
+    <li class="nav-item">
+      <%= link_to "Como profissional",
+          my_appointments_path(as: "worker", status: active_status.presence),
+          class: "nav-link #{active_as == 'worker' ? 'active' : ''}" %>
+    </li>
+  </ul>
+
+  <!-- Status filter -->
+  <ul class="nav nav-pills gap-2 mb-4">
+    <li class="nav-item">
+      <%= link_to "Todos", my_appointments_path(as: active_as.presence),
+          class: "nav-link #{active_status.blank? ? 'active' : ''}" %>
+    </li>
+    <li class="nav-item">
+      <%= link_to "Pendentes",
+          my_appointments_path(as: active_as.presence, status: "pending"),
+          class: "nav-link #{active_status == 'pending' ? 'active' : ''}" %>
+    </li>
+    <li class="nav-item">
+      <%= link_to "Aceitos",
+          my_appointments_path(as: active_as.presence, status: "accepted"),
+          class: "nav-link #{active_status == 'accepted' ? 'active' : ''}" %>
+    </li>
+    <li class="nav-item">
+      <%= link_to "Recusados",
+          my_appointments_path(as: active_as.presence, status: "declined"),
+          class: "nav-link #{active_status == 'declined' ? 'active' : ''}" %>
+    </li>
+  </ul>
+
+  <% if @appointments.blank? %>
+    <p>Nenhum agendamento.</p>
+  <% else %>
+    <div class="list-group">
+      <% @appointments.each do |a| %>
+        <%# ---------- conflict check (for worker, accepted items only) ---------- %>
+        <% conflict = false
+           if current_user.respond_to?(:worker?) && current_user.worker? && a.status.to_s == "accepted"
+             a_end = a.ends_at || (a.starts_at && a.starts_at + 1.hour)
+             @appointments.each do |b|
+               next if b.id == a.id
+               next unless b.status.to_s == "accepted"
+               next unless b.worker_profile.user_id == current_user.id
+               b_end = b.ends_at || (b.starts_at && b.starts_at + 1.hour)
+               if a.starts_at && b.starts_at && (a.starts_at < b_end) && (b.starts_at < a_end)
+                 conflict = true
+                 break
+               end
+             end
+           end
+        %>
+
+        <% status = a.status.to_s %>
+        <% badge_class = { "pending" => "bg-warning text-dark",
+                           "accepted" => "bg-success",
+                           "declined" => "bg-danger" }[status] || "bg-secondary" %>
+        <% status_icon = { "pending" => "fa-regular fa-clock",
+                           "accepted" => "fa-solid fa-check",
+                           "declined" => "fa-solid fa-xmark" }[status] || "fa-regular fa-calendar" %>
+
+        <%# ---------- unread detection (lights up the button) ---------- %>
+        <% last_read =
+             if current_user.id == a.user_id
+               a.client_last_read_at
+             else
+               a.worker_last_read_at
+             end %>
+        <% has_unread = a.messages.where("created_at > ? AND user_id != ?",
+                                         (last_read || Time.at(0)), current_user.id).exists? %>
+
+        <div class="list-group-item d-flex justify-content-between align-items-center gap-3 <%= conflict ? 'border border-danger' : '' %>">
+          <div>
+            <div class="fw-semibold">
+              <% if a.user_id == current_user.id %>
+                com <%= a.worker_profile.user.full_name.presence || a.worker_profile.user.email %>
+              <% else %>
+                com <%= a.user.full_name.presence || a.user.email %>
+              <% end %>
+            </div>
+            <div class="text-muted small">
+              <i class="fa-regular fa-calendar"></i>
+              <%= a.starts_at.present? ? (l(a.starts_at, format: :short) rescue a.starts_at) : "sem data" %>
+              <% if status.present? %>
+                • <span class="badge <%= badge_class %>">
+                  <i class="<%= status_icon %>"></i> <%= status.upcase %>
+                </span>
+                <% if conflict %>
+                  <span class="badge bg-danger ms-1">CONFLITO</span>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <%# Worker-only actions on pending %>
+            <% if a.worker_profile.user_id == current_user.id && status == "pending" %>
+              <%= button_to "Aceitar", accept_appointment_path(a), method: :patch, class: "btn btn-success btn-sm" %>
+
+              <!-- Decline opens modal to capture reason -->
+              <button type="button"
+                      class="btn btn-outline-danger btn-sm"
+                      data-bs-toggle="modal"
+                      data-bs-target="#declineModal"
+                      data-appointment-id="<%= a.id %>">
+                Recusar
+              </button>
+            <% end %>
+
+            <%= link_to (has_unread ? "Abrir chat • Novas" : "Abrir chat"),
+                        appointment_path(a),
+                        class: "btn btn-sm #{has_unread ? 'btn-success pulse' : 'btn-outline-primary'}" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<!-- Decline with reason modal (shared for all rows) -->
+<div class="modal fade" id="declineModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Recusar agendamento</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <%= form_with url: decline_appointment_path(0), method: :patch, id: "decline-form", data: { base_action: decline_appointment_path(0) } do %>
+          <div class="mb-3">
+            <label class="form-label">Motivo (opcional)</label>
+            <textarea name="reason" class="form-control" rows="3" placeholder="Ex.: Já tenho um compromisso nesse horário"></textarea>
+          </div>
+          <div class="d-grid">
+            <button type="submit" class="btn btn-danger">Confirmar recusa</button>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('show.bs.modal', function (event) {
+  const modal = event.target;
+  if (modal.id !== 'declineModal') return;
+  const button = event.relatedTarget;
+  const apptId = button?.getAttribute('data-appointment-id');
+  const form = document.getElementById('decline-form');
+  if (apptId && form) {
+    const base = form.dataset.baseAction; // e.g., /appointments/0/decline
+    form.action = base.replace('/0/', `/${apptId}/`);
+  }
+});
+</script>

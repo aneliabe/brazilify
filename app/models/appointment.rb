@@ -4,8 +4,12 @@ class Appointment < ApplicationRecord
 
   has_many :messages, dependent: :destroy
 
-  validates :starts_at, :ends_at, presence: true
-  validate :ends_after_starts
+  STATUSES = %w[pending accepted declined].freeze
+
+  validates :starts_at, presence: true
+  # ✅ keep status sane (allow nil temporarily so old rows don’t break)
+  validates :status, inclusion: { in: STATUSES }, allow_nil: true
+  before_validation :set_default_status, on: :create
 
   def participants
     [user, worker_profile.user]
@@ -17,8 +21,7 @@ class Appointment < ApplicationRecord
 
   private
 
-  def ends_after_starts
-    return if starts_at.blank? || ends_at.blank?
-    errors.add(:ends_at, "must be after start") if ends_at <= starts_at
+  def set_default_status
+    self.status ||= "pending"
   end
 end
