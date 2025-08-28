@@ -1,5 +1,7 @@
 class AppointmentsController < ApplicationController
   before_action :authenticate_user!
+  before_action :set_appointment, only: :show
+  before_action :authorize_participant!, only: :show
 
   def create
     worker = WorkerProfile.find(params[:worker_id]) # from nested route
@@ -20,6 +22,16 @@ class AppointmentsController < ApplicationController
   end
 
   private
+
+  def set_appointment
+    @appointment = Appointment.find(params[:id])
+  end
+
+  def authorize_participant!
+    unless @appointment.participant?(current_user)
+      redirect_to root_path, alert: "You are not allowed to access this chat."
+    end
+  end
 
   def appointment_params
     params.require(:appointment).permit(:starts_at, :ends_at)

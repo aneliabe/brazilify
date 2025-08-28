@@ -3,6 +3,8 @@ class MessagesController < ApplicationController
 
   def create
     @appointment = Appointment.find(params[:appointment_id])
+    return redirect_to root_path, alert: "You are not allowed to post here." unless @appointment.participant?(current_user)
+    
     @message = Message.new(message_params)
     @message.appointment = @appointment
     @message.user = current_user

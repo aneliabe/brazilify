@@ -1,11 +1,18 @@
 <div
   id="message-<%= message.id %>"
-  class="message <%= message.user === user ? 'sent' : 'received' %>"
+  class="message <%= message.user == user ? 'sent' : 'received' %>"
   data-controller="message"
   data-message-user-id-value="<%= message.user.id %>">
-  <small class="message-info">
-    <strong><%= message.user.respond_to?(:full_name) ? message.user.full_name : message.user.email %></strong>
-    <i><%= message.created_at.strftime("%a %b %e at %l:%M %p") %></i>
-  </small>
-  <p class="message-content"><%= message.content %></p>
+
+  <% unless message.user == user %>
+    <img src="https://placehold.co/32" class="msg-avatar" alt="">
+  <% end %>
+
+  <div class="bubble">
+    <small class="message-info">
+      <strong><%= message.user.full_name %></strong>
+      <i><%= message.created_at.strftime("%a %b %e at %l:%M %p") %></i>
+    </small>
+    <p class="message-content"><%= message.content %></p>
+  </div>
 </div>

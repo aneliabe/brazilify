@@ -1,16 +1,16 @@
 <div class="worker-show">
   <div class="card worker-card">
     <div class="worker-header">
-      <img src="<%= @worker.user.avatar.presence || 'https://placehold.co/96x96' %>" class="worker-avatar">
-      <div>
+      <img src="<%= @worker.user.avatar.presence || 'https://placehold.co/96x96' %>" class="worker-avatar" alt="">
+      <div class="worker-headings">
         <h2 class="worker-name"><%= @worker.user.full_name %></h2>
         <small class="worker-sub">
           <i class="fa-solid fa-location-dot"></i>
           <%= [@worker.user.city, @worker.user.country].compact.join(", ") %>
-        </small><br>
+        </small>
         <div class="worker-stats">
-          <i class="fa-solid fa-star" style="color:#f5b301"></i>
-          <%= @worker.average_rating %> (<%= @worker.reviews.count %> avaliações)
+          <i class="fa-solid fa-star"></i>
+          <span><%= @worker.average_rating %> (<%= @worker.reviews.count %> avaliações)</span>
         </div>
       </div>
     </div>
@@ -20,50 +20,74 @@
     <div class="worker-tags">
       <% if @worker.services.any? %>
         <% @worker.services.each do |s| %>
-          <span class="btn"><%= s.name %></span>
+          <span class="tag"><%= s.name %></span>
         <% end %>
       <% else %>
         <small>Sem serviços cadastrados ainda.</small>
       <% end %>
     </div>
 
-    <hr class="my-3">
-
-    <h3>Avaliações (<%= @worker.reviews.count %>)</h3>
-    <% if @worker.reviews.any? %>
-      <div class="reviews" style="display:flex;flex-direction:column;gap:.8rem;">
-        <% @worker.reviews.order(created_at: :desc).each do |r| %>
-          <div class="card" style="padding:.8rem;">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <strong><%= r.user.full_name %></strong>
-              <span><i class="fa-solid fa-star" style="color:#f5b301"></i> <%= r.rating %>/5</span>
-            </div>
-            <p style="margin:.4rem 0 0;"><%= r.comment %></p>
-          </div>
-        <% end %>
-      </div>
-    <% else %>
-      <small>Sem avaliações ainda.</small>
-    <% end %>
+    <hr class="divider">
 
     <div class="worker-cta">
-      <h2>Book this <%= @worker.user.full_name %></h2>
+      <h3>Agendar com <%= @worker.user.full_name %></h3>
 
-      <%= simple_form_for @appointment, url: worker_appointments_path(@worker) do |f| %>
-        <%= f.input :starts_at, as: :datetime, label: "Start" %>
-        <%= f.input :ends_at,   as: :datetime, label: "End" %>
-        <%= f.submit "Book", class: "btn btn-primary" %>
+      <%= simple_form_for @appointment, url: worker_appointments_path(@worker), html: { class: "appointment-form pretty" } do |f| %>
+        <div class="row">
+          <div class="field with-icon start">
+            <%= f.input :starts_at,
+              as: :string, label: false, placeholder: "Início",
+              input_html: {
+                id: "appointment_starts_at",
+                data: { controller: "flatpickr", flatpickr_enable_time_value: true }
+              } %>
+          </div>
+
+          <div class="field with-icon end">
+            <%= f.input :ends_at,
+              as: :string, label: false, placeholder: "Fim",
+              input_html: {
+                data: {
+                  controller: "flatpickr",
+                  flatpickr_enable_time_value: true,
+                  flatpickr_link_to_value: "#appointment_starts_at"
+                }
+              } %>
+          </div>
+          <div class="actions">
+            <%= f.submit "Agendar", class: "btn btn-primary" %>
+          </div>
+        </div>
+        <p class="hint">Escolha o intervalo de horário. Você poderá conversar com o profissional após criar o agendamento.</p>
       <% end %>
     </div>
+
     <% if @appointments.exists? %>
-      <h2>Your appointments</h2>
-      <ul>
-        <% @appointments.each do |appointment| %>
-          <li>
-            <%= link_to appointment.starts_at.strftime("%a %b %e at %l:%M %p"), appointment %>
-          </li>
-        <% end %>
-      </ul>
+      <div class="worker-appointments">
+        <h3>Seus agendamentos</h3>
+        <div class="appt-list">
+          <% @appointments.order(starts_at: :desc).each do |appointment| %>
+            <%= link_to appointment, class: "appt-card" do %>
+              <div class="date-badge">
+                <div class="day"><%= appointment.starts_at.strftime("%d") %></div>
+                <div class="mon"><%= appointment.starts_at.strftime("%b").upcase %></div>
+              </div>
+
+              <div class="appt-info">
+                <div class="title">
+                  <i class="fa-regular fa-clock"></i>
+                  <span><%= appointment.starts_at.strftime("%H:%M") %>–<%= appointment.ends_at.strftime("%H:%M") %></span>
+                </div>
+                <div class="meta">
+                  com <strong><%= @worker.user.full_name %></strong>
+                </div>
+              </div>
+
+              <div class="chev"><i class="fa-solid fa-chevron-right"></i></div>
+            <% end %>   <!-- closes link_to block -->
+          <% end %>     <!-- closes .each loop -->
+        </div>
+      </div>
     <% end %>
   </div>
 </div>
