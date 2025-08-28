@@ -37,17 +37,17 @@
           class: "nav-link #{active_status.blank? ? 'active' : ''}" %>
     </li>
     <li class="nav-item">
-      <%= link_to "Pendentes",
+      <%= link_to "Pendentes (#{@counts_by_status['pending']})",
           my_appointments_path(as: active_as.presence, status: "pending"),
           class: "nav-link #{active_status == 'pending' ? 'active' : ''}" %>
     </li>
     <li class="nav-item">
-      <%= link_to "Aceitos",
+      <%= link_to "Aceitos (#{@counts_by_status['accepted']})",
           my_appointments_path(as: active_as.presence, status: "accepted"),
           class: "nav-link #{active_status == 'accepted' ? 'active' : ''}" %>
     </li>
     <li class="nav-item">
-      <%= link_to "Recusados",
+      <%= link_to "Recusados (#{@counts_by_status['declined']})",
           my_appointments_path(as: active_as.presence, status: "declined"),
           class: "nav-link #{active_status == 'declined' ? 'active' : ''}" %>
     </li>

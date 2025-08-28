@@ -6,20 +6,30 @@ class AppointmentsController < ApplicationController
 
   # /my/appointments (optionally filtered by ?as=worker|client&status=pending|accepted|declined)
   def index
-    base = Appointment.joins(:worker_profile).includes(:messages, :user, worker_profile: :user)
+    # Preload associations for speed (messages for unread; users for names)
+    base = Appointment.joins(:worker_profile)
+                      .includes(:messages, :user, worker_profile: :user)
 
-    case params[:as]
-    when "worker"   # I’m the professional (owner of the worker_profile)
-      @appointments = base.where(worker_profiles: { user_id: current_user.id })
-    when "client"   # I’m the requester
-      @appointments = base.where(appointments: { user_id: current_user.id })
-    else            # both roles
-      @appointments = base.where(
-        "appointments.user_id = :uid OR worker_profiles.user_id = :uid",
-        uid: current_user.id
-      )
-    end
+    # ---- Role scope (as=worker|client or both) ----
+    role_scope =
+      case params[:as]
+      when "worker"
+        base.where(worker_profiles: { user_id: current_user.id })
+      when "client"
+        base.where(appointments: { user_id: current_user.id })
+      else
+        base.where("appointments.user_id = :uid OR worker_profiles.user_id = :uid", uid: current_user.id)
+      end
 
+    # ---- Counts for the status pills (based on current role scope) ----
+    @counts_by_status = role_scope.group(:status).count
+    # ensure keys exist (nil-safe)
+    @counts_by_status["pending"]  ||= 0
+    @counts_by_status["accepted"] ||= 0
+    @counts_by_status["declined"] ||= 0
+
+    # ---- Final list (apply optional status filter) ----
+    @appointments = role_scope
     @appointments = @appointments.where(status: params[:status]) if params[:status].present?
     @appointments = @appointments.order(created_at: :desc)
   end
