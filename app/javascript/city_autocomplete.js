@@ -2,7 +2,7 @@
   const MAPBOX_PARAMS = {
     types: "place",
     language: "pt,en",
-    country: "BR,IE,PT,US,GB, JP",
+    country: "BR,IE,PT,US,GB",
     limit: 7
   };
   const DEBOUNCE_MS = 250;
