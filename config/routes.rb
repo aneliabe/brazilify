@@ -11,6 +11,7 @@ Rails.application.routes.draw do
     end
   end
 
+
   resources :appointments, only: [:show] do
     resources :messages, only: [:create]
     member do

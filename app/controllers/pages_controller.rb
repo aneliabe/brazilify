@@ -13,24 +13,14 @@ class PagesController < ApplicationController
     raw_city = params[:city].to_s.strip
     @q       = params[:q].to_s.strip
 
-    # Parses "Dublin, IE" (now) and "Douglas, Cork, IE" (future)
     city_token, _country_hint = parse_city_label(raw_city)
 
     scope = WorkerProfile
-              .includes(:user, :services)
+              .includes(:user, :services, :reviews) # optional, for ratings
               .joins(:user)
 
-    # --- city filter (ILIKE, simple) ---
-    if city_token.present?
-      scope = scope.where("users.city ILIKE ?", "%#{city_token}%")
-    end
-
-    # --- service name filter (kept, but optional now) ---
-    if @q.present?
-      scope = scope.joins(:services)
-                   .where("services.name ILIKE ?", "%#{@q}%")
-                   .distinct
-    end
+    scope = scope.where("users.city LIKE ?", "%#{city_token}%") if city_token.present?
+    scope = scope.joins(:services).where("services.name ILIKE ?", "%#{@q}%").distinct if @q.present?
 
     @workers = scope
   end
