@@ -1,0 +1,27 @@
+<section class="search-hero">
+  <h1>Encontre brasileiros na sua cidade</h1>
+
+  <%= form_with url: search_path, method: :get, html: { class: "searchbar", role: "search" } do %>
+    <i class="fa-solid fa-location-dot"></i>
+
+    <input type="text"
+       id="city-input"
+       name="city"
+       value="<%= (local_assigns[:city] || params[:city]).to_s %>"
+       placeholder="Digite a cidade (ex: Dublin, IE)"
+       list="city-suggestions"
+       autocomplete="off"
+       autocapitalize="off"
+       spellcheck="false"
+       inputmode="search"
+       aria-label="Cidade" />
+
+
+
+    <datalist id="city-suggestions"></datalist>
+
+    <button type="submit" class="btn-accent">
+      <i class="fa-solid fa-magnifying-glass"></i> Buscar
+    </button>
+  <% end %>
+</section>
