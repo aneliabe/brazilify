@@ -1,36 +1,39 @@
-<div class="container" style="max-width:1100px;margin:2rem auto;padding:0 1rem;">
-  <h2>Resultados em <%= @city.presence || "todas as cidades" %></h2>
+<%= render "shared/search_bar", city: params[:city] %>
 
-  <% if @workers.blank? %>
-    <p>Nenhum profissional encontrado.</p>
-    <%= link_to "Voltar para a Home", root_path, class:"btn btn-outline-primary" %>
-  <% else %>
-    <div class="grid cols-2" style="margin-top:1rem;">
+<section class="search-results container">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h3 class="mb-0">
+      Resultados
+      <% if params[:city].present? %>
+        para <strong><%= params[:city] %></strong>
+      <% end %>
+      <% if params[:q].present? %>
+        · serviço: <strong><%= params[:q] %></strong>
+      <% end %>
+    </h3>
+
+    <div class="text-end">
+      <%= link_to "Voltar para a Home", root_path, class: "see-all-btn" %>
+    </div>
+  </div>
+
+  <% if @workers.present? && @workers.any? %>
+    <div class="meta mb-2">
+      <span><%= @workers.size %> <%= @workers.size == 1 ? "profissional encontrado" : "profissionais encontrados" %></span>
+    </div>
+
+    <div class="grid cols-3">
       <% @workers.each do |w| %>
-        <div class="card">
-          <div style="display:flex;gap:12px;align-items:center;">
-            <img src="<%= w.user.avatar.presence || 'https://placehold.co/64x64' %>" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover;">
-            <div>
-              <h3 style="margin:0;"><%= w.user.full_name %></h3>
-              <small><i class="fa-solid fa-location-dot"></i> <%= [w.user.city, w.user.country].compact.join(", ") %></small>
-            </div>
-          </div>
-
-          <p style="margin:.7rem 0 0;"><%= w.description.to_s.truncate(120) %></p>
-
-          <div style="margin-top:.6rem;display:flex;gap:8px;flex-wrap:wrap;">
-            <% w.services.each do |svc| %>
-              <span class="btn" style="padding:.3rem .6rem;"><%= svc.name %></span>
-            <% end %>
-          </div>
-
-          <div style="margin-top:.8rem;">
-            <%# If you set routes like: resources :worker_profiles, only: :show %>
-            <%# <%= link_to "Ver perfil", worker_profile_path(w), class:"btn btn-accent" %>
-            <%= link_to "Ver perfil", worker_path(w), class:"btn btn-accent" %>
-          </div>
-        </div>
+        <%= render "shared/results_card", w: w %>
       <% end %>
     </div>
+  <% else %>
+    <div class="empty-state">
+      <p>Nenhum profissional encontrado para esses filtros.</p>
+      <ul class="small">
+        <li>Tente outra cidade (ex.: “Dublin, IE”).</li>
+        <li>Ou remova o serviço para ampliar os resultados.</li>
+      </ul>
+    </div>
   <% end %>
-</div>
+</section>
