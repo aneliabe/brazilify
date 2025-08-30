@@ -10,6 +10,9 @@ Rails.application.routes.draw do
       get :contact
     end
   end
+  resources :categories, only: [:index, :show] do
+    get :services, on: :member
+  end
 
 
   resources :appointments, only: [:show] do
@@ -20,13 +23,19 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :categories, only: [:index]
+  resources :categories, only: [:index] do
+    member do
+      get :services
+    end
+  end
 
   resources :users, only: :show do
     member do
       get "become_worker"
       post :become_worker, action: :activate_worker
       get "worker", to: "users#worker_dashboard"
+      get "edit_worker", to: "users#edit_worker"
+      patch "update_worker", to: "users#update_worker"
     end
   end
 
