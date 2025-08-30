@@ -1,21 +1,27 @@
 (() => {
-  // ---- simple settings ----
   const MAPBOX_PARAMS = {
     types: "place",
     language: "pt,en",
-    // country: "BR,IE,PT,US,GB",
+    country: "BR,IE,PT,US,GB, JP",
     limit: 7
   };
   const DEBOUNCE_MS = 250;
   const MIN_CHARS = 2;
   const ENDPOINT = "https://api.mapbox.com/search/geocode/v6/forward";
 
-
-
   function buildUrl(q, token) {
     const params = new URLSearchParams({ q, access_token: token });
     for (const [k, v] of Object.entries(MAPBOX_PARAMS)) if (v) params.set(k, v);
     return `${ENDPOINT}?${params.toString()}`;
+  }
+
+  function getRegionAbbrev(ctx) {
+    const r = ctx?.region || {};
+    let code = r.short_code || r.region_code || r.region_code_full || r.code || "";
+    if (!code) return "";
+    code = String(code);
+    if (code.includes("-")) code = code.split("-").pop();
+    return code.length <= 3 ? code.toUpperCase() : "";
   }
 
   function setupCityAutocomplete(input, datalist, token) {
@@ -24,22 +30,17 @@
     if (input.dataset.cityAutocompleteBound === "true") return;
     input.dataset.cityAutocompleteBound = "true";
 
-
     let t = null;
     let lastController = null;
-
     let suppressUntil = 0;
     let lastQueryShown = "";
 
     function closeDatalist() {
       datalist.innerHTML = "";
-      // use the actual datalist id, not a hard-coded string
       const listId = datalist.id;
       input.setAttribute("list", "");
       setTimeout(() => input.setAttribute("list", listId), 0);
-
-      suppressUntil = Date.now() + 400; // cooldown
-      // allow same query to rebuild after close
+      suppressUntil = Date.now() + 400;
       lastQueryShown = "";
     }
 
@@ -65,10 +66,7 @@
 
         try {
           const res = await fetch(buildUrl(q, token), { signal: lastController.signal });
-          if (!res.ok) {
-            console.error("Mapbox HTTP error", res.status, await res.text());
-            return;
-          }
+          if (!res.ok) { console.error("Mapbox HTTP error", res.status, await res.text()); return; }
           const data = await res.json();
 
           datalist.innerHTML = "";
@@ -77,25 +75,30 @@
 
           lastQueryShown = q;
 
-const seen = new Set();
-features.forEach(f => {
-  const props   = f.properties || {};
-  const name    = (props.name || "").trim();
-  const country = (props.context?.country?.country_code || "").toUpperCase();
-  if (!name) return;
+          const seen = new Set();
+          features.forEach(f => {
+            const props = f.properties || {};
+            const ctx   = props.context || {};
+            const name  = (props.name || "").trim();
+            if (!name) return;
 
-  // label: "Cidade, PAÍS" (se país vier vazio, mostra só a cidade)
-  const label = country ? `${name}, ${country}` : name;
-  // dedupe inclui país para não colidir "Dublin, IE" com "Dublin, US"
-  const key   = `${name.toLowerCase()}||${country}`;
+            const countryName = (ctx.country?.name || "").trim();
+            const countryCode = (ctx.country?.country_code || "").toUpperCase();
+            const regionAbbr  = getRegionAbbrev(ctx);
 
-  if (seen.has(key)) return;
-  seen.add(key);
+            const label = regionAbbr
+              ? `${name} ${regionAbbr}${countryName ? `, ${countryName}` : ""}`
+              : `${name}${countryName ? `, ${countryName}` : ""}`;
 
-  const opt = document.createElement("option");
-  opt.value = label;
-  datalist.appendChild(opt);
-});
+            const countryKey = (countryCode || countryName).toUpperCase();
+            const key = `${name.toLowerCase()}||${regionAbbr}||${countryKey}`;
+            if (seen.has(key)) return;
+            seen.add(key);
+
+            const opt = document.createElement("option");
+            opt.value = label;
+            datalist.appendChild(opt);
+          });
         } catch (e) {
           if (e.name !== "AbortError") console.error("Fetch failed:", e);
         }
@@ -113,5 +116,4 @@ features.forEach(f => {
 
   document.addEventListener("turbo:load", init);
   document.addEventListener("DOMContentLoaded", init);
-
 })();
