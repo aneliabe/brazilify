@@ -1,40 +1,57 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["category", "service"]
+  static targets = ["servicesContainer"]
 
   connect() {
-    console.log("WorkerFormController connected") // verify it's attached
+    console.log("WorkerFormController connected")
+    this.maxServices = 5
   }
 
-  updateServices() {
-    console.log("updateServices triggered")
-    console.log("Category selected:", this.categoryTarget.value)
+  addServiceRow(event) {
+    event.preventDefault()
+    const rows = this.servicesContainerTarget.querySelectorAll(".service-row")
+    if (rows.length >= this.maxServices) return
 
-    const categoryId = this.categoryTarget.value
-    console.log("Category selected:", categoryId)
+    const template = rows[0].cloneNode(true)
+    template.querySelectorAll("select").forEach(select => select.value = "")
+    this.servicesContainerTarget.appendChild(template)
+  }
 
-    if (!categoryId) {
-      this.serviceTarget.innerHTML = '<option value="">Selecione um serviço</option>'
+  removeServiceRow(event) {
+    event.preventDefault()
+    const row = event.target.closest(".service-row")
+    if (!row) return
+
+    const rows = this.servicesContainerTarget.querySelectorAll(".service-row")
+    if (rows.length <= 1) {
+      row.querySelectorAll("select").forEach(select => select.value = "")
       return
     }
 
-    const url = `/categories/${categoryId}/services.json`
-    console.log("Fetching URL:", url)
+    row.remove()
+  }
 
-    fetch(url)
-      .then(response => response.json())
+  updateServices(event) {
+    const categorySelect = event.target
+    const row = categorySelect.closest(".service-row")
+    const serviceSelect = row.querySelector(".service-select")
+
+    serviceSelect.innerHTML = "<option value=''>Selecione o serviço</option>"
+
+    const categoryId = categorySelect.value
+    if (!categoryId) return
+
+    fetch(`/categories/${categoryId}/services.json`)
+      .then(res => res.json())
       .then(data => {
-        console.log("Services fetched:", data)
-        this.serviceTarget.innerHTML = '<option value="">Selecione um serviço</option>'
         data.forEach(service => {
           const option = document.createElement("option")
           option.value = service.id
-          option.text = service.name
-          this.serviceTarget.add(option)
+          option.textContent = service.name
+          serviceSelect.appendChild(option)
         })
       })
-      .catch(error => console.error("Fetch error:", error))
+      .catch(err => console.error("Erro ao carregar serviços:", err))
   }
-
 }
