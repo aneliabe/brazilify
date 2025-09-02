@@ -13,9 +13,11 @@ export default class extends Controller {
     const rows = this.servicesContainerTarget.querySelectorAll(".service-row")
     if (rows.length >= this.maxServices) return
 
-    const template = rows[0].cloneNode(true)
-    template.querySelectorAll("select").forEach(select => select.value = "")
-    this.servicesContainerTarget.appendChild(template)
+    const template = document.querySelector("#worker-service-template").innerHTML
+    const newId = new Date().getTime() // unique index for nested attributes
+    const html = template.replace(/NEW_RECORD/g, newId)
+
+    this.servicesContainerTarget.insertAdjacentHTML("beforeend", html)
   }
 
   removeServiceRow(event) {
@@ -25,7 +27,8 @@ export default class extends Controller {
 
     const rows = this.servicesContainerTarget.querySelectorAll(".service-row")
     if (rows.length <= 1) {
-      row.querySelectorAll("select").forEach(select => select.value = "")
+      // Clear values but don’t remove the last row
+      row.querySelectorAll("select, input").forEach(el => el.value = "")
       return
     }
 

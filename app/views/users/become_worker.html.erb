@@ -3,11 +3,19 @@
   <%= f.input :cpf, label: "CPF", input_html: { class: "form-control" } %>
   <%= f.input :description, as: :text, label: "Descrição", input_html: { class: "form-control", rows: 3 } %>
 
+  <!-- Container where service rows will be added -->
   <div id="worker-services" data-worker-form-target="servicesContainer">
     <%= f.simple_fields_for :worker_services do |ws| %>
       <%= render "worker_service_fields", f: ws, categories: @categories, service_types: @service_types %>
     <% end %>
   </div>
+
+  <!-- Hidden template for new service rows -->
+  <template id="worker-service-template">
+    <%= f.simple_fields_for :worker_services, WorkerService.new, child_index: "NEW_RECORD" do |ws| %>
+      <%= render "worker_service_fields", f: ws, categories: @categories, service_types: @service_types %>
+    <% end %>
+  </template>
 
   <div class="mt-2">
     <%= link_to "Adicionar serviço", "#", class: "btn btn-outline-secondary", data: { action: "click->worker-form#addServiceRow" } %>
