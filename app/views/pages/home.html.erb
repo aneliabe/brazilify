@@ -1,8 +1,8 @@
 <section class="info-bar">
   <div class="container d-flex justify-content-center gap-4 flex-wrap py-2">
-    <div class="d-flex align-items-center gap-1 text-white small">
+    <%# <div class="d-flex align-items-center gap-1 text-white small">
       <i class="fa-solid fa-shield-halved"></i> Pagamentos protegidos
-    </div>
+    </div> %>
     <div class="d-flex align-items-center gap-1 text-white small">
       <i class="fa-solid fa-circle-check"></i> Brasileiros verificados
     </div>
@@ -13,7 +13,6 @@
 </section>
 
 <%= render "shared/search_bar", city: params[:city] %>
-<%# <%= render "shared/why_us_card"%>
 
 <section class="popular-services">
   <h3>Serviços Populares</h3>
@@ -29,35 +28,8 @@
   </div>
 </section>
 
-<section class="top-workers">
-  <h3>Prestadores de serviços perto de você</h3>
-  <div class="grid cols-3">
-    <% @top_workers.each do |w| %>
-      <div class="card worker-card">
-        <div class="header">
-          <img src="<%= w.user.avatar.presence || 'https://placehold.co/72x72' %>" class="avatar" />
-          <div class="info">
-            <h4><%= w.user.full_name %></h4>
-            <p class="role">
-              <i class="fa-solid fa-screwdriver-wrench"></i>
-              <%= w.services.first&.name || "Profissional" %> ·
-              <i class="fa-solid fa-location-dot"></i>
-              <%= [w.user.city, w.user.country].compact.join(", ") %>
-            </p>
-          </div>
-        </div>
-        <p class="desc"><%= (w.description || "Profissional qualificado e bem avaliado.").truncate(120) %></p>
-        <div class="meta">
-          <span class="rating">
-            <i class="fa-solid fa-star"></i> <%= w.average_rating %>
-          </span>
-          <span class="dot">•</span>
-          <span class="reviews"><%= pluralize(w.reviews.size, "avaliação", "avaliações") %></span>
-        </div>
-        <div class="worker-cta" style="margin-top: .8rem;">
-          <%= link_to "Ver perfil", worker_path(w), class: "btn btn-accent" %>
-        </div>
-      </div>
-    <% end %>
-  </div>
-</section>
+<% if user_signed_in? && @top_workers_cards.present? %>
+  <%= render "shared/top_workers", top_workers: @top_workers %>
+<% else %>
+  <%= render "shared/why_us_card" %>
+<% end %>
