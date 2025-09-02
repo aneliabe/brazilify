@@ -28,8 +28,8 @@
   </div>
 </section>
 
-<% if user_signed_in? && @top_workers_cards.present? %>
-  <%= render "shared/top_workers", top_workers: @top_workers %>
+<% if user_signed_in? %>
+  <%= render "shared/top_workers_card", top_workers: @top_workers %>
 <% else %>
   <%= render "shared/why_us_card" %>
 <% end %>
