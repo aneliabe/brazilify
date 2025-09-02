@@ -11,10 +11,13 @@ export default class extends Controller {
   addServiceRow(event) {
     event.preventDefault()
     const rows = this.servicesContainerTarget.querySelectorAll(".service-row")
-    if (rows.length >= this.maxServices) return
+    if (rows.length >= this.maxServices) {
+      alert("Você não pode adicionar mais de 5 serviços.")
+      return
+    }
 
     const template = document.querySelector("#worker-service-template").innerHTML
-    const newId = new Date().getTime() // unique index for nested attributes
+    const newId = new Date().getTime() // unique index
     const html = template.replace(/NEW_RECORD/g, newId)
 
     this.servicesContainerTarget.insertAdjacentHTML("beforeend", html)
@@ -27,7 +30,6 @@ export default class extends Controller {
 
     const rows = this.servicesContainerTarget.querySelectorAll(".service-row")
     if (rows.length <= 1) {
-      // Clear values but don’t remove the last row
       row.querySelectorAll("select, input").forEach(el => el.value = "")
       return
     }
