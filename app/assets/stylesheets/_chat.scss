@@ -45,7 +45,7 @@
     }
 
     .bubble {
-      max-width: unquote("min(75%, 48rem)");
+      max-width: #{'min(75%, 48rem)'};
       padding: 0.6rem 0.9rem;
       border-radius: 1rem;
       line-height: 1.35;
