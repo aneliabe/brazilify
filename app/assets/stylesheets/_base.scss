@@ -4,10 +4,51 @@ body{background:$bg;color:$text;font-family:system-ui,-apple-system,Segoe UI,Rob
 .container h1{font-size:2rem;margin:0}
 h2{font-size:1.1rem;margin:1rem 0}
 
-.btn{padding:.6rem 1rem;border-radius:.6rem;border:1px solid #dcdcdc;background:#fff;cursor:pointer;
-  &.active{border-color:$brand;box-shadow:0 0 0 3px rgba($brand,.2)}
-  &.accent{background:$accent;color:#fff;border-color:$accent}
+// .btn{padding:.6rem 1rem;border-radius:.6rem;border:1px solid #dcdcdc;background:#fff;cursor:pointer;
+//   &.active{border-color:$brand;box-shadow:0 0 0 3px rgba($brand,.2)}
+//   &.accent{background:$accent;color:#fff;border-color:$accent}
+// }
+
+
+.worker-cta {
+  .btn {
+    padding: .6rem 1rem;
+    border-radius: .6rem;
+    border: 1px solid #dcdcdc;
+    background: #fff;
+    cursor: pointer;
+    transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
+  }
+
+  .btn.active {
+    border-color: $brand;
+    box-shadow: 0 0 0 3px rgba($brand, .2);
+  }
+
+  .btn.btn-accent {
+    background: $accent;
+    color: #fff;
+    border-color: $accent;
+
+    &:hover {
+      background: lighten($accent, 6%);
+      border-color: lighten($accent, 6%);
+      text-decoration: none;
+    }
+
+    &:active {
+      background: lighten($accent, 12%);
+      border-color: lighten($accent, 12%);
+    }
+
+    &:focus-visible {
+      outline: 0;
+      box-shadow: 0 0 0 3px rgba($accent, .35);
+    }
+  }
 }
+
+
 .grid{display:grid;gap:12px;&.cols-2{grid-template-columns:repeat(2,1fr)}&.cols-4{grid-template-columns:repeat(4,1fr)}}
 .card{background:#fff;border:1px solid #e6e6e6;border-radius:12px;padding:16px;box-shadow:0 4px 12px rgba(0,0,0,.05)}
 .info-bar{background:linear-gradient(90deg,#2c7a7b,#1f6feb);color:#fff;.small{font-size:.9rem}i{font-size:1rem}}

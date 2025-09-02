@@ -12,19 +12,8 @@
   </div>
 </section>
 
-<section class="search-hero">
-  <h1>Encontre brasileiros na sua cidade</h1>
-  <%= form_with url: search_path, method: :get, html: { class: "searchbar", role: "search" } do %>
-    <i class="fa-solid fa-location-dot"></i>
-    <input type="text"
-           name="city"
-           placeholder="Digite a cidade (ex: Boston, US)"
-           autocomplete="off" />
-    <button type="submit" class="btn-accent">
-      <i class="fa-solid fa-magnifying-glass"></i> Buscar
-    </button>
-  <% end %>
-</section>
+<%= render "shared/search_bar", city: params[:city] %>
+<%# <%= render "shared/why_us_card"%>
 
 <section class="popular-services">
   <h3>Serviços Populares</h3>

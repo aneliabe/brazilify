@@ -1,11 +1,28 @@
-<% title_text = "Ofereça seus serviços na Brazilify" %>
-<div class="container py-4" style="max-width: 900px;">
-  <div class="card shadow-sm border-0">
-    <div class="card-header bg-light">
-      <h1 class="h4 m-0"><%= title_text %></h1>
-    </div>
-    <div class="card-body p-4">
-      <%= render "worker_form" %>
-    </div>
+<%= simple_form_for @worker_profile, url: become_worker_user_path(@user), method: :post, data: { controller: "worker-form" } do |f| %>
+
+  <%= f.input :cpf, label: "CPF", input_html: { class: "form-control" } %>
+  <%= f.input :description, as: :text, label: "Descrição", input_html: { class: "form-control", rows: 3 } %>
+
+  <!-- Container where service rows will be added -->
+  <div id="worker-services" data-worker-form-target="servicesContainer">
+    <%= f.simple_fields_for :worker_services do |ws| %>
+      <%= render "worker_service_fields", f: ws, categories: @categories, service_types: @service_types %>
+    <% end %>
   </div>
-</div>
+
+  <!-- Hidden template for new service rows -->
+  <template id="worker-service-template">
+    <%= f.simple_fields_for :worker_services, WorkerService.new, child_index: "NEW_RECORD" do |ws| %>
+      <%= render "worker_service_fields", f: ws, categories: @categories, service_types: @service_types %>
+    <% end %>
+  </template>
+
+  <div class="mt-2">
+    <%= link_to "Adicionar serviço", "#", class: "btn btn-outline-secondary", data: { action: "click->worker-form#addServiceRow" } %>
+  </div>
+
+  <div class="mt-3">
+    <%= f.submit @user.worker? ? "Atualizar informações" : "Ativar perfil de prestador", class: "btn btn-primary" %>
+  </div>
+
+<% end %>
