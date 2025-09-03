@@ -1,0 +1,57 @@
+<div class="navbar navbar-expand-sm navbar-light navbar-lewagon">
+  <div class="container-fluid">
+    <%= link_to root_path, class: "navbar-brand" do %>
+      <%= image_tag "logo_brazilify.png", class: "navbar-img" %>
+    <%end%>
+</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto">
+          <li class="nav-item active">
+            <%= link_to "Encontrar Serviços", workers_path, class: "nav-link"%>
+          </li>
+          <% if user_signed_in? %>
+            <% if current_user.worker? %>
+              <li class="nav-item">
+                <%= link_to "Solicitações", my_requests_path, class: "nav-link" %>
+              </li>
+            <% else %>
+              <li class="nav-item">
+                <%= link_to "Torne-se Prestador", become_worker_user_path(current_user), class: "nav-link" %>
+              </li>
+            <% end %>
+          <% end %>
+          <% if user_signed_in? %>
+            <li class="nav-item dropdown">
+              <img class="avatar dropdown-toggle"
+                  id="navbarDropdown"
+                  data-bs-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                  src="https://kitt.lewagon.com/placeholder/users/ssaunier" />
+<div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+  <% if user_signed_in? && current_user.worker? %>
+    <%= link_to "Dashboard", worker_user_path(current_user), class: "dropdown-item" %>
+  <% end %>
+  <%= link_to "Meus agendamentos", my_appointments_path, class: "dropdown-item" %>
+  <%= link_to "Log out", destroy_user_session_path,
+            method: :delete,
+            class: "dropdown-item",
+            data: { turbo_method: :delete } %>
+</div>
+              </div>
+            </li>
+          <% else %>
+            <li class="nav-item">
+              <%= link_to "Entre ou cadastre-se", new_user_session_path, class: "btn btn-outline-primary" %>
+            </li>
+          <% end %>
+          <!--li class="nav-item"-->
+          <!--/li-->
+      </ul>
+    </div>
+  </div>
+</div>
