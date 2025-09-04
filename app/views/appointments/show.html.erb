@@ -1,25 +1,106 @@
 <%= turbo_stream_from "appointment_#{@appointment.id}_messages" %>
 
-<div class="container chat">
-  <h1>Your appointment for <%= @appointment.worker_profile.user.full_name %></h1>
+<style>
+  .system-msg { max-width: 70%; margin: .25rem auto; }
+  #messages.messages { max-height: 60vh; overflow-y: auto; position: relative; }
+  /* sticky new-messages pill */
+  .jump-latest { position: sticky; bottom: .5rem; display: flex; justify-content: center; }
+  .jump-latest .btn { box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+</style>
 
-  <div id="messages" class="messages">
+<div class="container chat">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h5 m-0">Your appointment for <%= @appointment.worker_profile.user.full_name %></h1>
+    <button type="button"
+            class="btn btn-outline-primary btn-sm d-flex align-items-center gap-2"
+            data-bs-toggle="modal" data-bs-target="#proposeModal">
+      <i class="fa-regular fa-calendar-plus"></i>
+      <span class="d-none d-sm-inline">Propor novo horário</span>
+    </button>
+  </div>
+
+  <!-- Chat stream controlled by Stimulus -->
+  <div id="messages" class="messages" data-controller="auto-scroll">
     <% @appointment.messages.order(:created_at).each do |message| %>
       <%= render "messages/message", message: message, user: current_user %>
     <% end %>
+
+    <% if @appointment.proposed_starts_at.present? %>
+      <% proposer = @appointment.proposed_by_id == @appointment.user_id ?
+          (@appointment.user.full_name.presence || @appointment.user.email) :
+          (@appointment.worker_profile.user.full_name.presence || @appointment.worker_profile.user.email) %>
+
+      <div class="system-msg border rounded p-3 bg-warning-subtle">
+        <div class="d-flex justify-content-between align-items-center gap-3">
+          <div class="small">
+            <strong>Proposta de novo horário:</strong>
+            <%= l(@appointment.proposed_starts_at, format: :long) rescue @appointment.proposed_starts_at %>
+            <small class="text-muted">por <%= proposer %></small>
+          </div>
+
+          <% if @appointment.proposed_by_id != current_user.id %>
+            <div class="d-flex gap-2">
+              <%= button_to "Aceitar", accept_proposed_appointment_path(@appointment),
+                            method: :patch, class: "btn btn-success btn-sm" %>
+              <%= button_to "Recusar", decline_proposed_appointment_path(@appointment),
+                            method: :patch, class: "btn btn-outline-danger btn-sm" %>
+            </div>
+          <% else %>
+            <span class="badge bg-secondary">Aguardando resposta</span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- sticky "new messages" pill (hidden until user scrolls up) -->
+    <div class="jump-latest d-none" data-auto-scroll-target="indicator">
+      <button class="btn btn-success btn-sm" data-action="click->auto-scroll#jumpToBottom">
+        Novas mensagens ↓
+      </button>
+    </div>
+
+    <!-- anchor used by the controller -->
+    <div data-auto-scroll-target="anchor"></div>
   </div>
 
-<% other_user = current_user == @appointment.worker_profile.user ? @appointment.user : @appointment.worker_profile.user %>
-
-<%= simple_form_for [@appointment, @message],
-  html: {
-    class: "d-flex",
-    data: { controller: "reset-form", action: "turbo:submit-end->reset-form#reset" }
-  } do |f| %>
   <% other_user = current_user == @appointment.worker_profile.user ? @appointment.user : @appointment.worker_profile.user %>
-  <%= f.input :content,
-      label: false,
-      placeholder: "Message #{other_user.full_name}",
-      wrapper_html: { class: "flex-grow-1" } %>
-  <%= f.submit "Send", class: "btn btn-primary mb-3" %>
-<% end %>
+  <%= simple_form_for [@appointment, @message],
+        html: { class: "d-flex",
+                data: { controller: "reset-form",
+                        action: "turbo:submit-end->reset-form#reset" } } do |f| %>
+    <%= f.input :content, label: false,
+        placeholder: "Message #{other_user.full_name}",
+        wrapper_html: { class: "flex-grow-1" } %>
+    <%= f.submit "Send", class: "btn btn-primary mb-3" %>
+  <% end %>
+</div>
+
+<!-- Propose modal -->
+<div class="modal fade" id="proposeModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Propor novo horário</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <%= form_with url: propose_time_appointment_path(@appointment), method: :post do %>
+          <div class="mb-3">
+            <label class="form-label">Novo dia e hora</label>
+            <input type="text" name="proposed_starts_at" class="form-control"
+                   placeholder="Selecione dia e hora" autocomplete="off"
+                   data-controller="flatpickr"
+                   data-flatpickr-enable-time-value="true"
+                   data-flatpickr-time-24hr-value="true"
+                   data-flatpickr-minute-increment-value="15"
+                   data-flatpickr-date-format-value="Y-m-d H:i">
+            <small class="text-muted">A outra parte precisa aceitar para a mudança valer.</small>
+          </div>
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary">Enviar proposta</button>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

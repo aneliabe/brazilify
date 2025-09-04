@@ -24,6 +24,9 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_30_190636) do
     t.datetime "updated_at", null: false
     t.datetime "client_last_read_at"
     t.datetime "worker_last_read_at"
+    t.datetime "proposed_starts_at"
+    t.bigint "proposed_by_id"
+    t.index ["proposed_by_id"], name: "index_appointments_on_proposed_by_id"
     t.index ["status"], name: "index_appointments_on_status"
     t.index ["user_id", "created_at"], name: "index_appointments_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_appointments_on_user_id"
@@ -124,6 +127,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_30_190636) do
   end
 
   add_foreign_key "appointments", "users"
+  add_foreign_key "appointments", "users", column: "proposed_by_id"
   add_foreign_key "appointments", "worker_profiles"
   add_foreign_key "messages", "appointments"
   add_foreign_key "messages", "users"
