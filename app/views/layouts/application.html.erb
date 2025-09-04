@@ -2,9 +2,11 @@
 <html>
   <head>
     <title>Brazilify</title>
+    <%= favicon_link_tag 'logo_brazilify.png', type: 'image/png' %>
+
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="mapbox-token" content="<%= ENV.fetch("MAPBOX_PUBLIC_TOKEN", nil) %>">
-    <%= favicon_link_tag 'logo_brazilify.png', type: 'image/png' %>
+
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
@@ -18,11 +20,9 @@
   <body data-current-user-id="<%= current_user ? current_user.id : "" %>">
     <%= render "shared/navbar2" %>
     <%= render "shared/flashes" %>
-  <main class="container">
-    <%= yield %>
-  </main>
-
-<%= render "shared/footer" %>
+    <main class="container">
+      <%= yield %>
+    </main>
+    <%= render "shared/footer" %>
   </body>
-
 </html>
