@@ -105,13 +105,22 @@
             <div class="text-muted small">
               <i class="fa-regular fa-calendar"></i>
               <%= a.starts_at.present? ? (l(a.starts_at, format: :short) rescue a.starts_at) : "sem data" %>
+
               <% if status.present? %>
                 • <span class="badge <%= badge_class %>">
                   <i class="<%= status_icon %>"></i> <%= status.upcase %>
                 </span>
-                <% if conflict %>
-                  <span class="badge bg-danger ms-1">CONFLITO</span>
-                <% end %>
+              <% end %>
+
+              <%# ✅ NEW: show proposed time if there’s a reschedule pending %>
+              <% if a.proposed_starts_at.present? %>
+                <span class="badge bg-warning text-dark ms-1">
+                  ⏱ Proposta: <%= l(a.proposed_starts_at, format: :short) rescue a.proposed_starts_at %>
+                </span>
+              <% end %>
+
+              <% if conflict %>
+                <span class="badge bg-danger ms-1">CONFLITO</span>
               <% end %>
             </div>
           </div>
