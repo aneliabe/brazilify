@@ -68,7 +68,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_30_190636) do
     t.bigint "category_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "service_type"
     t.index ["category_id", "name"], name: "index_services_on_category_id_and_name", unique: true
     t.index ["category_id"], name: "index_services_on_category_id"
   end
@@ -128,6 +127,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_30_190636) do
   end
 
   add_foreign_key "appointments", "users"
+  add_foreign_key "appointments", "users", column: "proposed_by_id"
   add_foreign_key "appointments", "worker_profiles"
   add_foreign_key "messages", "appointments"
   add_foreign_key "messages", "users"
