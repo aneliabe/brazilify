@@ -40,11 +40,67 @@
         Você escolhe a data/hora preferida. O profissional confirma ou sugere outro.
       </p>
     </div>
-    <!-- 🔄 CHANGE ENDS HERE -->
+
+    <hr class="divider">
+
+    <!-- ✅ NEW: Reviews section -->
+    <div class="worker-reviews">
+      <h3 class="mb-2">Avaliações (<%= @worker.reviews.count %>)</h3>
+
+      <% if @worker.reviews.exists? %>
+        <% avg = @worker.average_rating.to_f %>
+
+        <!-- Average as stars + number -->
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <div class="text-warning">
+            <% 5.times do |i| %>
+              <i class="fa-<%= i < avg.round ? 'solid' : 'regular' %> fa-star"></i>
+            <% end %>
+          </div>
+          <small class="text-muted"><%= number_with_precision(avg, precision: 1) %> de 5</small>
+        </div>
+
+        <div class="list-group">
+          <% @worker.reviews.includes(:user).order(created_at: :desc).limit(5).each do |rev| %>
+            <div class="list-group-item">
+              <div class="d-flex align-items-start gap-3">
+                <img src="<%= rev.user.avatar.presence || 'https://placehold.co/48x48' %>"
+                     class="rounded-circle" width="40" height="40" alt="">
+                <div class="flex-grow-1">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <strong><%= rev.user.full_name.presence || rev.user.email %></strong>
+                    <small class="text-muted">
+                      <%= l(rev.created_at.to_date, format: :long) rescue rev.created_at.strftime('%d/%m/%Y') %>
+                    </small>
+                  </div>
+
+                  <!-- rating stars -->
+                  <div class="text-warning mb-1">
+                    <% rev.rating.to_i.times do %><i class="fa-solid fa-star"></i><% end %>
+                    <% (5 - rev.rating.to_i).times do %><i class="fa-regular fa-star"></i><% end %>
+                  </div>
+
+                  <% if rev.comment.present? %>
+                    <p class="mb-0"><%= rev.comment %></p>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+
+        <% if @worker.reviews.count > 5 %>
+          <small class="text-muted d-block mt-2">Mostrando as 5 mais recentes.</small>
+        <% end %>
+      <% else %>
+        <p class="text-muted">Sem avaliações ainda.</p>
+      <% end %>
+    </div>
+    <!-- /Reviews -->
   </div>
 </div>
 
-<!-- ✅ NEW: Modal with form -->
+<!-- Modal to request time -->
 <div class="modal fade" id="requestTimeModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
