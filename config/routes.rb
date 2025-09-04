@@ -20,6 +20,9 @@ Rails.application.routes.draw do
     member do
       patch :accept
       patch :decline
+      post  :propose_time
+      patch :accept_proposed
+      patch :decline_proposed
     end
   end
 
