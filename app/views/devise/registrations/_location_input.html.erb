@@ -1,0 +1,20 @@
+<div data-controller="location-hint"
+     data-location-hint-token-value="<%= ENV.fetch('MAPBOX_PUBLIC_TOKEN', '') %>">
+
+  <div data-location-hint-target="wrap" class="position-relative">
+    <!-- This accepts any form builder and field name -->
+    <%= form.input field_name,
+                   label: label_text,
+                   placeholder: "Digite sua cidade (ex: Dublin, IE)",
+                   input_html: {
+                     class: "form-control",
+                     data: { "location-hint-target": "input" },
+                     list: "city-suggestions-#{field_name}"
+                   } %>
+
+    <datalist data-location-hint-target="datalist" id="city-suggestions-<%= field_name %>"></datalist>
+    <div data-location-hint-target="dropdown" class="dropdown-menu shadow w-100"></div>
+  </div>
+
+  <small data-location-hint-target="status" class="text-muted d-none"></small>
+</div>

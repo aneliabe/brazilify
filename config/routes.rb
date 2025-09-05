@@ -42,6 +42,8 @@ Rails.application.routes.draw do
     end
   end
 
+  get "location_hint", to: "locations#hint"
+
   get "my/appointments", to: "appointments#index", as: :my_appointments
   get "my/requests",     to: redirect("/my/appointments?as=worker&status=pending"), as: :my_requests
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html

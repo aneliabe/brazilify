@@ -25,21 +25,65 @@
                 required: true,
                 input_html: { autocomplete: "address" }%>
 
-    <%= f.input :city,
-                label: "Cidade:",
-                required: true%>
 
+      <div data-controller="location-hint"
+          data-location-hint-token-value="<%= ENV.fetch('MAPBOX_PUBLIC_TOKEN', '') %>"
+          data-location-hint-show-nearby-value="false"
+          data-location-hint-enable-cache-value="false">
 
-    <%= f.input :country,
-                label: "País:",
-                required: true,
-                as: :string %>
+      <div data-location-hint-target="wrap" class="position-relative">
+        <%= f.input :city,
+            label: "Cidade:",
+            required: true,
+            placeholder: "Digite sua cidade (ex: Dublin, IE)",
+            input_html: {
+              data: { "location-hint-target": "input" },
+              list: "city-suggestions-registration",
+              autocomplete: "off",
+              autocapitalize: "off",
+              spellcheck: "false"
+            } %>
 
-    <%= f.input :phone,
-                label: "Telefone",
-                required: true,
-                autofocus: true,
-                input_html: { autocomplete: "telephone" }%>
+        <datalist id="city-suggestions-registration" data-location-hint-target="datalist"></datalist>
+        <div data-location-hint-target="dropdown" class="dropdown-menu shadow w-100" style="max-height:240px; overflow:auto;"></div>
+      </div>
+
+      <%= f.input :country,
+                  label: "País:",
+                  required: true,
+                  as: :string,
+                  input_html: {
+                    data: { "location-hint-target": "country" },
+                    autocomplete: "off",
+                    autocapitalize: "off",
+                    spellcheck: "false"
+                  } %>
+
+      <small data-location-hint-target="status" class="text-muted d-none"></small>
+    </div>
+
+   <div class="row">
+      <div class="col-4">
+        <%= f.input :country_code,
+                    label: "Código",
+                    collection: [
+                      ["+353", "🇮🇪 +353"],
+                      ["+351", "🇵🇹 +351"],
+                      ["+55", "🇧🇷 +55"],
+                      ["+44", "🇬🇧 +44"],
+                      ["+1", "🇺🇸 +1"]
+                    ],
+                    prompt: "Código",
+                    input_html: { autocomplete: "off" } %>
+      </div>
+      <div class="col-8">
+        <%= f.input :phone,
+                    label: "Telefone",
+                    required: true,
+                    # placeholder: "Digite seu telefone",
+                    input_html: { autocomplete: "tel" } %>
+      </div>
+    </div>
 
     <%= f.input :email,
                 required: true,
