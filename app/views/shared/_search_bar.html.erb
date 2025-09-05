@@ -1,27 +1,40 @@
 <section class="search-hero">
-  <h1>Encontre profissionaios brasileiros na sua cidade</h1>
+  <h1>Encontre profissionais brasileiros na sua cidade</h1>
 
-  <%= form_with url: search_path, method: :get, html: { class: "searchbar", role: "search" } do %>
-    <i class="fa-solid fa-location-dot"></i>
+      <div data-controller="location-hint"
+          data-location-hint-token-value="<%= ENV.fetch('MAPBOX_PUBLIC_TOKEN', '') %>">
+    <%= form_with url: search_path, method: :get, html: { class: "searchbar", role: "search" } do %>
+      <i class="fa-solid fa-location-dot"></i>
 
-    <input type="text"
-       id="city-input"
-       name="city"
-       value="<%= (local_assigns[:city] || params[:city]).to_s %>"
-       placeholder="Digite a cidade (ex: Dublin, IE)"
-       list="city-suggestions"
-       autocomplete="off"
-       autocapitalize="off"
-       spellcheck="false"
-       inputmode="search"
-       aria-label="Cidade" />
+      <div data-location-hint-target="wrap" class="position-relative flex-grow-1" style="width:100%;">
+        <input
+          type="text"
+          name="city"
+          value="<%= (local_assigns[:city] || params[:city]).to_s %>"
+          placeholder="Digite a cidade (ex: Dublin, IE)"
+          list="city-suggestions"
+          autocomplete="off"
+          autocapitalize="off"
+          spellcheck="false"
+          inputmode="search"
+          aria-label="Cidade"
+          class="form-control border-0 shadow-none bg-transparent px-2"
+          data-location-hint-target="input" />
 
+        <datalist id="city-suggestions" data-location-hint-target="datalist"></datalist>
 
+        <div data-location-hint-target="dropdown" class="dropdown-menu shadow w-100" style="max-height:240px; overflow:auto;"></div>
+      </div>
 
-    <datalist id="city-suggestions"></datalist>
+      <input type="hidden" name="lat" data-location-hint-target="lat">
+      <input type="hidden" name="lng" data-location-hint-target="lng">
 
-    <button type="submit" class="btn-accent">
-      <i class="fa-solid fa-magnifying-glass"></i> Buscar
-    </button>
-  <% end %>
+      <button type="submit" class="btn btn-accent d-inline-flex align-items-center gap-1">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <span>Buscar</span>
+      </button>
+    <% end %>
+
+    <small data-location-hint-target="status" class="text-muted d-none mt-1"></small>
+  </div>
 </section>
