@@ -2,29 +2,29 @@
 // Run that command whenever you add a new controller or create them with
 // ./bin/rails generate stimulus controllerName
 
-import { application } from "controllers/application"
+import { application } from "./application"
 
 // Eager load all controllers defined in the import map under controllers/**/*_controller
 import { eagerLoadControllersFrom } from "@hotwired/stimulus-loading"
 eagerLoadControllersFrom("controllers", application)
 
-import AutoScrollController from "./auto_scroll_controller"
-application.register("auto-scroll", AutoScrollController)
+// import AutoScrollController from "./auto_scroll_controller"
+// application.register("auto-scroll", AutoScrollController)
 
-import CategoriesController from "./categories_controller"
-application.register("categories", CategoriesController)
+// import CategoriesController from "./categories_controller"
+// application.register("categories", CategoriesController)
 
-import FlatpickrController from "./flatpickr_controller"
-application.register("flatpickr", FlatpickrController)
+// import FlatpickrController from "./flatpickr_controller"
+// application.register("flatpickr", FlatpickrController)
 
-import HelloController from "./hello_controller"
-application.register("hello", HelloController)
+// import HelloController from "./hello_controller"
+// application.register("hello", HelloController)
 
-import MessageController from "./message_controller"
-application.register("message", MessageController)
+// import MessageController from "./message_controller"
+// application.register("message", MessageController)
 
-import ResetFormController from "./reset_form_controller"
-application.register("reset-form", ResetFormController)
+// import ResetFormController from "./reset_form_controller"
+// application.register("reset-form", ResetFormController)
 
-import WorkerFormController from "./worker_form_controller"
-application.register("worker-form", WorkerFormController)
+// import WorkerFormController from "./worker_form_controller"
+// application.register("worker-form", WorkerFormController)
