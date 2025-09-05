@@ -4,7 +4,7 @@
   <% @categories.each do |category| %>
     <div class="category">
       <!-- Link to toggle only its own services -->
-      <%= link_to category.name, "#", data: { action: "click->categories#toggle" } %>
+      <%= link_to category.name, "#", data: { action: "click->categories#toggle" , turbo: false} %>
 
       <!-- Hidden list of services -->
       <ul data-categories-target="services" style="display: none;">
