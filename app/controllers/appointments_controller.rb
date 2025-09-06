@@ -31,6 +31,10 @@ class AppointmentsController < ApplicationController
   # POST /workers/:worker_id/appointments
   def create
     worker = WorkerProfile.find(params[:worker_id]) # nested route
+    if current_user.id == worker.user_id
+      redirect_to worker_path(worker), alert: "Você não pode agendar consigo mesmo." and return
+    end
+
     @appointment = Appointment.new(appointment_params)
     @appointment.worker_profile = worker
     @appointment.user = current_user

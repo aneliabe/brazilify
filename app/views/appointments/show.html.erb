@@ -11,12 +11,30 @@
 <div class="container chat">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h5 m-0">Your appointment for <%= @appointment.worker_profile.user.full_name %></h1>
-    <button type="button"
-            class="btn btn-outline-primary btn-sm d-flex align-items-center gap-2"
-            data-bs-toggle="modal" data-bs-target="#proposeModal">
-      <i class="fa-regular fa-calendar-plus"></i>
-      <span class="d-none d-sm-inline">Propor novo horário</span>
-    </button>
+
+    <div class="d-flex align-items-center gap-2">
+      <%# show "Avaliar" only for the CLIENT, when accepted + already happened, and not yet reviewed %>
+      <% past      = @appointment.starts_at.present? && @appointment.starts_at < Time.zone.now %>
+      <% accepted  = @appointment.status.to_s == "accepted" %>
+      <% is_client = current_user.id == @appointment.user_id %>
+      <% already   = Review.exists?(user_id: current_user.id, worker_profile_id: @appointment.worker_profile_id) %>
+
+      <% if is_client && accepted && past && !already %>
+        <button type="button"
+                class="btn btn-success btn-sm d-flex align-items-center gap-2"
+                data-bs-toggle="modal" data-bs-target="#reviewModal">
+          <i class="fa-solid fa-star"></i>
+          <span class="d-none d-sm-inline">Avaliar profissional</span>
+        </button>
+      <% end %>
+
+      <button type="button"
+              class="btn btn-outline-primary btn-sm d-flex align-items-center gap-2"
+              data-bs-toggle="modal" data-bs-target="#proposeModal">
+        <i class="fa-regular fa-calendar-plus"></i>
+        <span class="d-none d-sm-inline">Propor novo horário</span>
+      </button>
+    </div>
   </div>
 
   <!-- Chat stream controlled by Stimulus -->
@@ -98,6 +116,44 @@
           </div>
           <div class="d-grid">
             <button type="submit" class="btn btn-primary">Enviar proposta</button>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Review modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Avaliar profissional</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+
+      <div class="modal-body">
+        <%= form_with url: reviews_path, method: :post do %>
+          <%= hidden_field_tag :worker_profile_id, @appointment.worker_profile_id %>
+
+          <div class="mb-3">
+            <label class="form-label">Nota</label>
+            <select name="rating" class="form-select" required>
+              <option value="">Selecione</option>
+              <% 5.downto(1).each do |r| %>
+                <option value="<%= r %>"><%= "★" * r %> (<%= r %>)</option>
+              <% end %>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Comentário (opcional)</label>
+            <textarea name="comment" class="form-control" rows="3"
+                      placeholder="Como foi o atendimento?"></textarea>
+          </div>
+
+          <div class="d-grid">
+            <button type="submit" class="btn btn-success">Enviar avaliação</button>
           </div>
         <% end %>
       </div>
