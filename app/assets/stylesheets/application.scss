@@ -10,9 +10,18 @@
 // Your CSS partials
 @import "components/index";
 @import "pages/index";
-@import "navbar";
 @import "base";
+
+/* 1) page styles (scoped) */
 @import "home";
-@import "worker";
-@import "chat";
-@import "components/why_us_card";
+@import "pages/worker";
+@import "appointments";
+
+
+/* 2) design system */
+@import "ui_tokens";
+@import "ui_components";
+
+/* 3) shared components you already have */
+@import "navbar";       // etc.
+@import "chat";         // if it’s global

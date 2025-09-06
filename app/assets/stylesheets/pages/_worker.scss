@@ -1,0 +1,45 @@
+/* app/assets/stylesheets/pages/_worker.scss
+   Scoped tweaks for the worker profile page */
+.worker-page {
+  background: var(--bg);
+
+  .glass-card { border-radius: var(--radius-md); }
+
+  /* hero header */
+  .glass-card:first-of-type { padding-top: 1.25rem; padding-bottom: 1.25rem; }
+  .rounded-circle.border { border-color: var(--stroke) !important; }
+  .text-warning i { font-size: .95rem; margin-right: 2px; } /* star size */
+  .chips { margin-top: .25rem; }
+  .chip { background: #f8fafc; }
+
+  /* reviews list = cleaner separators */
+  .list-group { border-radius: var(--radius-md); overflow: hidden; }
+  .list-group-item {
+    background: transparent;
+    border-color: var(--stroke);
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .list-group-item:last-child { border-bottom: 0; }
+
+  /* mobile: keep CTA nice and wide */
+  @media (max-width: 576px) {
+    .btn-line { width: 100%; justify-content: center; }
+  }
+}
+
+/* Workers listing page */
+.workers-page {
+  background: var(--bg);
+
+  .filter-form .form-label { font-weight: 600; }
+  .avatar-lg {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--stroke);
+    flex: 0 0 64px;
+  }
+  .worker-card .text-warning i { font-size: .9rem; margin-right: 2px; }
+  .worker-card .chips { margin-top: .25rem; }
+}

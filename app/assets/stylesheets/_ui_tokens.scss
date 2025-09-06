@@ -1,0 +1,27 @@
+/* Design tokens (colors, radii, etc.). Activated by adding class="theme-light" on <body> */
+
+:root {
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --shadow-1: 0 6px 16px rgba(2, 6, 23, .05);
+  --stroke: #e5e7eb; /* default border */
+}
+
+/* Light theme (we can add .theme-dark later if you want) */
+.theme-light {
+  --bg: #f8fafc;      /* page backgrounds */
+  --card: #ffffff;    /* panels/cards */
+  --fg: #0f172a;      /* main text */
+  --muted: #64748b;   /* secondary text */
+
+  --primary: #0d6efd;
+  --success: #198754;
+  --warning: #f59e0b;
+  --danger:  #dc3545;
+
+  --chip-pending-bg:  #fff7e6; --chip-pending-br: #fde68a; --chip-pending-fg: #92400e;
+  --chip-accepted-bg: #ecfdf5; --chip-accepted-br: #bbf7d0; --chip-accepted-fg: #065f46;
+  --chip-declined-bg: #fef2f2; --chip-declined-br: #fecaca; --chip-declined-fg: #7f1d1d;
+  --chip-proposed-bg: #eff6ff; --chip-proposed-br: #bfdbfe; --chip-proposed-fg: #1e40af;
+  --chip-conflict-bg: #fff1f2; --chip-conflict-br: #fecdd3; --chip-conflict-fg: #9f1239;
+}

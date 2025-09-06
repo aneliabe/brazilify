@@ -1,0 +1,94 @@
+/* Light, scoped styles for the appointments index page */
+.appt-page {
+  --bg: #f8fafc;           /* light backdrop */
+  --card: #ffffff;
+  --stroke: #e5e7eb;
+  --muted: #64748b;         /* slate-500 */
+  --primary: #0d6efd;       /* BS primary */
+  --success: #198754;       /* BS success */
+  --warning: #f59e0b;       /* amber */
+  --danger: #dc3545;        /* BS danger */
+
+  padding: 2rem 0;
+  background: radial-gradient(800px 180px at 15% -50%, rgba(13,110,253,.06), transparent 60%),
+              radial-gradient(800px 180px at 85% 120%, rgba(25,135,84,.06), transparent 60%),
+              var(--bg);
+
+  .appt-wrap { max-width: 1040px; margin: 0 auto; color: #0f172a; }
+
+  /* header + segmented filters */
+  .appt-title { font-size: 1.25rem; font-weight: 700; margin-bottom: .75rem; }
+
+  .seg {
+    display: flex; gap: .5rem; flex-wrap: wrap;
+    background: #ffffff; padding: .35rem; border-radius: 9999px; border: 1px solid var(--stroke);
+  }
+  .seg a {
+    display: inline-flex; align-items: center; gap: .4rem;
+    color: #334155; text-decoration: none; font-weight: 600;
+    padding: .45rem .8rem; border-radius: 9999px; border: 1px solid transparent;
+    transition: .2s all ease;
+  }
+  .seg a:hover { color: #0f172a; background: #f1f5f9; border-color: var(--stroke); }
+  .seg a.active { color: #0f172a; background: #e7f1ff; border-color: #bfd6ff; }
+
+  /* list */
+  .appt-list { display: flex; flex-direction: column; gap: .75rem; }
+
+  .appt-card {
+    position: relative;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    padding: .95rem 1rem;
+    background: var(--card);
+    border: 1px solid var(--stroke);
+    border-radius: 16px;
+    box-shadow: 0 6px 16px rgba(2, 6, 23, .05);
+  }
+  .appt-card.conflict { border-color: rgba(220,53,69,.45); box-shadow: 0 0 0 1px rgba(220,53,69,.08), 0 10px 20px rgba(220,53,69,.06); }
+
+  .who { display: flex; align-items: center; gap: .8rem; min-width: 0; }
+  .who .avatar {
+    width: 40px; height: 40px; border-radius: 50%; background: #e2e8f0; flex: 0 0 40px;
+    object-fit: cover; border: 1px solid var(--stroke);
+  }
+  .who .name { font-weight: 700; color: #0f172a; }
+  .who .meta { color: var(--muted); font-size: .86rem; }
+  .who .chips { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; margin-top: .15rem; }
+
+  /* chips */
+  .chip {
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .25rem .6rem; border-radius: 9999px; font-weight: 700; font-size: .75rem;
+    border: 1px solid var(--stroke); background: #f8fafc; color: #0f172a;
+  }
+  .chip i { opacity: .9; }
+
+  .chip-status.pending   { background: #fff7e6; border-color: #fde68a; color: #92400e; }
+  .chip-status.accepted  { background: #ecfdf5; border-color: #bbf7d0; color: #065f46; }
+  .chip-status.declined  { background: #fef2f2; border-color: #fecaca; color: #7f1d1d; }
+  .chip-proposed         { background: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
+  .chip-conflict         { background: #fff1f2; border-color: #fecdd3; color: #9f1239; }
+
+  /* actions */
+  .actions { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+  .btn-line {
+    border-radius: 10px; padding: .45rem .75rem; font-weight: 700;
+    border: 1px solid var(--stroke); background: #ffffff; color: #0f172a;
+    text-decoration: none; display: inline-flex; align-items: center; gap: .45rem; transition: .2s;
+  }
+  .btn-line:hover { background: #f8fafc; }
+  .btn-accept  { background: var(--success); color: #fff; border-color: transparent; }
+  .btn-accept:hover { filter: brightness(1.05); }
+  .btn-decline { color: #dc3545; background: #fff; border-color: #f5c2c7; }
+  .btn-decline:hover { background: #fff5f5; }
+  .btn-chat   { color: var(--primary); border-color: #cfe2ff; }
+  .btn-chat:hover { background: #e7f1ff; }
+
+  /* unread ping */
+  @keyframes ping { 0% { box-shadow: 0 0 0 0 rgba(25,135,84,.45) } 70% { box-shadow: 0 0 0 13px rgba(25,135,84,0) } 100% { box-shadow: 0 0 0 0 rgba(25,135,84,0) } }
+  .btn-chat.ping { animation: ping 1.6s infinite; border-color: #a3e6c1; }
+
+  /* decline modal: light look */
+  #declineModal .modal-content { background: #fff; color: #0f172a; border: 1px solid var(--stroke); }
+  #declineModal .form-control  { background: #fff; color: #0f172a; border: 1px solid var(--stroke); }
+}

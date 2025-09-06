@@ -1,0 +1,56 @@
+/* Reusable pieces used across pages. Safe, neutral light look. */
+
+/* Glass / card wrapper */
+.glass-card {
+  background: var(--card);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-1);
+}
+
+/* Segmented control (used for filters) */
+.seg {
+  display:flex; gap:.5rem; flex-wrap:wrap;
+  background:#fff; padding:.35rem; border-radius:9999px; border:1px solid var(--stroke);
+}
+.seg a{
+  display:inline-flex; align-items:center; gap:.4rem;
+  color:#334155; text-decoration:none; font-weight:600;
+  padding:.45rem .8rem; border-radius:9999px; border:1px solid transparent;
+  transition:.2s;
+}
+.seg a:hover{ color:#0f172a; background:#f1f5f9; border-color:var(--stroke); }
+.seg a.active{ color:#0f172a; background:#e7f1ff; border-color:#bfd6ff; }
+
+/* Chips (status/proposed/conflict) */
+.chips{ display:flex; align-items:center; gap:.4rem; flex-wrap:wrap; }
+.chip{
+  display:inline-flex; align-items:center; gap:.35rem;
+  padding:.25rem .6rem; border-radius:9999px; font-weight:700; font-size:.75rem;
+  border:1px solid var(--stroke); background:#f8fafc; color:#0f172a;
+}
+.chip i { opacity:.9; }
+.chip.is-pending  { background:var(--chip-pending-bg);  border-color:var(--chip-pending-br);  color:var(--chip-pending-fg); }
+.chip.is-accepted { background:var(--chip-accepted-bg); border-color:var(--chip-accepted-br); color:var(--chip-accepted-fg); }
+.chip.is-declined { background:var(--chip-declined-bg); border-color:var(--chip-declined-br); color:var(--chip-declined-fg); }
+.chip.is-proposed { background:var(--chip-proposed-bg); border-color:var(--chip-proposed-br); color:var(--chip-proposed-fg); }
+.chip.is-conflict { background:var(--chip-conflict-bg); border-color:var(--chip-conflict-br); color:var(--chip-conflict-fg); }
+
+/* Buttons */
+.btn-line{
+  border-radius: var(--radius-sm);
+  padding:.45rem .75rem; font-weight:700;
+  border:1px solid var(--stroke); background:#fff; color:#0f172a;
+  text-decoration:none; display:inline-flex; align-items:center; gap:.45rem; transition:.2s;
+}
+.btn-line:hover{ background:#f8fafc; }
+.btn-accept{ background:var(--success); color:#fff; border-color:transparent; }
+.btn-accept:hover{ filter:brightness(1.05); }
+.btn-decline{ color:var(--danger); background:#fff; border-color:#f5c2c7; }
+.btn-decline:hover{ background:#fff5f5; }
+.btn-chat{ color:var(--primary); border-color:#cfe2ff; }
+.btn-chat:hover{ background:#e7f1ff; }
+
+/* Subtle unread ping for chat button */
+@keyframes ping { 0%{box-shadow:0 0 0 0 rgba(25,135,84,.45)} 70%{box-shadow:0 0 0 13px rgba(25,135,84,0)} 100%{box-shadow:0 0 0 0 rgba(25,135,84,0)} }
+.btn-chat.ping{ animation: ping 1.6s infinite; border-color:#a3e6c1; }
