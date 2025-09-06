@@ -1,0 +1,35 @@
+<%# Renders the “proposed time” bubble when there is a pending proposal %>
+<% appointment = local_assigns.fetch(:appointment) %>
+
+<% if appointment.proposed_starts_at.present? %>
+  <% proposer_name =
+       (appointment.proposed_by_id == appointment.user_id ?
+         (appointment.user.full_name.presence || appointment.user.email) :
+         (appointment.worker_profile.user.full_name.presence || appointment.worker_profile.user.email)) %>
+
+  <div class="system-bubble text-center">
+    <div class="mb-2">
+      <strong>Proposta de novo horário:</strong>
+      <%= l(appointment.proposed_starts_at, format: :long) rescue appointment.proposed_starts_at %>
+      <small class="text-muted d-block">por <%= proposer_name %></small>
+    </div>
+
+    <div class="actions">
+      <% if appointment.proposed_by_id != current_user.id %>
+        <%= button_to "Aceitar",
+              accept_proposed_appointment_path(appointment),
+              method: :patch,
+              class: "btn btn-success btn-sm" %>
+
+        <%= button_to "Recusar",
+              decline_proposed_appointment_path(appointment),
+              method: :patch,
+              class: "btn btn-outline-danger btn-sm" %>
+      <% else %>
+        <span class="badge badge-pill bg-secondary-subtle text-secondary border border-secondary">
+          Aguardando resposta
+        </span>
+      <% end %>
+    </div>
+  </div>
+<% end %>

@@ -1,0 +1,37 @@
+<%# Actions to create/edit/delete a review (only for the client, after the time has passed) %>
+<% appointment = local_assigns.fetch(:appointment) %>
+<% my_review   = local_assigns[:my_review] %>
+
+<% past        = appointment.starts_at.present? && appointment.starts_at < Time.zone.now %>
+<% valid_stat  = %w[accepted pending].include?(appointment.status.to_s) %>
+<% is_client   = current_user.id == appointment.user_id %>
+<% can_review  = is_client && past && valid_stat %>
+
+<% if can_review %>
+  <div class="system-bubble text-center">
+    <div class="actions">
+      <% if my_review.present? %>
+        <span class="badge badge-pill bg-success-subtle text-success border border-success">
+          Avaliação feita
+        </span>
+
+        <button type="button" class="btn btn-outline-secondary btn-sm"
+                data-bs-toggle="modal" data-bs-target="#editReviewModal">
+          Editar
+        </button>
+
+        <%= button_to "Excluir",
+              review_path(my_review, return_to: appointment_path(appointment)),
+              method: :delete,
+              form: { class: "d-inline", data: { turbo_confirm: "Remover sua avaliação?" } },
+              class: "btn btn-outline-danger btn-sm" %>
+      <% else %>
+        <button type="button" class="btn btn-success btn-sm d-flex align-items-center gap-2"
+                data-bs-toggle="modal" data-bs-target="#reviewModal">
+          <i class="fa-solid fa-star"></i>
+          Avaliar profissional
+        </button>
+      <% end %>
+    </div>
+  </div>
+<% end %>

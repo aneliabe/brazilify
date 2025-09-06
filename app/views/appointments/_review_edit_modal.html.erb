@@ -1,0 +1,46 @@
+<!-- Review EDIT modal -->
+<% if my_review.present? %>
+  <div class="modal fade" id="editReviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-narrow modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Editar avaliação</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+
+        <div class="modal-body">
+          <%= form_with url: review_path(my_review, return_to: appointment_path(appointment)),
+                        method: :patch, id: "review-edit-form" do %>
+            <div class="form-shell">
+              <div class="row g-4">
+                <div class="col-12 col-md-5">
+                  <label class="form-label d-block">Nota</label>
+                  <div class="rating mb-1">
+                    <% current = my_review.rating.to_i %>
+                    <% 5.downto(1).each do |r| %>
+                      <input id="edit-rating-<%= r %>" type="radio" name="rating" value="<%= r %>"
+                             <%= "checked" if r == current %> required>
+                      <label for="edit-rating-<%= r %>" aria-label="<%= r %> estrelas">★</label>
+                    <% end %>
+                  </div>
+                  <small class="text-muted small nowrap">Clique nas estrelas</small>
+                </div>
+
+                <div class="col-12 col-md-7">
+                  <label class="form-label">Comentário</label>
+                  <textarea name="comment" class="form-control" rows="5"><%= my_review.comment %></textarea>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="modal-footer justify-content-center">
+          <button type="submit" class="btn btn-primary btn-lg" form="review-edit-form">
+            Salvar alterações
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

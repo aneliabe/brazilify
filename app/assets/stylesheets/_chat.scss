@@ -29,6 +29,47 @@
     background: #fff;
     border-radius: 0.75rem;
     margin: 0.5rem;
+
+    /* -------- System / meta bubbles (proposal + review actions) -------- */
+    .system-bubble {
+      max-width: 80%;
+      margin: .5rem auto 0;
+      background: #f8f9fa;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: .75rem 1rem;
+      text-align: center;
+
+      .actions {
+        display: flex;
+        gap: .5rem;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+
+        /* make button_to forms inline (no white block) */
+        form {
+          display: inline-block;
+          margin: 0;
+          padding: 0;
+          background: transparent;
+          border: 0;
+        }
+
+        /* unify control sizing */
+        .btn {
+          padding: .375rem .65rem;
+          line-height: 1.2;
+          border-radius: 10px;
+        }
+
+        .badge-pill {
+          padding: .45rem .75rem;
+          border-radius: 9999px;
+          font-weight: 600;
+        }
+      }
+    }
   }
 
   /* One message “row” */
@@ -134,6 +175,21 @@
       }
     }
   }
+
+  /* -------- Rating stars + modal helpers -------- */
+  .rating { display:flex; gap:.25rem; direction: rtl; }
+  .rating input { display:none; }
+  .rating label { font-size:1.6rem; line-height:1; cursor:pointer; color:#ced4da; }
+  .rating label:hover,
+  .rating label:hover ~ label,
+  .rating input:checked ~ label { color:#f59e0b; } /* amber */
+
+  .modal-body .form-label { font-weight:600; }
+  .nowrap { white-space: nowrap; }  /* keep helper texts on one line */
+  .form-shell { max-width: 620px; margin: 0 auto; } /* center modal content tighter */
+
+  /* ✅ custom narrower modal width */
+  .modal-dialog.modal-narrow { max-width: 700px; } /* tweak if you want tighter */
 
   /* Small screens */
   @media (max-width: 576px) {

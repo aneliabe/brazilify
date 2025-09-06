@@ -14,6 +14,7 @@ Rails.application.routes.draw do
     get :services, on: :member
   end
 
+  resources :reviews, only: [:create, :update, :destroy]
 
   resources :appointments, only: [:show] do
     resources :messages, only: [:create]

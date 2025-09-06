@@ -128,7 +128,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_05_194931) do
   end
 
   add_foreign_key "appointments", "users"
-  add_foreign_key "appointments", "users", column: "proposed_by_id"
   add_foreign_key "appointments", "worker_profiles"
   add_foreign_key "messages", "appointments"
   add_foreign_key "messages", "users"
