@@ -1,37 +1,84 @@
-<section class="search-hero">
+<section class="search-hero"
+         data-controller="search-enhancement location-hint search"
+         data-location-hint-token-value="<%= ENV.fetch('MAPBOX_PUBLIC_TOKEN', '') %>">
+
   <h1>Encontre profissionais brasileiros na sua cidade</h1>
 
-      <div data-controller="location-hint"
-          data-location-hint-token-value="<%= ENV.fetch('MAPBOX_PUBLIC_TOKEN', '') %>">
+  <div data-location-hint-target="wrap">
     <%= form_with url: search_path, method: :get, html: { class: "searchbar", role: "search" } do %>
-      <i class="fa-solid fa-location-dot"></i>
 
-      <div data-location-hint-target="wrap" class="position-relative flex-grow-1" style="width:100%;">
-        <input
-          type="text"
-          name="city"
-          value="<%= (local_assigns[:city] || params[:city]).to_s %>"
-          placeholder="Digite a cidade (ex: Dublin, IE)"
-          list="city-suggestions"
-          autocomplete="off"
-          autocapitalize="off"
-          spellcheck="false"
-          inputmode="search"
-          aria-label="Cidade"
-          class="form-control border-0 shadow-none bg-transparent px-2"
-          data-location-hint-target="input" />
+      <div class="search-section">
+        <i class="fa-solid fa-location-dot search-icon"></i>
+        <div class="search-content">
+          <label class="search-label">Onde</label>
+          <input
+            type="text"
+            name="city"
+            value="<%= (local_assigns[:city] || params[:city]).to_s %>"
+            placeholder="Digite a cidade"
+            class="search-input"
+            autocomplete="off"
+            data-location-hint-target="input" />
 
-        <datalist id="city-suggestions" data-location-hint-target="datalist"></datalist>
+          <datalist id="city-suggestions" data-location-hint-target="datalist"></datalist>
+          <div data-location-hint-target="dropdown" class="dropdown-menu shadow w-100" style="max-height:240px; overflow:auto;"></div>
+        </div>
+      </div>
 
-        <div data-location-hint-target="dropdown" class="dropdown-menu shadow w-100" style="max-height:240px; overflow:auto;"></div>
+      <div class="search-divider"></div>
+
+      <!-- Categoria (full list, no scrollbar) -->
+      <div class="search-section">
+        <i class="fa-solid fa-list search-icon"></i>
+        <div class="search-content has-select">
+          <label class="search-label">Categoria</label>
+          <select name="category_id"
+                  class="search-input search-select js-enhance-select"
+                  data-full-menu="true"
+                  data-controller="search"
+                  data-action="change->search#updateServices">
+            <option value="">Todas</option>
+            <% if defined?(@categories) %>
+              <% @categories.each do |category| %>
+                <option value="<%= category.id %>" <%= "selected" if params[:category_id] == category.id.to_s %>>
+                  <%= category.name %>
+                </option>
+              <% end %>
+            <% end %>
+          </select>
+        </div>
+      </div>
+
+      <div class="search-divider"></div>
+
+      <!-- Serviço (scrollable) -->
+      <div class="search-section">
+        <i class="fa-solid fa-wrench search-icon"></i>
+        <div class="search-content has-select">
+          <label class="search-label">Serviço</label>
+          <select name="service_id"
+                  id="service-select"
+                  class="search-input search-select js-enhance-select">
+            <option value="">Todos</option>
+            <% if params[:category_id].present? && defined?(@categories) %>
+              <% selected_category = @categories.find { |c| c.id == params[:category_id].to_i } %>
+              <% if selected_category %>
+                <% selected_category.services.each do |service| %>
+                  <option value="<%= service.id %>" <%= "selected" if params[:service_id] == service.id.to_s %>>
+                    <%= service.name %>
+                  </option>
+                <% end %>
+              <% end %>
+            <% end %>
+          </select>
+        </div>
       </div>
 
       <input type="hidden" name="lat" data-location-hint-target="lat">
       <input type="hidden" name="lng" data-location-hint-target="lng">
 
-      <button type="submit" class="btn btn-accent d-inline-flex align-items-center gap-1">
+      <button type="submit" class="search-btn">
         <i class="fa-solid fa-magnifying-glass"></i>
-        <span>Buscar</span>
       </button>
     <% end %>
 

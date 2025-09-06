@@ -20,7 +20,7 @@ static values = { token: String, showNearby: { type: Boolean, default: true }, e
       type: "nearby",
       icon: '<i class="fa-solid fa-location-crosshairs me-2"></i>',
       label: "Nearby",
-      sub: "Use sua localização atual"
+      // sub: "Use sua localização atual"
     }
 
     // Load saved location on page load
