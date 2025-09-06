@@ -1,31 +1,5 @@
 <%= turbo_stream_from "appointment_#{@appointment.id}_messages" %>
 
-<style>
-  /* neutral system bubble */
-  .messages .system-bubble{
-    max-width: 80%;
-    margin: .5rem auto 0;
-    background: #f8f9fa;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: .75rem 1rem;
-  }
-  .messages .system-bubble .actions{
-    display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; justify-content:center;
-  }
-  /* ✅ make button_to forms inline (no white block) */
-  .messages .system-bubble .actions form{
-    display:inline-block; margin:0; padding:0; background: transparent; border:0;
-  }
-  /* unify control sizing */
-  .messages .system-bubble .actions .btn{
-    padding:.375rem .65rem; line-height:1.2; border-radius:10px;
-  }
-  .messages .system-bubble .actions .badge-pill{
-    padding:.45rem .75rem; border-radius:9999px; font-weight:600;
-  }
-</style>
-
 <div class="container chat">
   <!-- HEADER: title + Propor novo horário -->
   <div class="d-flex justify-content-between align-items-center mb-3">
@@ -45,64 +19,12 @@
       <%= render "messages/message", message: message, user: current_user %>
     <% end %>
 
-    <%# -------- proposal bubble (optional) -------- %>
-    <% if @appointment.proposed_starts_at.present? %>
-      <% proposer_name =
-           (@appointment.proposed_by_id == @appointment.user_id ?
-             (@appointment.user.full_name.presence || @appointment.user.email) :
-             (@appointment.worker_profile.user.full_name.presence || @appointment.worker_profile.user.email)) %>
-      <div class="system-bubble text-center">
-        <div class="mb-2">
-          <strong>Proposta de novo horário:</strong>
-          <%= l(@appointment.proposed_starts_at, format: :long) rescue @appointment.proposed_starts_at %>
-          <small class="text-muted d-block">por <%= proposer_name %></small>
-        </div>
-        <div class="actions">
-          <% if @appointment.proposed_by_id != current_user.id %>
-            <%= button_to "Aceitar", accept_proposed_appointment_path(@appointment),
-                          method: :patch, class: "btn btn-success btn-sm" %>
-            <%= button_to "Recusar", decline_proposed_appointment_path(@appointment),
-                          method: :patch, class: "btn btn-outline-danger btn-sm" %>
-          <% else %>
-            <span class="badge badge-pill bg-secondary-subtle text-secondary border border-secondary">Aguardando resposta</span>
-          <% end %>
-        </div>
-      </div>
-    <% end %>
+    <%# compute once for bubbles & modals %>
+    <% my_review = Review.where(worker_profile_id: @appointment.worker_profile_id,
+                                user_id: current_user.id).order(created_at: :desc).first %>
 
-    <%# -------- review actions bubble -------- %>
-    <% my_review   = Review.where(worker_profile_id: @appointment.worker_profile_id, user_id: current_user.id).order(created_at: :desc).first %>
-    <% past        = @appointment.starts_at.present? && @appointment.starts_at < Time.zone.now %>
-    <% valid_stat  = %w[accepted pending].include?(@appointment.status.to_s) %>
-    <% is_client   = current_user.id == @appointment.user_id %>
-    <% can_review  = is_client && past && valid_stat %>
-
-    <% if can_review %>
-      <div class="system-bubble text-center">
-        <div class="actions">
-          <% if my_review.present? %>
-            <span class="badge badge-pill bg-success-subtle text-success border border-success">Avaliação feita</span>
-
-            <button type="button" class="btn btn-outline-secondary btn-sm"
-                    data-bs-toggle="modal" data-bs-target="#editReviewModal">
-              Editar
-            </button>
-
-            <%= button_to "Excluir",
-                  review_path(my_review, return_to: appointment_path(@appointment)),
-                  method: :delete,
-                  form: { class: "d-inline", data: { turbo_confirm: "Remover sua avaliação?" } },
-                  class: "btn btn-outline-danger btn-sm" %>
-          <% else %>
-            <button type="button" class="btn btn-success btn-sm d-flex align-items-center gap-2"
-                    data-bs-toggle="modal" data-bs-target="#reviewModal">
-              <i class="fa-solid fa-star"></i>
-              Avaliar profissional
-            </button>
-          <% end %>
-        </div>
-      </div>
-    <% end %>
+    <%= render "appointments/proposal_bubble",       appointment: @appointment %>
+    <%= render "appointments/review_actions_bubble", appointment: @appointment, my_review: my_review %>
 
     <!-- bottom anchor so we land below the bubbles -->
     <div id="chat-tail" class="py-1"></div>
@@ -119,79 +41,11 @@
     <%= f.submit "Enviar", class: "btn btn-primary mb-3" %>
   <% end %>
 
-  <!-- Review CREATE modal -->
-  <div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Avaliar profissional</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-        </div>
-        <div class="modal-body">
-          <%= form_with url: reviews_path, method: :post do %>
-            <%= hidden_field_tag :worker_profile_id, @appointment.worker_profile_id %>
-            <%= hidden_field_tag :appointment_id,    @appointment.id %>
+  <!-- Review modals (partials, slim width) -->
+  <%= render "appointments/review_modal",       appointment: @appointment %>
+  <%= render "appointments/review_edit_modal", appointment: @appointment, my_review: my_review %>
 
-            <div class="mb-3">
-              <label class="form-label">Nota</label>
-              <select name="rating" class="form-select" required>
-                <option value="">Selecione</option>
-                <% 5.downto(1).each do |r| %>
-                  <option value="<%= r %>"><%= "★" * r %> (<%= r %>)</option>
-                <% end %>
-              </select>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Comentário (opcional)</label>
-              <textarea name="comment" class="form-control" rows="3" placeholder="Como foi o atendimento?"></textarea>
-            </div>
-
-            <div class="d-grid">
-              <button type="submit" class="btn btn-success">Enviar avaliação</button>
-            </div>
-          <% end %>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Review EDIT modal -->
-  <% if my_review.present? %>
-    <div class="modal fade" id="editReviewModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Editar avaliação</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-          </div>
-          <div class="modal-body">
-            <%= form_with url: review_path(my_review, return_to: appointment_path(@appointment)), method: :patch do %>
-              <div class="mb-3">
-                <label class="form-label">Nota</label>
-                <select name="rating" class="form-select" required>
-                  <% 5.downto(1).each do |r| %>
-                    <option value="<%= r %>" <%= "selected" if my_review.rating.to_i == r %>><%= "★" * r %> (<%= r %>)</option>
-                  <% end %>
-                </select>
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Comentário</label>
-                <textarea name="comment" class="form-control" rows="3"><%= my_review.comment %></textarea>
-              </div>
-
-              <div class="d-grid">
-                <button type="submit" class="btn btn-primary">Salvar alterações</button>
-              </div>
-            <% end %>
-          </div>
-        </div>
-      </div>
-    </div>
-  <% end %>
-
-  <!-- Propose-time modal -->
+  <!-- Propose-time modal (kept inline for now) -->
   <div class="modal fade" id="proposeModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">

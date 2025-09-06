@@ -1,0 +1,45 @@
+<!-- Review CREATE modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-narrow modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Avaliar profissional</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+
+      <div class="modal-body">
+        <%= form_with url: reviews_path, method: :post, id: "review-create-form" do %>
+          <%= hidden_field_tag :worker_profile_id, appointment.worker_profile_id %>
+          <%= hidden_field_tag :appointment_id,    appointment.id %>
+
+          <div class="form-shell">
+            <div class="row g-4">
+              <div class="col-12 col-md-5">
+                <label class="form-label d-block">Nota</label>
+                <div class="rating mb-1">
+                  <% 5.downto(1).each do |r| %>
+                    <input id="new-rating-<%= r %>" type="radio" name="rating" value="<%= r %>" required>
+                    <label for="new-rating-<%= r %>" aria-label="<%= r %> estrelas">★</label>
+                  <% end %>
+                </div>
+                <small class="text-muted small nowrap">Clique nas estrelas</small>
+              </div>
+
+              <div class="col-12 col-md-7">
+                <label class="form-label">Comentário <span class="text-muted">(opcional)</span></label>
+                <textarea name="comment" class="form-control" rows="5"
+                          placeholder="Como foi o atendimento?"></textarea>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="modal-footer justify-content-center">
+        <button type="submit" class="btn btn-primary btn-lg" form="review-create-form">
+          Enviar avaliação
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
