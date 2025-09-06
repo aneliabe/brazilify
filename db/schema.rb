@@ -98,8 +98,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_05_194931) do
     t.string "city"
     t.string "avatar"
     t.integer "role"
-    t.float "latitude"
-    t.float "longitude"
     t.string "country_code"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
@@ -131,7 +129,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_05_194931) do
   end
 
   add_foreign_key "appointments", "users"
-  add_foreign_key "appointments", "users", column: "proposed_by_id"
   add_foreign_key "appointments", "worker_profiles"
   add_foreign_key "messages", "appointments"
   add_foreign_key "messages", "users"
