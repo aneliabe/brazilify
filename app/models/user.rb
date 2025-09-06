@@ -10,4 +10,13 @@ class User < ApplicationRecord
   has_many :reviews, dependent: :nullify
   has_many :appointments, dependent: :destroy
   has_many :messages, dependent: :destroy
+
+  
+  after_initialize :set_default_role, if: :new_record?
+
+  private
+
+  def set_default_role
+    self.role ||= :client
+  end
 end

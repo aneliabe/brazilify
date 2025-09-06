@@ -1,0 +1,20 @@
+<div class="container py-4" style="max-width: 900px;">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+      <h1 class="h4 m-0">Meu Perfil</h1>
+      <%= link_to "Editar perfil", edit_profile_user_path(@user), class: "btn btn-outline-primary" %>
+    </div>
+
+    <div class="card-body">
+      <h5>Informações do Usuário</h5>
+      <p><strong>Nome completo:</strong> <%= @user.full_name %></p>
+      <p><strong>Data de Nascimento:</strong> <%= @user.birth_date %></p>
+      <p><strong>Endereço:</strong> <%= @user.address %></p>
+      <p><strong>Cidade:</strong> <%= @user.city %></p>
+      <p><strong>País:</strong> <%= @user.country %></p>
+      <p><strong>Código do país:</strong> <%= @user.country_code %></p>
+      <p><strong>Telefone:</strong> <%= @user.phone %></p>
+      <p><strong>Email:</strong> <%= @user.email %></p>
+    </div>
+  </div>
+</div>

@@ -1,7 +1,18 @@
 class UsersController < ApplicationController
   before_action :authenticate_user!
   skip_before_action :authenticate_user!, only: [:show]
-  before_action :set_user, only: [:show, :become_worker, :activate_worker, :edit_worker, :update_worker, :worker_dashboard]
+  before_action :set_user, only: [:show, :become_worker, :activate_worker, :edit_worker, :update_worker, :worker_dashboard, :edit_profile, :update_profile]
+
+  def edit_profile
+  end
+
+  def update_profile
+    if @user.update(user_params)
+      redirect_to profile_user_path(@user), notice: "Perfil atualizado com sucesso!"
+    else
+      render :edit_profile
+    end
+  end
 
   def show
   end
@@ -50,6 +61,19 @@ class UsersController < ApplicationController
       :cpf, :description,
       worker_services_attributes: [:id, :category_id, :service_id, :service_type, :_destroy]
     )
+  end
+
+  def user_params
+  params.require(:user).permit(
+    :full_name,
+    :birth_date,
+    :address,
+    :city,
+    :country,
+    :country_code,
+    :phone,
+    :email
+  )
   end
 
   def save_worker_profile(submit_text)

@@ -32,8 +32,12 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :users, only: :show do
+  resources :users do
     member do
+      get "profile", to: "users#show"
+      get "edit_profile", to: "users#edit_profile"
+      patch "update_profile", to: "users#update_profile"
+
       get "become_worker"
       post :become_worker, action: :activate_worker
       get "worker", to: "users#worker_dashboard"
