@@ -1,0 +1,84 @@
+<div class="container p-4">
+  <div class="row justify-content-center">
+    <div class="col-6">
+      <h2>Editar Perfil</h2>
+
+      <%= simple_form_for(@user, url: update_profile_user_path(@user), method: :patch) do |f| %>
+        <%= f.error_notification %>
+
+        <div class="form-inputs">
+          <%= f.input :full_name, label: "Nome completo", required: true, input_html: { autocomplete: "name" } %>
+
+          <%= f.input :birth_date, label: "Data de Nascimento", required: true, as: :date,
+                      start_year: Time.zone.now.year - 120,
+                      end_year: Time.zone.now.year,
+                      order: [:day, :month, :year],
+                      input_html: { class: 'form-control' } %>
+
+          <%= f.input :address, label: "Endereço", required: true, input_html: { autocomplete: "address" } %>
+
+      <div data-controller="location-hint"
+          data-location-hint-token-value="<%= ENV.fetch('MAPBOX_PUBLIC_TOKEN', '') %>"
+          data-location-hint-show-nearby-value="false"
+          data-location-hint-enable-cache-value="false">
+
+      <div data-location-hint-target="wrap" class="position-relative">
+        <%= f.input :city,
+            label: "Cidade:",
+            required: true,
+            placeholder: "Digite sua cidade (ex: Dublin, IE)",
+            input_html: {
+              data: { "location-hint-target": "input" },
+              list: "city-suggestions-registration",
+              autocomplete: "off",
+              autocapitalize: "off",
+              spellcheck: "false"
+            } %>
+
+        <datalist id="city-suggestions-registration" data-location-hint-target="datalist"></datalist>
+        <div data-location-hint-target="dropdown" class="dropdown-menu shadow w-100" style="max-height:240px; overflow:auto;"></div>
+      </div>
+
+      <%= f.input :country,
+                  label: "País:",
+                  required: true,
+                  as: :string,
+                  input_html: {
+                    data: { "location-hint-target": "country" },
+                    autocomplete: "off",
+                    autocapitalize: "off",
+                    spellcheck: "false"
+                  } %>
+
+      <small data-location-hint-target="status" class="text-muted d-none"></small>
+    </div>
+
+          <div class="row">
+            <div class="col-4">
+              <%= f.input :country_code,
+                          label: "Código",
+                          collection: [
+                            ["+353", "🇮🇪 +353"],
+                            ["+351", "🇵🇹 +351"],
+                            ["+55", "🇧🇷 +55"],
+                            ["+44", "🇬🇧 +44"],
+                            ["+1", "🇺🇸 +1"]
+                          ],
+                          prompt: "Código",
+                          input_html: { autocomplete: "off" } %>
+            </div>
+            <div class="col-8">
+              <%= f.input :phone, label: "Telefone", required: true, input_html: { autocomplete: "tel" } %>
+            </div>
+          </div>
+
+          <%= f.input :email, required: true, input_html: { autocomplete: "email" } %>
+        </div>
+
+        <div class="form-actions mt-3">
+          <%= f.button :submit, "Atualizar Perfil", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

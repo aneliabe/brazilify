@@ -6,29 +6,37 @@
     </div>
 
     <div class="card-body">
-      <h5>Informações do Prestador</h5>
-      <p><strong>CPF:</strong> <%= @worker_profile.cpf %></p>
-      <p><strong>Descrição:</strong> <%= @worker_profile.description %></p>
-
-      <h5>Serviços Oferecidos</h5>
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Categoria</th>
-            <th>Serviço</th>
-            <th>Tipo de Serviço</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @worker_services.each do |ws| %>
+      <% if @user.role == "worker" %>
+        <h5>Serviços Oferecidos</h5>
+        <table class="table">
+          <thead>
             <tr>
-              <td><%= ws.category.name %></td>
-              <td><%= ws.service.name %></td>
-              <td><%= ws.service_type.humanize %></td>
+              <th>Categoria</th>
+              <th>Serviço</th>
+              <th>Tipo de Serviço</th>
             </tr>
-          <% end %>
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            <% @worker_services.each do |ws| %>
+              <tr>
+                <td><%= ws.category.name %></td>
+                <td><%= ws.service.name %></td>
+                <td><%= ws.service_type.humanize %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% end %>
+
+      <h5>Informações do Prestador</h5>
+      <p><strong>Nome completo:</strong> <%= @user.full_name %></p>
+      <p><strong>Data de Nascimento:</strong> <%= @user.birth_date %></p>
+      <p><strong>Endereço:</strong> <%= @user.address %></p>
+      <p><strong>Cidade:</strong> <%= @user.city %></p>
+      <p><strong>País:</strong> <%= @user.country %></p>
+      <p><strong>Código do país:</strong> <%= @user.country_code %></p>
+      <p><strong>Telefone:</strong> <%= @user.phone %></p>
+      <p><strong>Email:</strong> <%= @user.email %></p>
     </div>
   </div>
 </div>
