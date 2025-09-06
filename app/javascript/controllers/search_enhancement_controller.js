@@ -16,7 +16,7 @@ export default class extends Controller {
   }
 
   connect() {
-    this.cleanupEnhancements() // Clean up first
+    this.cleanupEnhancements()
     this.enhanceSelects()
     this.setupCityToCategoryJump()
     this.setupCategoryToServiceFlow()
@@ -173,21 +173,27 @@ export default class extends Controller {
       setTimeout(doOpen, 50)
     }
 
-    cityInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault()
-        triggerOpenCategory()
-      }
-    })
+    // Marcar que os event listeners já foram adicionados
+    if (!cityInput._searchEnhancementBound) {
+      cityInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          triggerOpenCategory()
+        }
+      })
 
-    cityInput.addEventListener('change', (e) => {
-      setTimeout(triggerOpenCategory, 100)
-    })
+      cityInput.addEventListener('change', (e) => {
+        setTimeout(triggerOpenCategory, 100)
+      })
 
-    if (cityDropdown) {
+      cityInput._searchEnhancementBound = true
+    }
+
+    if (cityDropdown && !cityDropdown._searchEnhancementBound) {
       cityDropdown.addEventListener('mousedown', (e) => {
         setTimeout(triggerOpenCategory, 200)
       })
+      cityDropdown._searchEnhancementBound = true
     }
   }
 
@@ -195,12 +201,16 @@ export default class extends Controller {
     const categorySel = this.element.querySelector('select[name="category_id"].js-enhance-select')
     if (!categorySel) return
 
-    categorySel.addEventListener('change', () => {
-      const serviceSel = this.element.querySelector('#service-select.js-enhance-select')
-      if (serviceSel) {
-        this.openServiceWhenOptionsChange(serviceSel)
-      }
-    })
+    // Evitar múltiplos event listeners
+    if (!categorySel._searchEnhancementBound) {
+      categorySel.addEventListener('change', () => {
+        const serviceSel = this.element.querySelector('#service-select.js-enhance-select')
+        if (serviceSel) {
+          this.openServiceWhenOptionsChange(serviceSel)
+        }
+      })
+      categorySel._searchEnhancementBound = true
+    }
   }
 
   observeSelectChanges() {
@@ -213,6 +223,13 @@ export default class extends Controller {
   }
 
   disconnect() {
-    // Stimulus automatically handles cleanup
+    // Limpar flags quando o controller é desconectado
+    const cityInput = this.element.querySelector('input[name="city"]')
+    const cityDropdown = this.element.querySelector('[data-location-hint-target="dropdown"]')
+    const categorySel = this.element.querySelector('select[name="category_id"].js-enhance-select')
+
+    if (cityInput) delete cityInput._searchEnhancementBound
+    if (cityDropdown) delete cityDropdown._searchEnhancementBound
+    if (categorySel) delete categorySel._searchEnhancementBound
   }
 }
