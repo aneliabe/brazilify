@@ -1,1 +1,83 @@
-// Specific CSS for your home-page
+/* Home — compact hero + glass sections + fixed-size service chips */
+.home-compact {
+  background: var(--bg);
+
+  .hero-ribbon {
+    background:
+      linear-gradient(180deg, #f6f9ff, #eef4ff);
+    border-bottom: 1px solid var(--stroke);
+    padding: 1.4rem 0 1.2rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .hero-title {
+    text-align: center;
+    margin: 0 0 .8rem;
+    font-size: clamp(1.4rem, calc(1rem + 1.5vw), 2rem);
+    line-height: 1.2;
+  }
+
+  .hero-search {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: .75rem;
+  }
+
+  .section-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: .2px;
+  }
+
+  /* ===== Serviços Populares ===== */
+  .svc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); /* keeps size close to what you had */
+    gap: .75rem .9rem;
+    justify-items: center;
+  }
+
+  .svc-card {
+    /* keep the “pill card” size & feel */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 260px;     /* same visual width */
+    height: 56px;         /* same visual height */
+    padding: .5rem 1rem;
+    border-radius: 14px;
+    font-weight: 700;
+    text-transform: none;
+    border: 1px solid var(--stroke);
+    background: #1f5b67;    /* teal like your screenshot */
+    color: #fff;
+
+    /* subtle depth + hover */
+    box-shadow: 0 6px 12px rgba(0,0,0,.06);
+    transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0,0,0,.08);
+      background: #1b505a;
+      color: #fff;
+    }
+  }
+
+  /* Colored micro-chips used inside worker cards */
+  .chip.tone-1 { background: #eff6ff; border-color:#dbeafe; color:#1d4ed8; }
+  .chip.tone-2 { background: #ecfeff; border-color:#cffafe; color:#0e7490; }
+  .chip.tone-3 { background: #ecfdf5; border-color:#d1fae5; color:#047857; }
+  .chip.tone-4 { background: #fff7ed; border-color:#ffedd5; color:#c2410c; }
+  .chip.tone-5 { background: #f5f3ff; border-color:#ede9fe; color:#6d28d9; }
+  .chip.tone-6 { background: #fef2f2; border-color:#fee2e2; color:#b91c1c; }
+
+  /* Card hover used on workers */
+  .hover-lift { transition: transform .18s ease, box-shadow .18s ease; }
+  .hover-lift:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(0,0,0,.06); }
+
+  @media (max-width: 576px) {
+    .svc-grid { grid-template-columns: 1fr; }
+    .svc-card { width: 100%; min-width: 0; }
+  }
+}
