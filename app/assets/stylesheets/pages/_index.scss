@@ -1,2 +1,50 @@
 // Import page-specific CSS files here.
 @import "home";
+
+/* Worker dashboard — reuses glass + chips */
+.dashboard {
+  .glass-card {
+    border: 1px solid var(--stroke);
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 12px 28px rgba(16, 24, 40, .06);
+  }
+
+  /* chips already exist globally; soften here */
+  .chips { display:flex; flex-wrap:wrap; gap:.5rem; }
+  .chip {
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    color:#0f172a;
+    padding:.4rem .6rem;
+    border-radius:10px;
+    font-weight:600;
+    max-width:100%;
+  }
+
+  .badge-soft {
+    border:1px solid #dbeafe;
+    background:#eff6ff;
+    color:#1d4ed8;
+    font-weight:700;
+    border-radius:999px;
+    padding:.1rem .45rem;
+    font-size:.72rem;
+  }
+
+  /* definition list as two-column grid */
+  .info-grid {
+    display:grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap:.6rem 1rem;
+    margin:0;
+
+    dt { font-size:.78rem; color:#64748b; margin:0; }
+    dd { margin:0; font-weight:600; color:#0f172a; }
+    > div { display:grid; grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 576px) {
+    .info-grid { grid-template-columns: 1fr; }
+  }
+}

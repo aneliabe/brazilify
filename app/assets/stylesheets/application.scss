@@ -16,6 +16,7 @@
 /* 1) page styles (scoped) */
 @import "pages/home";
 @import "pages/worker";
+@import "pages/categories";
 @import "appointments";
 
 
@@ -24,5 +25,5 @@
 @import "ui_components";
 
 /* 3) shared components you already have */
-@import "navbar";       // etc.
+@import "components/navbar";       // etc.
 @import "chat";         // if it’s global
