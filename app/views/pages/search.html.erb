@@ -2,15 +2,23 @@
 
 <section class="search-results container">
   <div class="d-flex align-items-center justify-content-between mb-3">
-    <h3 class="mb-0">
-      Resultados
-      <% if params[:city].present? %>
-        para <strong><%= params[:city] %></strong>
-      <% end %>
-      <% if params[:q].present? %>
-        · serviço: <strong><%= params[:q] %></strong>
-      <% end %>
-    </h3>
+      <h3 class="mb-0">
+    Resultados
+    <% if params[:city].present? %>
+      para <strong><%= params[:city] %></strong>
+    <% end %>
+    <% if params[:category_id].present? && @categories %>
+      <% category = @categories.find { |c| c.id == params[:category_id].to_i } %>
+      · categoria: <strong><%= category&.name %></strong>
+    <% end %>
+    <% if params[:service_id].present? %>
+      <% service = Service.find_by(id: params[:service_id]) %>
+      · serviço: <strong><%= service&.name %></strong>
+    <% end %>
+    <% if params[:q].present? %>
+      · busca: <strong><%= params[:q] %></strong>
+    <% end %>
+  </h3>
 
     <div class="text-end">
       <%= link_to "Voltar para a Home", root_path, class: "see-all-btn" %>

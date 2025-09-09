@@ -4,11 +4,14 @@ class PagesController < ApplicationController
   def home
     @popular_services = Service.order("RANDOM()").limit(8)
     @top_workers = find_top_workers
+    @categories = Category.includes(:services).order(:name)
   end
 
   def search
     raw_city = params[:city].to_s.strip
     @q = params[:q].to_s.strip
+    @category_id = params[:category_id].to_s.strip
+    @service_id = params[:service_id].to_s.strip
 
     city_token, _country_hint = parse_city_label(raw_city)
 
@@ -19,7 +22,20 @@ class PagesController < ApplicationController
     scope = scope.where("LOWER(users.city) LIKE LOWER(?)", "%#{city_token}%") if city_token.present?
     scope = scope.joins(:services).where("services.name ILIKE ?", "%#{@q}%").distinct if @q.present?
 
+    if @category_id.present?
+      scope = scope.joins(:services)
+                  .where(services: { category_id: @category_id })
+                  .distinct
+    end
+
+    if @service_id.present?
+      scope = scope.joins(:services)
+                  .where(services: { id: @service_id })
+                  .distinct
+    end
+
     @workers = scope
+    @categories = Category.includes(:services).order(:name)
   end
 
   private
