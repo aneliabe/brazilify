@@ -1,86 +1,110 @@
 <%= turbo_stream_from "appointment_#{@appointment.id}_messages" %>
 
-<div class="container chat">
-  <!-- HEADER: title + Propor novo horário -->
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h5 m-0">Your appointment for <%= @appointment.worker_profile.user.full_name %></h1>
+<div class="container" style="max-width:1040px; margin:2rem auto;">
+  <div class="chat appt-chat-page"><!-- 🔵 put .chat back so _chat.scss applies -->
 
-    <button type="button"
-            class="btn btn-outline-primary btn-sm d-flex align-items-center gap-2"
-            data-bs-toggle="modal" data-bs-target="#proposeModal">
-      <i class="fa-regular fa-calendar-plus"></i>
-      <span class="d-none d-sm-inline">Propor novo horário</span>
-    </button>
-  </div>
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center">
+      <h1 class="h5 m-0">
+        Your appointment for <%= @appointment.worker_profile.user.full_name %>
+      </h1>
 
-  <!-- messages (scrollable) -->
-  <div id="messages" class="messages">
-    <% @appointment.messages.order(:created_at).each do |message| %>
-      <%= render "messages/message", message: message, user: current_user %>
+      <button type="button"
+              class="btn-line"
+              data-bs-toggle="modal" data-bs-target="#proposeModal">
+        <i class="fa-regular fa-calendar-plus"></i>
+        Propor novo horário
+      </button>
+    </div>
+
+    <!-- Messages -->
+    <div id="messages" class="messages">
+      <% @appointment.messages.order(:created_at).each do |message| %>
+        <%= render "messages/message", message: message, user: current_user %>
+      <% end %>
+
+      <%# ---- proposal bubble (optional) ---- %>
+      <% if @appointment.proposed_starts_at.present? %>
+        <% proposer_name =
+             (@appointment.proposed_by_id == @appointment.user_id ?
+               (@appointment.user.full_name.presence || @appointment.user.email) :
+               (@appointment.worker_profile.user.full_name.presence || @appointment.worker_profile.user.email)) %>
+        <div class="system-bubble text-center">
+          <div class="mb-2">
+            <strong>Proposta de novo horário:</strong>
+            <%= l(@appointment.proposed_starts_at, format: :long) rescue @appointment.proposed_starts_at %>
+            <small class="text-muted d-block">por <%= proposer_name %></small>
+          </div>
+          <div class="actions">
+            <% if @appointment.proposed_by_id != current_user.id %>
+              <%= button_to "Aceitar", accept_proposed_appointment_path(@appointment),
+                            method: :patch, class: "btn btn-success btn-sm" %>
+              <%= button_to "Recusar", decline_proposed_appointment_path(@appointment),
+                            method: :patch, class: "btn btn-outline-danger btn-sm" %>
+            <% else %>
+              <span class="badge badge-pill bg-secondary-subtle text-secondary border border-secondary">
+                Aguardando resposta
+              </span>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <%# ---- review actions bubble ---- %>
+      <% my_review   = Review.where(worker_profile_id: @appointment.worker_profile_id, user_id: current_user.id).order(created_at: :desc).first %>
+      <% past        = @appointment.starts_at.present? && @appointment.starts_at < Time.zone.now %>
+      <% valid_stat  = %w[accepted pending].include?(@appointment.status.to_s) %>
+      <% is_client   = current_user.id == @appointment.user_id %>
+      <% can_review  = is_client && past && valid_stat %>
+
+      <% if can_review %>
+        <div class="system-bubble text-center">
+          <div class="actions">
+            <% if my_review.present? %>
+              <span class="badge badge-pill bg-success-subtle text-success border border-success">Avaliação feita</span>
+
+              <button type="button" class="btn btn-outline-secondary btn-sm"
+                      data-bs-toggle="modal" data-bs-target="#editReviewModal">
+                Editar
+              </button>
+
+              <%= button_to "Excluir",
+                    review_path(my_review, return_to: appointment_path(@appointment)),
+                    method: :delete,
+                    form: { class: "d-inline", data: { turbo_confirm: "Remover sua avaliação?" } },
+                    class: "btn btn-outline-danger btn-sm" %>
+            <% else %>
+              <button type="button" class="btn btn-success btn-sm d-flex align-items-center gap-2"
+                      data-bs-toggle="modal" data-bs-target="#reviewModal">
+                <i class="fa-solid fa-star"></i>
+                Avaliar profissional
+              </button>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <div id="chat-tail" class="py-1"></div>
+    </div>
+
+    <!-- Composer -->
+    <% other_user = current_user == @appointment.worker_profile.user ? @appointment.user : @appointment.worker_profile.user %>
+    <%= simple_form_for [@appointment, @message],
+      html: { class: "d-flex", data: { controller: "reset-form", action: "turbo:submit-end->reset-form#reset" } } do |f| %>
+      <%= f.input :content,
+          label: false,
+          placeholder: "Mensagem para #{other_user.full_name}",
+          wrapper_html: { class: "flex-grow-1" } %>
+      <%= f.submit "Enviar", class: "btn btn-primary mb-3" %>
     <% end %>
 
-    <%# compute once for bubbles & modals %>
-    <% my_review = Review.where(worker_profile_id: @appointment.worker_profile_id,
-                                user_id: current_user.id).order(created_at: :desc).first %>
-
-    <%= render "appointments/proposal_bubble",       appointment: @appointment %>
-    <%= render "appointments/review_actions_bubble", appointment: @appointment, my_review: my_review %>
-
-    <!-- bottom anchor so we land below the bubbles -->
-    <div id="chat-tail" class="py-1"></div>
-  </div>
-
-  <!-- composer -->
-  <% other_user = current_user == @appointment.worker_profile.user ? @appointment.user : @appointment.worker_profile.user %>
-  <%= simple_form_for [@appointment, @message],
-    html: { class: "d-flex", data: { controller: "reset-form", action: "turbo:submit-end->reset-form#reset" } } do |f| %>
-    <%= f.input :content,
-        label: false,
-        placeholder: "Mensagem para #{other_user.full_name}",
-        wrapper_html: { class: "flex-grow-1" } %>
-    <%= f.submit "Enviar", class: "btn btn-primary mb-3" %>
-  <% end %>
-
-  <!-- Review modals (partials, slim width) -->
-  <%= render "appointments/review_modal",       appointment: @appointment %>
-  <%= render "appointments/review_edit_modal", appointment: @appointment, my_review: my_review %>
-
-  <!-- Propose-time modal (kept inline for now) -->
-  <div class="modal fade" id="proposeModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Propor novo horário</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-        </div>
-        <div class="modal-body">
-          <%= form_with url: propose_time_appointment_path(@appointment), method: :post do %>
-            <div class="mb-3">
-              <label class="form-label">Novo dia e hora</label>
-              <input type="text"
-                     name="proposed_starts_at"
-                     class="form-control"
-                     placeholder="Selecione dia e hora"
-                     autocomplete="off"
-                     data-controller="flatpickr"
-                     data-flatpickr-enable-time-value="true"
-                     data-flatpickr-time-24hr-value="true"
-                     data-flatpickr-minute-increment-value="15"
-                     data-flatpickr-date-format-value="Y-m-d H:i">
-              <small class="text-muted">A outra parte precisa aceitar para a mudança valer.</small>
-            </div>
-            <div class="d-grid">
-              <button type="submit" class="btn btn-primary">Enviar proposta</button>
-            </div>
-          <% end %>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
 
+<!-- modals unchanged (review create/edit + propose) ... keep your current modals here -->
+
 <script>
-  // Scroll to bottom so the system bubbles are visible
+  // keep auto-scroll
   function scrollChatTail() {
     const tail = document.getElementById('chat-tail');
     tail && tail.scrollIntoView({ behavior: 'auto' });

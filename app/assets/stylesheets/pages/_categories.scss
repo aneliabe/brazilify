@@ -1,0 +1,55 @@
+/* Categories – glass cards + collapsible chips */
+.categories-page {
+  .page-title { font-size: 1.35rem; font-weight: 800; }
+
+  .category-card {
+    border: 1px solid var(--stroke);
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 10px 25px rgba(16,24,40,.05);
+    overflow: hidden;
+  }
+
+  .category-toggle {
+    display: flex; align-items: center; gap: .75rem;
+    width: 100%;
+    background: transparent; border: 0; padding: .9rem 1rem;
+    font-weight: 700; color: #0f172a; text-align: left;
+    transition: background-color .15s ease;
+
+    &:hover { background: rgba(2,132,199,.06); }
+  }
+
+  .dot {
+    width: 10px; height: 10px; border-radius: 999px;
+    background: linear-gradient(180deg, #22c55e, #16a34a);
+    box-shadow: 0 0 0 3px rgba(34,197,94,.15);
+  }
+
+  .name { flex: 0 1 auto; }
+
+  .count {
+    margin-left: .25rem;
+    font-size: .75rem; font-weight: 700;
+    color: #0f766e;
+    background: #ecfeff; border: 1px solid #a5f3fc;
+    padding: .12rem .5rem; border-radius: 999px;
+  }
+
+  .chevron { transition: transform .18s ease; }
+  .category-toggle[aria-expanded="true"] .chevron { transform: rotate(180deg); }
+
+  .services {
+    border-top: 1px dashed var(--stroke);
+    padding: .75rem 1rem 1rem;
+  }
+
+  /* chips reuse your global .chip look; this tightens spacing */
+  .chips { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .chip {
+    background: #f8fafc; border: 1px solid #e2e8f0; color: #0f172a;
+    padding: .35rem .65rem; border-radius: 10px; font-weight: 600;
+    transition: transform .12s ease, background-color .12s ease;
+    &:hover { background: #eef2ff; transform: translateY(-1px); }
+  }
+}

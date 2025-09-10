@@ -17,7 +17,8 @@
     <%= stylesheet_link_tag "https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css", media: "all" %>
   </head>
 
-  <body data-current-user-id="<%= current_user ? current_user.id : "" %>">
+  <body class="theme-light" data-current-user-id="<%= current_user ? current_user.id : "" %>">
+
     <%= render "shared/navbar2" %>
     <%= render "shared/flashes" %>
     <main class="container">

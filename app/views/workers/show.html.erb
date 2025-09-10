@@ -1,71 +1,86 @@
-<div class="worker-show">
-  <div class="card worker-card">
-    <div class="worker-header">
-      <img src="<%= @worker.user.avatar.presence || 'https://placehold.co/96x96' %>" class="worker-avatar" alt="">
-      <div class="worker-headings">
-        <h2 class="worker-name"><%= @worker.user.full_name %></h2>
-        <small class="worker-sub">
-          <i class="fa-solid fa-location-dot"></i>
-          <%= [@worker.user.city, @worker.user.country].compact.join(", ") %>
-        </small>
-        <div class="worker-stats">
-          <i class="fa-solid fa-star"></i>
-          <span><%= @worker.average_rating %> (<%= @worker.reviews.count %> avaliações)</span>
+<div class="worker-page">
+  <div class="container" style="max-width: 1040px; margin: 2rem auto;">
+
+    <!-- HERO CARD -->
+    <div class="glass-card p-3 p-md-4 mb-3">
+      <div class="row g-4 align-items-center">
+        <div class="col-auto">
+          <img
+            src="<%= @worker.user.avatar.presence || 'https://placehold.co/96x96' %>"
+            alt=""
+            width="96" height="96"
+            class="rounded-circle border"
+            style="object-fit:cover;"
+          >
         </div>
+
+        <div class="col">
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <h1 class="h4 m-0"><%= @worker.user.full_name %></h1>
+            <span class="text-muted small">
+              <i class="fa-solid fa-location-dot"></i>
+              <%= [@worker.user.city, @worker.user.country].compact.join(", ") %>
+            </span>
+          </div>
+
+          <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
+            <!-- stars -->
+            <span class="text-warning">
+              <% avg = @worker.average_rating.to_f %>
+              <% 5.times do |i| %>
+                <i class="fa-<%= i < avg.round ? 'solid' : 'regular' %> fa-star"></i>
+              <% end %>
+            </span>
+            <span class="text-muted small">
+              <%= number_with_precision(avg, precision: 1) %> de 5
+              • <%= @worker.reviews.count %> avaliações
+            </span>
+          </div>
+
+          <% if @worker.description.present? %>
+            <p class="mt-3 mb-0 text-muted"><%= @worker.description %></p>
+          <% end %>
+        </div>
+
+        <div class="col-12 col-md-auto ms-md-auto">
+          <button type="button"
+                  class="btn-line"
+                  data-bs-toggle="modal" data-bs-target="#requestTimeModal">
+            <i class="fa-regular fa-calendar-plus"></i>
+            Solicitar horário
+          </button>
+        </div>
+      </div>
+
+      <!-- Services as chips -->
+      <div class="mt-3">
+        <% if @worker.services.any? %>
+          <div class="chips">
+            <% @worker.services.each do |s| %>
+              <span class="chip"><i class="fa-solid fa-tag"></i> <%= s.name %></span>
+            <% end %>
+          </div>
+        <% else %>
+          <small class="text-muted">Sem serviços cadastrados ainda.</small>
+        <% end %>
       </div>
     </div>
 
-    <p class="worker-desc"><%= @worker.description %></p>
-
-    <div class="worker-tags">
-      <% if @worker.services.any? %>
-        <% @worker.services.each do |s| %>
-          <span class="tag"><%= s.name %></span>
-        <% end %>
-      <% else %>
-        <small>Sem serviços cadastrados ainda.</small>
-      <% end %>
-    </div>
-
-    <hr class="divider">
-
-    <div class="worker-cta">
-      <h3>Solicitar horário com <%= @worker[:name] %></h3>
-
-      <button type="button" class="see-all-btn" data-bs-toggle="modal" data-bs-target="#requestTimeModal">
-        Solicitar horário
-      </button>
-
-      <p class="hint">
-        Você escolhe a data/hora preferida. O profissional confirma ou sugere outro.
-      </p>
-    </div>
-
-    <hr class="divider">
-
-    <!-- ✅ NEW: Reviews section -->
-    <div class="worker-reviews">
-      <h3 class="mb-2">Avaliações (<%= @worker.reviews.count %>)</h3>
+    <!-- REVIEWS CARD -->
+    <div class="glass-card p-3 p-md-4">
+      <div class="d-flex align-items-baseline justify-content-between flex-wrap gap-2 mb-3">
+        <h2 class="h5 m-0">Avaliações (<%= @worker.reviews.count %>)</h2>
+      </div>
 
       <% if @worker.reviews.exists? %>
-        <% avg = @worker.average_rating.to_f %>
-
-        <!-- Average as stars + number -->
-        <div class="d-flex align-items-center gap-2 mb-3">
-          <div class="text-warning">
-            <% 5.times do |i| %>
-              <i class="fa-<%= i < avg.round ? 'solid' : 'regular' %> fa-star"></i>
-            <% end %>
-          </div>
-          <small class="text-muted"><%= number_with_precision(avg, precision: 1) %> de 5</small>
-        </div>
-
         <div class="list-group">
           <% @worker.reviews.includes(:user).order(created_at: :desc).limit(5).each do |rev| %>
-            <div class="list-group-item">
+            <div class="list-group-item border-0 border-bottom">
               <div class="d-flex align-items-start gap-3">
-                <img src="<%= rev.user.avatar.presence || 'https://placehold.co/48x48' %>"
-                     class="rounded-circle" width="40" height="40" alt="">
+                <img
+                  src="<%= rev.user.avatar.presence || 'https://placehold.co/48x48' %>"
+                  class="rounded-circle border" width="40" height="40" alt="" style="object-fit:cover;"
+                >
                 <div class="flex-grow-1">
                   <div class="d-flex align-items-center justify-content-between">
                     <strong><%= rev.user.full_name.presence || rev.user.email %></strong>
@@ -74,10 +89,9 @@
                     </small>
                   </div>
 
-                  <!-- rating stars -->
-                  <div class="text-warning mb-1">
-                    <% rev.rating.to_i.times do %><i class="fa-solid fa-star"></i><% end %>
-                    <% (5 - rev.rating.to_i).times do %><i class="fa-regular fa-star"></i><% end %>
+                  <div class="text-warning my-1">
+                    <% rev.rating.to_i.times { %><i class="fa-solid fa-star"></i><% } %>
+                    <% (5 - rev.rating.to_i).times { %><i class="fa-regular fa-star"></i><% } %>
                   </div>
 
                   <% if rev.comment.present? %>
@@ -93,14 +107,14 @@
           <small class="text-muted d-block mt-2">Mostrando as 5 mais recentes.</small>
         <% end %>
       <% else %>
-        <p class="text-muted">Sem avaliações ainda.</p>
+        <p class="text-muted m-0">Sem avaliações ainda.</p>
       <% end %>
     </div>
-    <!-- /Reviews -->
+
   </div>
 </div>
 
-<!-- Modal to request time -->
+<!-- Modal to request time (unchanged) -->
 <div class="modal fade" id="requestTimeModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">

@@ -1,17 +1,33 @@
-<h1>Categories of Services</h1>
+<div class="container categories-page" style="max-width:1100px;margin:2rem auto;">
+  <h1 class="page-title mb-3">Categorias de serviços</h1>
 
-<div data-controller="categories">
-  <% @categories.each do |category| %>
-    <div class="category">
-      <!-- Link to toggle only its own services -->
-      <%= link_to category.name, "#", data: { action: "click->categories#toggle" , turbo: false} %>
+  <div data-controller="categories">
+    <div class="row g-3">
+      <% @categories.each do |category| %>
+        <div class="col-12 col-md-6">
+          <div class="glass-card category-card">
+            <!-- header button (fires your Stimulus toggle) -->
+            <button type="button"
+                    class="category-toggle"
+                    data-action="click->categories#toggle"
+                    aria-expanded="false">
+              <span class="dot"></span>
+              <span class="name"><%= category.name %></span>
+              <span class="count"><%= category.services.size %></span>
+              <i class="fa-solid fa-chevron-down ms-auto chevron"></i>
+            </button>
 
-      <!-- Hidden list of services -->
-      <ul data-categories-target="services" style="display: none;">
-        <% category.services.each do |service| %>
-          <li><%= service.name %></li>
-        <% end %>
-      </ul>
+            <!-- services list (keeps your target + inline display so no JS change) -->
+            <div class="services" data-categories-target="services" style="display:none;">
+              <div class="chips">
+                <% category.services.order(:name).each do |service| %>
+                  <span class="chip"><%= service.name %></span>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
     </div>
-  <% end %>
+  </div>
 </div>

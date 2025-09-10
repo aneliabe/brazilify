@@ -1,35 +1,91 @@
-<section class="info-bar">
-  <div class="container d-flex justify-content-center gap-4 flex-wrap py-2">
-    <%# <div class="d-flex align-items-center gap-1 text-white small">
-      <i class="fa-solid fa-shield-halved"></i> Pagamentos protegidos
-    </div> %>
-    <div class="d-flex align-items-center gap-1 text-white small">
-      <i class="fa-solid fa-circle-check"></i> Brasileiros verificados
-    </div>
-    <div class="d-flex align-items-center gap-1 text-white small">
-      <i class="fa-solid fa-comments"></i> Fale em português
-    </div>
-  </div>
-</section>
+<div class="home-compact">
+  <!-- Hero ribbon + search -->
+        <%= render "shared/search_bar", city: params[:city] %>
 
-<%= render "shared/search_bar", city: params[:city] %>
+  <div class="container" style="max-width:1100px;">
 
-<section class="popular-services">
-  <h3>Serviços Populares</h3>
-  <div class="grid chips">
-    <% @popular_services.each do |svc| %>
-      <%= link_to svc.name,
-                  search_path(city: params[:city], q: svc.name),
-                  class: "chip" %>
+    <!-- Serviços Populares (keeps your sizing, just polished) -->
+    <section class="glass-card p-3 p-md-4 mb-4">
+      <h2 class="section-title">Serviços Populares</h2>
+
+      <div class="svc-grid chips">
+        <% @popular_services.each do |svc| %>
+          <%= link_to svc.name,
+                      search_path(city: params[:city], q: svc.name),
+                      class: "chip svc-card text-decoration-none" %>
+        <% end %>
+      </div>
+
+    </section>
+
+    <!-- Destaques (logged in) OR your explainer (guest) -->
+    <% if user_signed_in? %>
+      <section class="mb-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+          <h2 class="section-title m-0">Prestadores de serviços perto de você</h2>
+          <%= link_to "Ver todos", workers_path, class: "btn btn-link p-0" %>
+        </div>
+
+        <% if @top_workers.blank? %>
+          <div class="glass-card p-4 text-center text-muted">Sem prestadores ainda.</div>
+        <% else %>
+          <div class="row g-3 top-workers">
+            <% @top_workers.each do |w| %>
+              <div class="col-12 col-md-6 col-lg-4">
+                <div class="glass-card p-3 h-100 hover-lift d-flex flex-column">
+                  <div class="d-flex gap-3 align-items-center">
+                    <img src="<%= w.user.avatar.presence || 'https://placehold.co/72x72' %>"
+                        alt="" class="rounded-circle"
+                        style="width:72px;height:72px;object-fit:cover;border:1px solid var(--stroke);">
+
+                    <div class="flex-grow-1 min-w-0">
+                      <!-- name -->
+                      <h3 class="h6 m-0 text-truncate"><%= w.user.full_name %></h3>
+
+                      <!-- stars + rating + reviews -->
+                      <div class="d-flex align-items-center gap-2 mt-1 flex-wrap">
+                        <span class="stars text-warning">
+                          <% avg = w.average_rating.to_f %>
+                          <% 5.times do |i| %>
+                            <i class="fa-<%= i < avg.round ? 'solid' : 'regular' %> fa-star"></i>
+                          <% end %>
+                        </span>
+                        <span class="rating-pill"><%= number_with_precision(avg, precision: 1) %></span>
+                        <small class="text-muted"> <%= w.reviews.count %> avaliações</small>
+                      </div>
+
+                      <!-- location -->
+                      <small class="text-muted d-inline-flex align-items-center gap-1 mt-1">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <%= [w.user.city, w.user.country].compact.join(", ") %>
+                      </small>
+                    </div>
+                  </div>
+
+                  <% if w.services.any? %>
+                    <!-- 2-column fixed grid so chips align across cards -->
+                    <div class="chips-grid mt-2">
+                      <% w.services.limit(3).each_with_index do |svc, i| %>
+                        <span class="chip tone-<%= (i % 6) + 1 %> text-truncate">
+                          <i class="fa-solid fa-briefcase"></i> <%= svc.name %>
+                        </span>
+                      <% end %>
+                    </div>
+                  <% end %>
+
+                  <div class="mt-2 d-flex justify-content-end">
+                    <%= link_to "Ver perfil", worker_path(w), class: "btn-line btn-chat" %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </section>
+    <% else %>
+      <section class="mb-4">
+        <%= render "shared/why_us_card" %>
+      </section>
     <% end %>
   </div>
-  <div class="see-all">
-    <%= link_to "Ver todas as categorias", categories_path, class: "see-all-btn" %>
-  </div>
-</section>
-
-<% if user_signed_in? %>
-  <%= render "shared/top_workers_card", top_workers: @top_workers %>
-<% else %>
-  <%= render "shared/why_us_card" %>
-<% end %>
+</div>
