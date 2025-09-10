@@ -29,43 +29,51 @@
         <% if @top_workers.blank? %>
           <div class="glass-card p-4 text-center text-muted">Sem prestadores ainda.</div>
         <% else %>
-          <div class="row g-3">
+          <div class="row g-3 top-workers">
             <% @top_workers.each do |w| %>
               <div class="col-12 col-md-6 col-lg-4">
-                <div class="glass-card p-3 h-100 hover-lift">
+                <div class="glass-card p-3 h-100 hover-lift d-flex flex-column">
                   <div class="d-flex gap-3 align-items-center">
                     <img src="<%= w.user.avatar.presence || 'https://placehold.co/72x72' %>"
-                         alt="" class="rounded-circle"
-                         style="width:72px;height:72px;object-fit:cover;border:1px solid var(--stroke);">
+                        alt="" class="rounded-circle"
+                        style="width:72px;height:72px;object-fit:cover;border:1px solid var(--stroke);">
+
                     <div class="flex-grow-1 min-w-0">
-                      <div class="d-flex align-items-center justify-content-between gap-2">
-                        <h3 class="h6 m-0 text-truncate"><%= w.user.full_name %></h3>
-                        <span class="text-warning">
+                      <!-- name -->
+                      <h3 class="h6 m-0 text-truncate"><%= w.user.full_name %></h3>
+
+                      <!-- stars + rating + reviews -->
+                      <div class="d-flex align-items-center gap-2 mt-1 flex-wrap">
+                        <span class="stars text-warning">
                           <% avg = w.average_rating.to_f %>
                           <% 5.times do |i| %>
                             <i class="fa-<%= i < avg.round ? 'solid' : 'regular' %> fa-star"></i>
                           <% end %>
                         </span>
+                        <span class="rating-pill"><%= number_with_precision(avg, precision: 1) %></span>
+                        <small class="text-muted"> <%= w.reviews.count %> avaliações</small>
                       </div>
-                      <small class="text-muted d-block">
+
+                      <!-- location -->
+                      <small class="text-muted d-inline-flex align-items-center gap-1 mt-1">
                         <i class="fa-solid fa-location-dot"></i>
-                        <%= [w.user.city, w.user.country].compact.join(", ") %> •
-                        <%= number_with_precision(avg, precision: 1) %> · <%= w.reviews.count %> avaliações
+                        <%= [w.user.city, w.user.country].compact.join(", ") %>
                       </small>
                     </div>
                   </div>
 
                   <% if w.services.any? %>
-                    <div class="chips mt-2">
+                    <!-- 2-column fixed grid so chips align across cards -->
+                    <div class="chips-grid mt-2">
                       <% w.services.limit(3).each_with_index do |svc, i| %>
-                        <span class="chip tone-<%= (i % 6) + 1 %>">
+                        <span class="chip tone-<%= (i % 6) + 1 %> text-truncate">
                           <i class="fa-solid fa-briefcase"></i> <%= svc.name %>
                         </span>
                       <% end %>
                     </div>
                   <% end %>
 
-                  <div class="d-flex justify-content-end mt-2">
+                  <div class="mt-2 d-flex justify-content-end">
                     <%= link_to "Ver perfil", worker_path(w), class: "btn-line btn-chat" %>
                   </div>
                 </div>

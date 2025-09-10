@@ -1,46 +1,64 @@
 <%= render "shared/search_bar", city: params[:city] %>
 
-<section class="search-results container">
-  <div class="d-flex align-items-center justify-content-between mb-3">
-      <h3 class="mb-0">
-    Resultados
-    <% if params[:city].present? %>
-      para <strong><%= params[:city] %></strong>
-    <% end %>
-    <% if params[:category_id].present? && @categories %>
-      <% category = @categories.find { |c| c.id == params[:category_id].to_i } %>
-      · categoria: <strong><%= category&.name %></strong>
-    <% end %>
-    <% if params[:service_id].present? %>
-      <% service = Service.find_by(id: params[:service_id]) %>
-      · serviço: <strong><%= service&.name %></strong>
-    <% end %>
-    <% if params[:q].present? %>
-      · busca: <strong><%= params[:q] %></strong>
-    <% end %>
-  </h3>
+<section class="search-results container" style="max-width:1100px;margin:1.25rem auto;">
 
-    <div class="text-end">
-      <%= link_to "Voltar para a Home", root_path, class: "see-all-btn" %>
+  <%# ------- Header ------- %>
+  <div class="search-header glass-card p-3 p-md-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div>
+      <h1 class="h5 m-0">Resultados</h1>
+
+      <%# active filter chips %>
+      <div class="filter-chips mt-2">
+        <% if params[:city].present? %>
+          <span class="chip tone-2"><i class="fa-solid fa-location-dot"></i> <%= params[:city] %></span>
+        <% end %>
+
+        <% if params[:category_id].present? %>
+          <% cat = (@categories || Category.all).find { |c| c.id == params[:category_id].to_i } %>
+          <% if cat %><span class="chip tone-3"><i class="fa-solid fa-folder-tree"></i> <%= cat.name %></span><% end %>
+        <% end %>
+
+        <% if params[:service_id].present? %>
+          <% svc = Service.find_by(id: params[:service_id]) %>
+          <% if svc %><span class="chip tone-4"><i class="fa-solid fa-briefcase"></i> <%= svc.name %></span><% end %>
+        <% end %>
+
+        <% if params[:q].present? %>
+          <span class="chip tone-1"><i class="fa-solid fa-magnifying-glass"></i> “<%= params[:q] %>”</span>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <% if params.except(:controller, :action).present? %>
+        <%= link_to "Limpar filtros", search_path, class: "btn btn-outline-primary" %>
+      <% end %>
+      <%= link_to "Voltar para a Home", root_path, class: "btn-line" %>
     </div>
   </div>
 
+  <%# ------- Results / Empty ------- %>
   <% if @workers.present? && @workers.any? %>
-    <div class="meta mb-2">
-      <span><%= @workers.size %> <%= @workers.size == 1 ? "profissional encontrado" : "profissionais encontrados" %></span>
+    <div class="d-flex align-items-center justify-content-between mt-3 mb-2">
+      <span class="count-pill">
+        <%= @workers.size %>
+        <%= @workers.size == 1 ? "profissional encontrado" : "profissionais encontrados" %>
+      </span>
     </div>
 
-    <div class="grid cols-3">
+    <div class="result-grid">
       <% @workers.each do |w| %>
         <%= render "shared/results_card", w: w %>
       <% end %>
     </div>
   <% else %>
-    <div class="empty-state">
-      <p>Nenhum profissional encontrado para esses filtros.</p>
-      <ul class="small">
+    <div class="empty-state glass-card p-4 text-center mt-3">
+      <div class="display-6 mb-2">😕</div>
+      <h2 class="h6">Nenhum profissional encontrado</h2>
+      <p class="text-muted mb-2">Tente ajustar os filtros ou a cidade para ampliar os resultados.</p>
+      <ul class="text-muted small m-0" style="list-style: disc; padding-left: 1.2rem;">
         <li>Tente outra cidade (ex.: “Dublin, IE”).</li>
-        <li>Ou remova o serviço para ampliar os resultados.</li>
+        <li>Remova o serviço ou categoria.</li>
       </ul>
     </div>
   <% end %>
