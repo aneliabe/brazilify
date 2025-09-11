@@ -29,5 +29,11 @@ module Brazilify
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    # Show/compare times in this zone:
+    config.time_zone = 'America/Sao_Paulo' # ← pick yours
+
+    # Keep DB in UTC (recommended):
+    config.active_record.default_timezone = :utc
   end
 end

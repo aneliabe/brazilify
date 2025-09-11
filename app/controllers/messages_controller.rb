@@ -4,7 +4,12 @@ class MessagesController < ApplicationController
   def create
     @appointment = Appointment.find(params[:appointment_id])
     return redirect_to root_path, alert: "You are not allowed to post here." unless @appointment.participant?(current_user)
-    
+
+    if @appointment.frozen_chat?
+      redirect_to appointment_path(@appointment), alert: "Este chat está encerrado."
+      return
+    end
+
     @message = Message.new(message_params)
     @message.appointment = @appointment
     @message.user = current_user
