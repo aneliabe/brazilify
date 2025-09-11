@@ -1,5 +1,66 @@
-<p>Welcome <%= @email %>!</p>
+<!-- app/views/devise/mailer/confirmation_instructions.html.erb -->
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Confirme sua conta</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body style="margin:0;padding:0;background:#f6f7f9;">
+  <!-- preheader (texto de pré-visualização) -->
+  <span style="display:none!important;opacity:0;visibility:hidden;mso-hide:all;height:0;width:0;overflow:hidden;">
+    Confirme seu cadastro na Brazilify.
+  </span>
 
-<p>You can confirm your account email through the link below:</p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f7f9;padding:24px 0;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;background:#ffffff;border-radius:8px;border:1px solid #e5e7eb;">
+          <tr>
+            <td style="padding:24px 24px 8px; text-align:center; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
+              <h1 style="margin:0;font-size:20px;font-weight:700;color:#16a34a;">Brazilify</h1>
+            </td>
+          </tr>
 
-<p><%= link_to 'Confirm my account', confirmation_url(@resource, confirmation_token: @token) %></p>
+          <tr>
+            <td style="padding:8px 24px 0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:#111827;">
+              <% name = (@resource.respond_to?(:full_name) && @resource.full_name.present?) ? @resource.full_name : @email %>
+
+              <p style="margin:0 0 12px; font-size:16px;">Olá, <strong><%= name %></strong>!</p>
+
+              <p style="margin:0 0 16px; font-size:15px; color:#374151;">
+                Obrigado por criar sua conta. Para ativá-la, confirme seu e-mail clicando no botão abaixo:
+              </p>
+
+              <p style="margin:24px 0;" align="center">
+                <%= link_to "Confirmar minha conta",
+                  confirmation_url(@resource, confirmation_token: @token),
+                  style: "display:inline-block;padding:12px 20px;text-decoration:none;border-radius:6px;background:#2563eb;color:#ffffff;font-weight:600;font-size:15px;" %>
+              </p>
+
+              <p style="margin:0 0 8px; font-size:14px; color:#6b7280;">
+                Se o botão não funcionar, copie e cole este link no seu navegador:
+              </p>
+
+              <p style="margin:0 0 16px;">
+                <a href="<%= confirmation_url(@resource, confirmation_token: @token) %>" style="word-break:break-all;color:#2563eb;">
+                  <%= confirmation_url(@resource, confirmation_token: @token) %>
+                </a>
+              </p>
+
+              <p style="margin:0 0 16px; font-size:13px; color:#6b7280;">
+                Se você não criou uma conta na Brazilify, pode ignorar este e-mail.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:16px 24px; border-top:1px solid #e5e7eb; font-size:12px; color:#6b7280; text-align:center; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
+              © <%= Time.current.year %> Brazilify
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>

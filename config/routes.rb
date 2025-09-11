@@ -1,6 +1,8 @@
 Rails.application.routes.draw do
 
-  devise_for :users
+    devise_for :users, controllers: {
+    registrations: 'users/registrations'
+  }
   root to: "pages#home"
 
   get "search", to: "pages#search", as: :search
@@ -48,6 +50,10 @@ Rails.application.routes.draw do
   end
 
   get "location_hint", to: "locations#hint"
+
+
+
+  get 'email_verification', to: 'email_verification#show'
 
   get "my/appointments", to: "appointments#index", as: :my_appointments
   get "my/requests",     to: redirect("/my/appointments?as=worker&status=pending"), as: :my_requests
