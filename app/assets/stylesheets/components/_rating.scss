@@ -1,0 +1,32 @@
+/* ---------- Star rating (global, works in modals) ---------- */
+.rating {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  white-space: nowrap;      /* avoid wrapping */
+  direction: rtl;           /* so hover fills from left to right */
+}
+
+/* hide radios reliably (modals are outside .chat) */
+.rating input[type="radio"] {
+  display: none !important;
+}
+
+/* the visual stars */
+.rating label {
+  margin: 0;
+  font-size: 1.6rem;        /* tweak below for smaller modals */
+  line-height: 1;
+  cursor: pointer;
+  color: #ced4da;           /* gray when off */
+}
+
+/* hover/active states */
+.rating label:hover,
+.rating label:hover ~ label,
+.rating input[type="radio"]:checked ~ label {
+  color: #f59e0b;           /* amber */
+}
+
+/* Optional: slightly smaller in narrow modals */
+.modal .rating label { font-size: 1.4rem; }
