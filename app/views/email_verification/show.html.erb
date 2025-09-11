@@ -1,0 +1,32 @@
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+      <div class="card shadow-sm">
+        <div class="card-header text-center bg-success text-white">
+          <h3 class="h5 mb-0">Conta criada com sucesso</h3>
+        </div>
+
+        <div class="card-body text-center">
+          <p class="mb-3">
+            Enviamos um e-mail de confirmação. Verifique sua caixa de entrada para ativar sua conta.
+          </p>
+
+          <ol class="text-start small mb-4">
+            <li>Abra sua caixa de entrada</li>
+            <li>Procure a mensagem de <strong>Brazilify</strong></li>
+            <li>Clique em <em>“Confirmar minha conta”</em></li>
+            <li>Volte aqui e faça login</li>
+          </ol>
+
+          <div class="alert alert-light border mb-4">
+            <strong>Não recebeu o e-mail?</strong>
+            Verifique o spam ou
+            <%= link_to "reenviar o e-mail de confirmação", new_user_confirmation_path, class: "link-primary" %>.
+          </div>
+
+          <%= link_to "Go to Sign In", new_user_session_path, class: "btn btn-primary" %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
