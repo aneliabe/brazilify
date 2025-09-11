@@ -125,9 +125,20 @@
                 </button>
               <% end %>
 
+              <% past = a.starts_at.present? && a.starts_at < Time.zone.now %>
+              <% can_archive = a.can_archive?(current_user) %>
+
               <%= link_to (has_unread ? "Abrir chat • Novas" : "Abrir chat"),
                           appointment_path(a),
                           class: "btn-line btn-chat #{has_unread ? 'ping' : ''}" %>
+
+              <% if can_archive %>
+                <%= button_to "Excluir",
+                      appointment_path(a),
+                      method: :delete,
+                      form: { data: { turbo_confirm: "Excluir este agendamento da sua lista? O chat ficará somente leitura para ambos." } },
+                      class: "btn-line btn-decline" %>
+              <% end %>
             </div>
           </div>
         <% end %>

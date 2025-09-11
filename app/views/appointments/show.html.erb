@@ -52,7 +52,7 @@
 
       <%# ---- review actions bubble ---- %>
       <% my_review   = Review.where(worker_profile_id: @appointment.worker_profile_id, user_id: current_user.id).order(created_at: :desc).first %>
-      <% past        = @appointment.starts_at.present? && @appointment.starts_at < Time.zone.now %>
+      <% past = @appointment.starts_at.present? && @appointment.starts_at < Time.current - 15.minutes %>
       <% valid_stat  = %w[accepted pending].include?(@appointment.status.to_s) %>
       <% is_client   = current_user.id == @appointment.user_id %>
       <% can_review  = is_client && past && valid_stat %>
@@ -89,19 +89,29 @@
 
     <!-- Composer -->
     <% other_user = current_user == @appointment.worker_profile.user ? @appointment.user : @appointment.worker_profile.user %>
-    <%= simple_form_for [@appointment, @message],
-      html: { class: "d-flex", data: { controller: "reset-form", action: "turbo:submit-end->reset-form#reset" } } do |f| %>
-      <%= f.input :content,
-          label: false,
-          placeholder: "Mensagem para #{other_user.full_name}",
-          wrapper_html: { class: "flex-grow-1" } %>
-      <%= f.submit "Enviar", class: "btn btn-primary mb-3" %>
+
+    <% if @appointment.frozen_chat? %>
+      <div class="system-bubble text-center">
+        <strong>Chat encerrado.</strong>
+        <div class="text-muted small">Uma das partes arquivou este atendimento; novas mensagens não são permitidas.</div>
+      </div>
+    <% else %>
+      <%= simple_form_for [@appointment, @message],
+        html: { class: "d-flex", data: { controller: "reset-form", action: "turbo:submit-end->reset-form#reset" } } do |f| %>
+        <%= f.input :content,
+            label: false,
+            placeholder: "Mensagem para #{other_user.full_name}",
+            wrapper_html: { class: "flex-grow-1" } %>
+        <%= f.submit "Enviar", class: "btn btn-primary mb-3" %>
+      <% end %>
     <% end %>
 
   </div>
 </div>
 
 <!-- modals unchanged (review create/edit + propose) ... keep your current modals here -->
+<%= render "review_modal", appointment: @appointment %>
+<%= render "review_edit_modal", appointment: @appointment, my_review: my_review %>
 
 <script>
   // keep auto-scroll

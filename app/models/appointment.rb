@@ -28,6 +28,35 @@ class Appointment < ApplicationRecord
     nil
   end
 
+  # soft-delete visibility/freeze helpers
+  def past?
+    starts_at.present? && starts_at < Time.zone.now
+  end
+
+  def client_review_present?
+    Review.exists?(user_id: user_id, worker_profile_id: worker_profile_id)
+  end
+
+  def archived_for?(user)
+    return false unless participant?(user)
+    if user_id == user.id
+      client_archived_at.present?
+    elsif worker_profile&.user_id == user.id
+      worker_archived_at.present?
+    else
+      false
+    end
+  end
+
+  def frozen_chat?
+    client_archived_at.present? || worker_archived_at.present?
+  end
+
+  # who is allowed to archive (your rule: only after the CLIENT has reviewed; both sides may clean)
+  def can_archive?(user)
+    participant?(user) && past? && client_review_present?
+  end
+
   private
 
   def set_default_status

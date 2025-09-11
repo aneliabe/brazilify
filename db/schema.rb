@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_09_05_194931) do
+ActiveRecord::Schema[7.1].define(version: 2025_09_11_205716) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -26,11 +26,15 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_05_194931) do
     t.datetime "worker_last_read_at"
     t.datetime "proposed_starts_at"
     t.bigint "proposed_by_id"
+    t.datetime "client_archived_at"
+    t.datetime "worker_archived_at"
     t.index ["proposed_by_id"], name: "index_appointments_on_proposed_by_id"
     t.index ["status"], name: "index_appointments_on_status"
+    t.index ["user_id", "client_archived_at"], name: "index_appointments_on_user_id_and_client_archived_at"
     t.index ["user_id", "created_at"], name: "index_appointments_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_appointments_on_user_id"
     t.index ["worker_profile_id", "starts_at"], name: "index_appointments_on_worker_profile_id_and_starts_at"
+    t.index ["worker_profile_id", "worker_archived_at"], name: "index_appointments_on_worker_profile_id_and_worker_archived_at"
     t.index ["worker_profile_id"], name: "index_appointments_on_worker_profile_id"
   end
 
@@ -68,6 +72,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_05_194931) do
     t.bigint "category_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "service_type"
     t.index ["category_id", "name"], name: "index_services_on_category_id_and_name", unique: true
     t.index ["category_id"], name: "index_services_on_category_id"
   end

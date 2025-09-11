@@ -1,31 +1,56 @@
 class AppointmentsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_appointment, only: [:show, :accept, :decline, :propose_time, :accept_proposed, :decline_proposed]
-  before_action :authorize_participant!, only: [:show, :propose_time, :accept_proposed, :decline_proposed]
+  before_action :set_appointment, only: [:show, :destroy, :accept, :decline, :propose_time, :accept_proposed, :decline_proposed]
+  before_action :authorize_participant!, only: [:show, :destroy, :propose_time, :accept_proposed, :decline_proposed]
   before_action :authorize_worker!, only: [:accept, :decline]
 
   # /my/appointments (optionally filtered by ?as=worker|client&status=pending|accepted|declined)
   def index
     base = Appointment.joins(:worker_profile)
-                      .includes(:messages, :user, worker_profile: :user)
 
     case params[:as]
     when "worker"
-      role_scope = base.where(worker_profiles: { user_id: current_user.id })
+      @appointments = base
+        .where(worker_profiles: { user_id: current_user.id })
+        .where(worker_archived_at: nil)
     when "client"
-      role_scope = base.where(appointments: { user_id: current_user.id })
+      @appointments = base
+        .where(appointments: { user_id: current_user.id })
+        .where(client_archived_at: nil)
     else
-      role_scope = base.where("appointments.user_id = :uid OR worker_profiles.user_id = :uid", uid: current_user.id)
+      # both roles, but only those not archived for ME
+      @appointments = base.where(
+        "(appointments.user_id = :uid AND client_archived_at IS NULL)
+        OR (worker_profiles.user_id = :uid AND worker_archived_at IS NULL)",
+        uid: current_user.id
+      )
     end
 
-    @counts_by_status = role_scope.group(:status).count
-    @counts_by_status["pending"]  ||= 0
-    @counts_by_status["accepted"] ||= 0
-    @counts_by_status["declined"] ||= 0
-
-    @appointments = role_scope
     @appointments = @appointments.where(status: params[:status]) if params[:status].present?
     @appointments = @appointments.order(created_at: :desc)
+
+    # counts (ignore archived)
+    scope_for_counts = base.where(
+      "(appointments.user_id = :uid AND client_archived_at IS NULL)
+      OR (worker_profiles.user_id = :uid AND worker_archived_at IS NULL)",
+      uid: current_user.id
+    )
+    @counts_by_status = scope_for_counts.group(:status).count
+  end
+
+  def destroy
+    unless @appointment.can_archive?(current_user)
+      redirect_to my_appointments_path, alert: "Você só pode excluir após avaliar e quando o horário já passou."
+      return
+    end
+
+    if current_user.id == @appointment.user_id
+      @appointment.update!(client_archived_at: Time.zone.now)
+    elsif @appointment.worker_profile&.user_id == current_user.id
+      @appointment.update!(worker_archived_at: Time.zone.now)
+    end
+
+    redirect_to my_appointments_path, notice: "Agendamento arquivado. O chat fica somente para leitura."
   end
 
   # POST /workers/:worker_id/appointments

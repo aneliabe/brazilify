@@ -9,6 +9,7 @@ class AppointmentRequest < ApplicationRecord
   before_validation :set_default_status, on: :create
 
   private
+  
   def set_default_status
     self.status ||= "pending"
   end
