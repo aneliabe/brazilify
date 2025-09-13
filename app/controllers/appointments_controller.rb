@@ -55,23 +55,26 @@ class AppointmentsController < ApplicationController
 
   # POST /workers/:worker_id/appointments
   def create
-    worker = WorkerProfile.find(params[:worker_id]) # nested route
-    if current_user.id == worker.user_id
-      redirect_to worker_path(worker), alert: "Você não pode agendar consigo mesmo." and return
+    worker = WorkerProfile.find(params[:worker_id]) # from nested route
+    @appointment = Appointment.new
+    @appointment.worker_profile = worker
+    @appointment.user           = current_user
+    @appointment.status         = "pending" if @appointment.status.blank?
+
+    # 🔹 choose the appointment clock (worker's TZ if you have it, else SP)
+    @appointment.time_zone = worker.user.try(:time_zone).presence || "America/Sao_Paulo"
+
+    # 🔹 parse the picker string inside that zone
+    raw_start = params.dig(:appointment, :starts_at)
+    Time.use_zone(@appointment.time_zone) do
+      @appointment.starts_at = Time.zone.parse(raw_start) if raw_start.present?
     end
 
-    @appointment = Appointment.new(appointment_params)
-    @appointment.worker_profile = worker
-    @appointment.user = current_user
-    @appointment.status = "pending" if @appointment.status.blank?
-
     if @appointment.save
-      Message.create!(
-        appointment: @appointment,
-        user: current_user,
-        content: params[:message]
-      ) if params[:message].present?
-
+      # optional first message
+      if params[:message].present?
+        Message.create!(appointment: @appointment, user: current_user, content: params[:message])
+      end
       redirect_to @appointment, notice: "Solicitação criada. Conversem por aqui para alinhar detalhes."
     else
       redirect_to worker_path(worker), alert: @appointment.errors.full_messages.to_sentence
@@ -122,23 +125,27 @@ class AppointmentsController < ApplicationController
 
   # POST /appointments/:id/propose_time
   def propose_time
-    new_time_str = params[:proposed_starts_at].to_s.strip
-    new_time = (Time.zone.parse(new_time_str) rescue nil)
+    @appointment = Appointment.find(params[:id])
+    return redirect_to @appointment, alert: "Sem permissão." unless @appointment.participant?(current_user)
 
-    if new_time.blank? || new_time < Time.current
-      return redirect_back fallback_location: appointment_path(@appointment),
-                           alert: "Escolha um horário válido no futuro."
+    raw = params[:proposed_starts_at]
+    if raw.blank?
+      return redirect_to @appointment, alert: "Informe o novo dia e hora."
     end
 
-    @appointment.update!(proposed_starts_at: new_time, proposed_by: current_user)
+    # 🔹 parse inside the appointment's zone
+    new_time = nil
+    Time.use_zone(@appointment.time_zone) { new_time = Time.zone.parse(raw) }
 
-    Message.create!(
-      appointment: @appointment,
-      user: current_user,
-      content: "Propus novo horário: #{I18n.l(new_time, format: :short)}"
+    if new_time.blank?
+      return redirect_to @appointment, alert: "Horário inválido."
+    end
+
+    @appointment.update!(
+      proposed_starts_at: new_time,
+      proposed_by: current_user
     )
-
-    redirect_to appointment_path(@appointment), notice: "Proposta enviada. Aguarde a resposta."
+    redirect_to @appointment, notice: "Proposta enviada."
   end
 
   # PATCH /appointments/:id/accept_proposed
