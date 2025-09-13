@@ -47,6 +47,27 @@ class Appointment < ApplicationRecord
     end
   end
 
+  # --- archive helpers (public) ---
+  def archived_by_client?
+    archived_by_client_at.present?
+  end
+
+  def archived_by_worker?
+    archived_by_worker_at.present?
+  end
+
+  # Freeze chat for BOTH sides if EITHER side archived
+  def frozen_chat?
+    archived_by_client? || archived_by_worker?
+  end
+
+  # (optional) keep this public so views can call it
+  # Only allow archive if appointment is in the past AND this user has reviewed
+  def can_archive?(who)
+    return false unless starts_at.present? && starts_at < Time.zone.now
+    Review.exists?(appointment_id: id, user_id: who.id)
+  end
+
   private
 
   def set_default_status
