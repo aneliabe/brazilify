@@ -37,5 +37,6 @@ class WorkersController < ApplicationController
     @worker = WorkerProfile.includes(:user, :services, reviews: :user).find(params[:id])
     @appointment = Appointment.new
     @appointments = @worker.appointments.where(user: current_user)
+    @user = @worker.user
   end
 end

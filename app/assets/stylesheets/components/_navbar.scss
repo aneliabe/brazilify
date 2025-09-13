@@ -9,7 +9,20 @@
 
 .navbar-lewagon .navbar-brand img {
   width: 80px;
-  margin-left: 16px ;
 }
 
-.avatar { cursor: pointer; }
+.avatar{
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.navbar-lewagon .container-fluid {
+  padding-left: 1.5cm;
+  padding-right: 1.5cm;
+}
+
+@media (max-width: 576px){
+  .navbar-lewagon .container-fluid { padding-left: 1rem; padding-right: 1rem; }
+}

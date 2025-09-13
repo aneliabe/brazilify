@@ -25,6 +25,8 @@
                 required: true,
                 input_html: { autocomplete: "address" }%>
 
+      <%= f.input :photo, as: :file %>
+
 
       <div data-controller="location-hint"
           data-location-hint-token-value="<%= ENV.fetch('MAPBOX_PUBLIC_TOKEN', '') %>"

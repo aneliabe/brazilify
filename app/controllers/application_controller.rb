@@ -15,7 +15,8 @@ class ApplicationController < ActionController::Base
       :country_code,
       :phone,
       :avatar,
-      :role # <-- permit role
+      :role, # <-- permit role
+      :photo
     ])
 
     # Permit extra fields for account update

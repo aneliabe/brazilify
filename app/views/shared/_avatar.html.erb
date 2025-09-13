@@ -1,0 +1,17 @@
+<% s = (local_assigns[:size] || 64).to_i %>
+<% extra = (local_assigns[:class] || "").to_s.strip %>
+<% classes = ["rounded-circle", "border", extra].reject(&:blank?).join(" ") %>
+<% alt_text = (local_assigns[:alt].presence || user&.full_name || "Avatar") %>
+
+<% if user&.photo&.attached? %>
+  <%= cl_image_tag user.photo.key,
+        width: s, height: s, crop: :fill, gravity: :face,
+        dpr: 2, quality: "auto", fetch_format: "auto",
+        class: classes, alt: alt_text, style: "object-fit:cover;" %>
+<% else %>
+  <!-- 2x placeholder, scaled down via CSS for crispness -->
+  <img src="https://placehold.co/<%= s*2 %>x<%= s*2 %>"
+       class="<%= classes %>"
+       alt="<%= alt_text %>"
+       style="object-fit:cover;width:<%= s %>px;height:<%= s %>px;">
+<% end %>

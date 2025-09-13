@@ -3,10 +3,7 @@
 <div class="result-card glass-card p-3 h-100 d-flex flex-column hover-lift">
   <!-- header -->
   <div class="d-flex gap-3 align-items-center">
-    <img src="<%= w.user.avatar.presence || 'https://placehold.co/64x64' %>"
-         alt=""
-         class="rounded-circle"
-         style="width:64px;height:64px;object-fit:cover;border:1px solid var(--stroke);">
+    <%= render "shared/avatar", user: w.user, size: 64 %>
 
     <div class="flex-grow-1 min-w-0">
       <h4 class="h6 m-0 text-truncate"><%= w.user.full_name %></h4>
