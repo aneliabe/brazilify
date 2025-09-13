@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_09_12_200249) do
+ActiveRecord::Schema[7.1].define(version: 2025_09_13_153357) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -56,8 +56,10 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_12_200249) do
     t.bigint "proposed_by_id"
     t.datetime "client_archived_at"
     t.datetime "worker_archived_at"
+    t.string "time_zone", default: "America/Sao_Paulo", null: false
     t.index ["proposed_by_id"], name: "index_appointments_on_proposed_by_id"
     t.index ["status"], name: "index_appointments_on_status"
+    t.index ["time_zone"], name: "index_appointments_on_time_zone"
     t.index ["user_id", "client_archived_at"], name: "index_appointments_on_user_id_and_client_archived_at"
     t.index ["user_id", "created_at"], name: "index_appointments_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_appointments_on_user_id"
@@ -130,8 +132,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_12_200249) do
     t.string "city"
     t.string "avatar"
     t.integer "role"
-    t.float "latitude"
-    t.float "longitude"
     t.string "country_code"
     t.string "confirmation_token"
     t.datetime "confirmed_at"
@@ -169,7 +169,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_12_200249) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "appointments", "users"
-  add_foreign_key "appointments", "users", column: "proposed_by_id"
   add_foreign_key "appointments", "worker_profiles"
   add_foreign_key "messages", "appointments"
   add_foreign_key "messages", "users"
