@@ -5,13 +5,24 @@
     <div class="glass-card p-3 p-md-4 mb-3">
       <div class="row g-4 align-items-center">
         <div class="col-auto">
-          <img
-            src="<%= @worker.user.avatar.presence || 'https://placehold.co/96x96' %>"
-            alt=""
-            width="96" height="96"
-            class="rounded-circle border"
-            style="object-fit:cover;"
-          >
+          <div class="profile-avatar">
+          <!-- <% u = @user || @worker_profile&.user || @worker&.user %>
+
+          <% if u&.photo&.attached? %>
+            <%= cl_image_tag u.photo.key,
+                  width: 96, height: 96, crop: :fill, gravity: :face,
+                  class: "rounded-circle border",
+                  alt: (u.full_name || "Avatar"),
+                  style: "object-fit: cover;" %>
+                <% else %>
+                  <img src="https://placehold.co/96x96"
+                      class="rounded-circle border"
+                      alt="Avatar"
+                      style="object-fit: cover;">
+                <% end %> -->
+
+                <%= render "shared/avatar", user: @worker.user, size: 96 %>
+        </div>
         </div>
 
         <div class="col">
