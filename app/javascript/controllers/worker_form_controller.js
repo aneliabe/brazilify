@@ -56,7 +56,27 @@ export default class extends Controller {
           option.textContent = service.name
           serviceSelect.appendChild(option)
         })
+
+        this.filterDuplicateServices()
+
       })
       .catch(err => console.error("Erro ao carregar serviços:", err))
+  }
+
+    filterDuplicateServices() {
+    // Collect all selected service IDs
+    const selectedIds = Array.from(this.servicesContainerTarget.querySelectorAll(".service-select"))
+      .map(select => select.value)
+      .filter(val => val !== "")
+
+    // For each select dropdown
+    this.servicesContainerTarget.querySelectorAll(".service-select").forEach(select => {
+      const currentValue = select.value
+      Array.from(select.options).forEach(option => {
+        if (option.value === "") return // keep placeholder
+        // Hide option if it's selected in another row
+        option.disabled = selectedIds.includes(option.value) && option.value !== currentValue
+      })
+    })
   }
 }
