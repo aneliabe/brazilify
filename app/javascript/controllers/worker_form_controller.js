@@ -6,6 +6,7 @@ export default class extends Controller {
   connect() {
     console.log("WorkerFormController connected")
     this.maxServices = 5
+    this.filterDuplicateServices()
   }
 
   addServiceRow(event) {
