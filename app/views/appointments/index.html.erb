@@ -63,6 +63,8 @@
           %>
 
           <% status = a.status.to_s %>
+          <% is_participant = [a.user_id, a.worker_profile.user_id].include?(current_user.id) %>
+          <% declined_like = %w[declined canceled cancelled].include?(status) %>
           <% status_icon = { "pending" => "fa-regular fa-clock",
                              "accepted" => "fa-solid fa-check",
                              "declined" => "fa-solid fa-xmark" }[status] || "fa-regular fa-calendar" %>
@@ -144,7 +146,8 @@
                           appointment_path(a),
                           class: "btn-line btn-chat #{has_unread ? 'ping' : ''}" %>
 
-              <% if can_archive %>
+              <% can_delete_now = is_participant && (can_archive || declined_like) %>
+              <% if can_delete_now %>
                 <%= button_to "Excluir",
                       appointment_path(a),
                       method: :delete,
