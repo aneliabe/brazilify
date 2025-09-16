@@ -21,7 +21,7 @@ export default class extends Controller {
 
       this.element.innerHTML = `
         <small class="text-muted d-block">
-          No seu fuso: ${formatted} (${browserTZ})
+          ${formatted} (${browserTZ})
         </small>
       `
     } catch (_) { /* no-op */ }
