@@ -1,0 +1,178 @@
+.services-photo-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  justify-items: left;
+}
+
+.photo-card {
+  position: relative;
+  cursor: pointer;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f8fafc;
+  transition: all 0.3s ease;
+  max-width: 320px;
+  width: 100%;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+
+    .photo-image {
+      transform: scale(1.05);
+    }
+
+    .photo-overlay {
+      opacity: 1;
+    }
+
+    .photo-zoom-icon {
+      transform: scale(1);
+    }
+  }
+}
+
+.photo-wrapper {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+}
+
+.photo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.photo-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.photo-zoom-icon {
+  background: rgba(255,255,255,0.9);
+  color: #1f2937;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  transform: scale(0.9);
+  transition: transform 0.2s ease;
+}
+
+.modal-xl {
+  max-width: 90vw;
+}
+
+.modal.fade .modal-dialog {
+  transition: transform 0.2s ease-out;
+}
+
+.photo-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.9);
+  border: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #1f2937;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+
+  &:hover {
+    background: white;
+    transform: translateY(-50%) scale(1.1);
+  }
+
+  &.photo-nav-prev {
+    left: 20px;
+  }
+
+  &.photo-nav-next {
+    right: 20px;
+  }
+}
+
+.photo-zoom-container {
+  position: relative;
+  overflow: hidden;
+  max-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zoomable-image {
+  transition: transform 0.3s ease;
+  max-width: 100%;
+  height: auto;
+
+  &.zoomed {
+    transform: scale(2);
+    cursor: zoom-out;
+  }
+
+  &:not(.zoomed) {
+    cursor: zoom-in;
+  }
+}
+
+.zoom-instructions {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.7);
+  padding: 8px 16px;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+
+// Consolidated mobile styles
+@media (max-width: 768px) {
+  .services-photo-gallery {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .photo-nav-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+
+    &.photo-nav-prev {
+      left: 10px;
+    }
+
+    &.photo-nav-next {
+      right: 10px;
+    }
+  }
+
+  .zoom-instructions {
+    font-size: 0.75rem;
+    padding: 6px 12px;
+  }
+}

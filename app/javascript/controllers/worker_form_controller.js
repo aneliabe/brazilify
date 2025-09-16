@@ -4,8 +4,36 @@ export default class extends Controller {
   static targets = ["servicesContainer"]
 
   connect() {
-    console.log("WorkerFormController connected")
     this.maxServices = 5
+    this._redispatching = false
+  }
+
+  enforcePhotoLimit(event) {
+    if (this._redispatching) {
+      this._redispatching = false
+      return
+    }
+
+    const input = event?.currentTarget
+    if (!input) return
+
+    const max = parseInt(this.element?.dataset?.workerFormMaxPhotosValue || "9", 10)
+    const files = Array.from(input.files || [])
+
+    if (files.length <= max) return
+
+    if (event) event.stopImmediatePropagation()
+
+    if (window.DataTransfer) {
+      const dt = new DataTransfer()
+      files.slice(0, max).forEach(f => dt.items.add(f))
+      input.files = dt.files
+    } else {
+      input.value = ""
+    }
+
+    this._redispatching = true
+    queueMicrotask(() => input.dispatchEvent(new Event("change", { bubbles: true })))
   }
 
   addServiceRow(event) {
@@ -17,7 +45,7 @@ export default class extends Controller {
     }
 
     const template = document.querySelector("#worker-service-template").innerHTML
-    const newId = new Date().getTime() // unique index
+    const newId = new Date().getTime()
     const html = template.replace(/NEW_RECORD/g, newId)
 
     this.servicesContainerTarget.insertAdjacentHTML("beforeend", html)

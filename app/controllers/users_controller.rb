@@ -59,6 +59,7 @@ class UsersController < ApplicationController
   def worker_profile_params
     params.require(:worker_profile).permit(
       :cpf, :description,
+      services_photos: [],
       worker_services_attributes: [:id, :category_id, :service_id, :service_type, :_destroy]
     )
   end
@@ -85,7 +86,7 @@ class UsersController < ApplicationController
       @user.update(role: :worker) unless @user.worker?
       redirect_to worker_user_path(@user), notice: "#{submit_text} com sucesso!"
     else
-      render @user.worker? ? :edit_worker : :become_worker, status: :unprocessable_entity
+      render :become_worker, status: :unprocessable_entity
     end
   end
 end

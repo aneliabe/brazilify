@@ -4,6 +4,7 @@ class WorkerProfile < ApplicationRecord
   has_many :services, through: :worker_services
   has_many :reviews, dependent: :destroy
   has_many :appointments, dependent: :destroy
+  has_many_attached :services_photos
 
   accepts_nested_attributes_for :worker_services, allow_destroy: true, reject_if: :all_blank
 
