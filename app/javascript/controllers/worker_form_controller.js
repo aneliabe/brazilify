@@ -4,14 +4,42 @@ export default class extends Controller {
   static targets = ["servicesContainer"]
 
   connect() {
-    console.log("WorkerFormController connected")
     this.maxServices = 5
+    this._redispatching = false
 
     // Ensure at least one row exists
     const rows = this.servicesContainerTarget.querySelectorAll(".service-row")
     if (rows.length === 0) this.addInitialRow()
 
     this.filterDuplicateServices()
+  }
+
+  enforcePhotoLimit(event) {
+    if (this._redispatching) {
+      this._redispatching = false
+      return
+    }
+
+    const input = event?.currentTarget
+    if (!input) return
+
+    const max = parseInt(this.element?.dataset?.workerFormMaxPhotosValue || "9", 10)
+    const files = Array.from(input.files || [])
+
+    if (files.length <= max) return
+
+    if (event) event.stopImmediatePropagation()
+
+    if (window.DataTransfer) {
+      const dt = new DataTransfer()
+      files.slice(0, max).forEach(f => dt.items.add(f))
+      input.files = dt.files
+    } else {
+      input.value = ""
+    }
+
+    this._redispatching = true
+    queueMicrotask(() => input.dispatchEvent(new Event("change", { bubbles: true })))
   }
 
   addInitialRow() {
@@ -46,11 +74,9 @@ export default class extends Controller {
     const isNew = row.dataset.newRecord === "true";
 
     if (destroyField && !isNew) {
-      // Existing record: mark for destruction and hide
       destroyField.value = "1";
-      row.classList.add("d-none") // hides the row visually
+      row.classList.add("d-none")
     } else {
-      // New record: remove from DOM completely
       row.remove();
     }
 
@@ -83,7 +109,6 @@ export default class extends Controller {
   }
 
   filterDuplicateServices() {
-    // Gather selected service IDs (excluding hidden rows marked for destroy)
     const selectedIds = Array.from(this.servicesContainerTarget.querySelectorAll(".service-row"))
       .filter(row => row.style.display !== "none")
       .map(row => row.querySelector(".service-select").value)
