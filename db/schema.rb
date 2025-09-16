@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_09_13_202822) do
+ActiveRecord::Schema[7.1].define(version: 2025_09_16_151915) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -106,7 +106,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_13_202822) do
     t.bigint "category_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "service_type"
     t.index ["category_id", "name"], name: "index_services_on_category_id_and_name", unique: true
     t.index ["category_id"], name: "index_services_on_category_id"
   end
@@ -118,6 +117,22 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_13_202822) do
     t.datetime "updated_at", null: false
     t.index ["channel"], name: "index_solid_cable_messages_on_channel"
     t.index ["created_at"], name: "index_solid_cable_messages_on_created_at"
+  end
+
+  create_table "subscriptions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "stripe_subscription_id"
+    t.string "stripe_customer_id"
+    t.string "status"
+    t.string "plan_name"
+    t.datetime "current_period_start"
+    t.datetime "current_period_end"
+    t.datetime "canceled_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "price_cents", default: 0, null: false
+    t.string "price_currency", default: "EUR", null: false
+    t.index ["user_id"], name: "index_subscriptions_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -141,6 +156,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_13_202822) do
     t.datetime "confirmed_at"
     t.datetime "confirmation_sent_at"
     t.string "unconfirmed_email"
+    t.string "stripe_customer_id"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
@@ -173,6 +189,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_13_202822) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "appointments", "users"
+  add_foreign_key "appointments", "users", column: "proposed_by_id"
   add_foreign_key "appointments", "worker_profiles"
   add_foreign_key "messages", "appointments"
   add_foreign_key "messages", "users"
@@ -180,6 +197,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_13_202822) do
   add_foreign_key "reviews", "users"
   add_foreign_key "reviews", "worker_profiles"
   add_foreign_key "services", "categories"
+  add_foreign_key "subscriptions", "users"
   add_foreign_key "worker_profiles", "categories"
   add_foreign_key "worker_profiles", "users"
   add_foreign_key "worker_services", "categories"

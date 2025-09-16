@@ -15,6 +15,12 @@ class User < ApplicationRecord
 
   after_initialize :set_default_role, if: :new_record?
 
+  def setup_stripe_customer
+    return if stripe_customer_id.present?
+    customer = Stripe::Customer.create(email: email)
+    update(stripe_customer_id: customer.id)
+  end
+
   private
 
   def set_default_role

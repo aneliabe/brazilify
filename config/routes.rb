@@ -1,5 +1,4 @@
 Rails.application.routes.draw do
-
     devise_for :users, controllers: {
     registrations: 'users/registrations'
   }
@@ -51,7 +50,11 @@ Rails.application.routes.draw do
 
   get "location_hint", to: "locations#hint"
 
-
+  post   "/subscriptions",          to: "subscriptions#create",  as: :subscriptions
+  delete "/subscriptions/:id",      to: "subscriptions#destroy", as: :subscription
+  
+  #redirect to avoid GET /subscriptions errors
+  get "/subscriptions", to: redirect("/")
 
   get 'email_verification', to: 'email_verification#show'
 

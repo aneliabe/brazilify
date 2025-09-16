@@ -70,4 +70,8 @@
       </div>
     </div>
   </div>
+
+  <%= form_with url: subscriptions_path, method: :post, data: { turbo: false } do %>
+    <%= submit_tag "Subscribe", class: "btn btn-primary" %>
+  <% end %>
 </div>
