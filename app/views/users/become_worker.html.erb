@@ -1,5 +1,4 @@
 <%= simple_form_for @worker_profile, url: become_worker_user_path(@user), method: :post, html: { multipart: true }, data: { controller: "worker-form", worker_form_max_photos_value: 9 } do |f| %>
-
   <% if @worker_profile.errors.any? %>
     <div class="alert alert-danger" role="alert">
       <h6 class="alert-heading">Erro ao salvar:</h6>
@@ -16,8 +15,14 @@
 
   <!-- Container where service rows will be added -->
   <div id="worker-services" data-worker-form-target="servicesContainer">
-    <%= f.simple_fields_for :worker_services do |ws| %>
-      <%= render "worker_service_fields", f: ws, categories: @categories, service_types: @service_types %>
+    <% if @worker_profile.worker_services.any? %>
+      <%= f.simple_fields_for :worker_services do |ws| %>
+        <%= render "worker_service_fields", f: ws, categories: @categories, service_types: @service_types %>
+      <% end %>
+    <% else %>
+      <%= f.simple_fields_for :worker_services, @worker_profile.worker_services.build do |ws| %>
+        <%= render "worker_service_fields", f: ws, categories: @categories, service_types: @service_types %>
+      <% end %>
     <% end %>
   </div>
 
@@ -44,15 +49,8 @@
           } %>
   </div>
 
-  <div class="mt-3">
+  <div class="mt-3 mb-3">
     <%= f.submit @user.worker? ? "Atualizar informações" : "Ativar perfil de prestador", class: "btn btn-primary" %>
   </div>
-
-  <!-- Hidden template for new service rows -->
-  <template id="worker-service-template">
-    <%= f.simple_fields_for :worker_services, WorkerService.new, child_index: "NEW_RECORD" do |ws| %>
-      <%= render "worker_service_fields", f: ws, categories: @categories, service_types: @service_types %>
-    <% end %>
-  </template>
 
 <% end %>

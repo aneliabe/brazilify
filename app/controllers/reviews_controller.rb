@@ -5,22 +5,25 @@ class ReviewsController < ApplicationController
     wp   = WorkerProfile.find(params[:worker_profile_id])
     appt = Appointment.find(params[:appointment_id]) if params[:appointment_id].present?
 
-    # can only review if you are the client & the appointment time already passed
+    # must be the client, correct worker, and appointment already in the past (pending/accepted)
     past         = appt&.starts_at.present? && appt.starts_at < Time.zone.now
     valid_status = %w[accepted pending].include?(appt&.status.to_s)
     unless appt && appt.user_id == current_user.id && appt.worker_profile_id == wp.id && past && valid_status
       return redirect_back fallback_location: worker_path(wp), alert: "Você só pode avaliar após o horário do atendimento."
     end
 
-    # one review per user–pro (current rule) — we edit the latest if it exists
-    my_review = Review.where(worker_profile_id: wp.id, user_id: current_user.id).order(created_at: :desc).first
-    if my_review
-      # if user somehow hits "create" again, treat as update
-      return update_existing(my_review, rating: params[:rating], comment: params[:comment], return_to: appointment_path(appt))
+    # 🔁 ONE REVIEW PER APPOINTMENT (per-user):
+    existing = Review.find_by(appointment_id: appt.id, user_id: current_user.id)
+    if existing
+      return update_existing(existing,
+        rating: params[:rating],
+        comment: params[:comment],
+        return_to: appointment_path(appt))
     end
 
     review = Review.new(
       worker_profile: wp,
+      appointment:    appt,              # ✅ important
       user:           current_user,
       rating:         params[:rating].to_i,
       comment:        params[:comment].to_s.strip
@@ -56,5 +59,10 @@ class ReviewsController < ApplicationController
     else
       redirect_to (return_to.presence || worker_path(review.worker_profile)), alert: review.errors.full_messages.to_sentence
     end
+  end
+
+  # ✅ strong params (mainly useful if you later switch to mass-assignment)
+  def review_params
+    params.permit(:worker_profile_id, :appointment_id, :rating, :comment)
   end
 end

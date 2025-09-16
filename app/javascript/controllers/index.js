@@ -28,3 +28,6 @@ eagerLoadControllersFrom("controllers", application)
 
 // import WorkerFormController from "./worker_form_controller"
 // application.register("worker-form", WorkerFormController)
+
+// import LocalTimeController from "./local_time_controller"
+// application.register("local-time", LocalTimeController)

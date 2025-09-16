@@ -1,4 +1,7 @@
-<div class="d-flex gap-2 mb-2 service-row">
+<div class="d-flex gap-2 mb-2 service-row" data-new-record="<%= f.object.new_record? %>">
+  <%= f.hidden_field :id %>
+  <%= f.hidden_field :_destroy %>
+
   <!-- Categoria -->
   <%= f.input :category_id,
               collection: categories,
