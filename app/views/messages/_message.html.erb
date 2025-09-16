@@ -11,7 +11,11 @@
   <div class="bubble">
     <small class="message-info">
       <strong><%= message.user.full_name %></strong>
-      <i><%= message.created_at.strftime("%a %b %e at %l:%M %p") %></i>
+      <i><time
+        data-controller="local-time"
+        data-local-time-iso-value="<%= message.created_at.utc.iso8601 %>">
+        <%= l(message.created_at.utc, format: :short) %> <!-- fallback if JS is off -->
+      </time></i>
     </small>
     <p class="message-content"><%= message.content %></p>
   </div>
