@@ -40,12 +40,15 @@ class WebhooksController < ApplicationController
       stripe_customer_id: session.customer,
       status: 'active',
     )
+    # user.update(role: :worker) unless user.worker?
   end
 
   def handle_subscription_cancellation(subscription)
     record = Subscription.find_by(stripe_subscription_id: subscription.id)
     return unless record
 
-    record.update(status: 'canceled', canceled_at: Time.current)
+    record.update(status: 'canceled')
+
+    # record.user.update(role: :client)
   end
 end

@@ -20,7 +20,7 @@ class SubscriptionsController < ApplicationController
   end
 
   def cancel
-    subscription = current_user.subscription
+    subscription = current_user.subscriptions
     return redirect_to users_worker_path(current_user), alert: "No subscription found" unless subscription
 
     subscription.update(status: "canceled")

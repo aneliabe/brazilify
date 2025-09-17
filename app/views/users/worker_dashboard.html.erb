@@ -1,3 +1,4 @@
+<% latest_sub = current_user.latest_subscription %>
 <div class="container dashboard" style="max-width:1100px;margin:2rem auto;">
 
   <!-- Header: avatar + name + quick actions -->
@@ -81,17 +82,23 @@
       </div>
     </div>
   </div>
-
-  <%= form_with url: subscriptions_path, method: :post, data: { turbo: false } do %>
-    <%= submit_tag "Subscribe", class: "btn btn-primary" %>
+  <br>
+  <% if latest_sub.nil? || latest_sub.status == "canceled" %>
+    <%= form_with url: subscriptions_path, method: :post, data: { turbo: false } do %>
+      <%= submit_tag "Upgrade", class: "btn btn-primary" %>
+    <% end %>
   <% end %>
 
-  <% if current_user.subscription.present? && current_user.subscription.status == "active" %>
+  <% if latest_sub&.status == "active" %>
     <%= button_to "Cancel Subscription",
-                  cancel_subscription_path(current_user.subscription),
+                  cancel_subscription_path(latest_sub),
                   method: :patch,
                   data: { confirm: "Are you sure?" },
                   class: "btn btn-danger" %>
   <% end %>
 
+
+ <!-- <%= form_with url: subscriptions_path, method: :post, data: { turbo: false } do %>
+    <%= submit_tag "Upgrade", class: "btn btn-primary" %>
+  <% end %> -->
 </div>
