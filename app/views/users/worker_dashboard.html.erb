@@ -81,4 +81,17 @@
       </div>
     </div>
   </div>
+
+  <%= form_with url: subscriptions_path, method: :post, data: { turbo: false } do %>
+    <%= submit_tag "Subscribe", class: "btn btn-primary" %>
+  <% end %>
+
+  <% if current_user.subscription.present? && current_user.subscription.status == "active" %>
+    <%= button_to "Cancel Subscription",
+                  cancel_subscription_path(current_user.subscription),
+                  method: :patch,
+                  data: { confirm: "Are you sure?" },
+                  class: "btn btn-danger" %>
+  <% end %>
+
 </div>
