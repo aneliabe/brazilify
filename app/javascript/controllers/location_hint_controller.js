@@ -2,12 +2,15 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["input", "dropdown", "wrap", "status", "lat", "lng", "datalist", "country"]
-static values = { token: String, showNearby: { type: Boolean, default: true }, enableCache: { type: Boolean, default: true } }
+  static values = {
+    token: String,
+    showNearby: { type: Boolean, default: true },
+    enableCache: { type: Boolean, default: false }  // You already changed this
+  }
 
   static FWD = "https://api.mapbox.com/search/geocode/v6/forward"
   static REV = "https://api.mapbox.com/search/geocode/v6/reverse"
   static PARAMS = { types: "place", language: "pt,en", limit: "7", proximity: "ip", country: "IE,PT,GB,US" }
-
 
   connect() {
     this.timeout = null
@@ -18,7 +21,7 @@ static values = { token: String, showNearby: { type: Boolean, default: true }, e
 
     this.nearbyRow = {
       type: "nearby",
-      icon: '<i class="fa-solid fa-location-crosshairs me-2"></i>',
+      icon: '<i class="fa-solid fa-location-crosshairs location-icon nearby me-2"></i>',
       label: "Nearby",
       // sub: "Use sua localização atual"
     }
@@ -36,56 +39,56 @@ static values = { token: String, showNearby: { type: Boolean, default: true }, e
   }
 
   loadSavedLocation() {
-  // Skip loading saved location if cache is disabled
-  if (!this.enableCacheValue) return
+    // Skip loading saved location if cache is disabled
+    if (!this.enableCacheValue) return
 
-  try {
-    const saved = localStorage.getItem(this.STORAGE_KEY)
-    if (!saved) return
+    try {
+      const saved = localStorage.getItem(this.STORAGE_KEY)
+      if (!saved) return
 
-    const data = JSON.parse(saved)
-    const now = Date.now()
+      const data = JSON.parse(saved)
+      const now = Date.now()
 
-    // Check if data is still valid (within 30 minutes)
-    if (data.expiry && now < data.expiry) {
-      this.inputTarget.value = data.city || ''
-      if (this.hasLatTarget && data.lat) this.latTarget.value = data.lat
-      if (this.hasLngTarget && data.lng) this.lngTarget.value = data.lng
-      if (this.hasCountryTarget && data.country) this.countryTarget.value = data.country
+      // Check if data is still valid (within 30 minutes)
+      if (data.expiry && now < data.expiry) {
+        this.inputTarget.value = data.city || ''
+        if (this.hasLatTarget && data.lat) this.latTarget.value = data.lat
+        if (this.hasLngTarget && data.lng) this.lngTarget.value = data.lng
+        if (this.hasCountryTarget && data.country) this.countryTarget.value = data.country
 
-      // Show subtle indicator that we loaded saved location
-      if (data.city) {
-        // this.flashStatus("Localização salva carregada", 1000)
+        // Show subtle indicator that we loaded saved location
+        if (data.city) {
+          // this.flashStatus("Localização salva carregada", 1000)
+        }
+      } else {
+        // Data expired, remove it
+        localStorage.removeItem(this.STORAGE_KEY)
       }
-    } else {
-      // Data expired, remove it
-      localStorage.removeItem(this.STORAGE_KEY)
+    } catch (e) {
+      // Silent fail if localStorage isn't available
+      console.warn('Could not load saved location:', e)
     }
-  } catch (e) {
-    // Silent fail if localStorage isn't available
-    console.warn('Could not load saved location:', e)
   }
-}
 
- saveLocation(city, lat, lng, country = null) {
-  // Skip saving if cache is disabled
-  if (!this.enableCacheValue) return
+  saveLocation(city, lat, lng, country = null) {
+    // Skip saving if cache is disabled
+    if (!this.enableCacheValue) return
 
-  try {
-    const data = {
-      city,
-      lat,
-      lng,
-      country,
-      expiry: Date.now() + this.CACHE_DURATION,
-      timestamp: Date.now()
+    try {
+      const data = {
+        city,
+        lat,
+        lng,
+        country,
+        expiry: Date.now() + this.CACHE_DURATION,
+        timestamp: Date.now()
+      }
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data))
+    } catch (e) {
+      // Silent fail if localStorage isn't available (private browsing, etc.)
+      console.warn('Could not save location:', e)
     }
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data))
-  } catch (e) {
-    // Silent fail if localStorage isn't available (private browsing, etc.)
-    console.warn('Could not save location:', e)
   }
-}
 
   preloadLocation() {
     // Only if we don't have recent cached data
@@ -112,68 +115,179 @@ static values = { token: String, showNearby: { type: Boolean, default: true }, e
     }
   }
 
-  bindEvents() {
-  // Keep focus in input when interacting with dropdown
-  this.dropdownTarget.addEventListener("mousedown", (e) => e.preventDefault(), true)
+  // NEW: Load nearby major cities based on IP location
+  async loadNearbyCities() {
+    try {
+      const response = await fetch("/location_hint")
+      if (!response.ok) return []
 
-  // Only bind focus/click events to show dropdown if nearby is enabled
-  if (this.showNearbyValue) {
-    this.inputTarget.addEventListener("focus", () => this.openDropdown([this.nearbyRow]))
-    this.inputTarget.addEventListener("click", () => this.openDropdown([this.nearbyRow]))
+      const data = await response.json()
+
+      // Get major cities based on detected location
+      const nearbyCities = this.getMajorCitiesFor(data.city, data.ip)
+
+      return nearbyCities.map(city => ({
+        type: "major_city",
+        icon: '<i class="fa-solid fa-city location-icon major me-2"></i>',
+        label: city.name,
+        lat: city.lat,
+        lng: city.lng,
+        country: city.country_code
+      }))
+    } catch {
+      // Fallback to Ireland cities if IP detection fails
+      return this.getDefaultMajorCities()
+    }
   }
 
-  // Typing: Nearby + Mapbox results
-  this.inputTarget.addEventListener("input", () => this.handleInput())
+  // NEW: Define major cities database based on user's region
+  getMajorCitiesFor(detectedCity, clientIp) {
+    const cityDatabase = {
+      // Ireland
+      'IE': [
+        { name: "Dublin", lat: 53.3498, lng: -6.2603, country: "Ireland", country_code: "IE" },
+        { name: "Cork", lat: 51.8985, lng: -8.4756, country: "Ireland", country_code: "IE" },
+        { name: "Galway", lat: 53.2707, lng: -9.0568, country: "Ireland", country_code: "IE" },
+        { name: "Limerick", lat: 52.6638, lng: -8.6267, country: "Ireland", country_code: "IE" },
+        { name: "Waterford", lat: 52.2583, lng: -7.1119, country: "Ireland", country_code: "IE" }
+      ],
+      // United Kingdom
+      'GB': [
+        { name: "London", lat: 51.5074, lng: -0.1278, country: "United Kingdom", country_code: "GB" },
+        { name: "Manchester", lat: 53.4808, lng: -2.2426, country: "United Kingdom", country_code: "GB" },
+        { name: "Birmingham", lat: 52.4862, lng: -1.8904, country: "United Kingdom", country_code: "GB" },
+        { name: "Edinburgh", lat: 55.9533, lng: -3.1883, country: "United Kingdom", country_code: "GB" },
+        { name: "Glasgow", lat: 55.8642, lng: -4.2518, country: "United Kingdom", country_code: "GB" }
+      ],
+      // United States
+      'US': [
+        { name: "New York", lat: 40.7128, lng: -74.0060, country: "United States", country_code: "US" },
+        { name: "Los Angeles", lat: 34.0522, lng: -118.2437, country: "United States", country_code: "US" },
+        { name: "Chicago", lat: 41.8781, lng: -87.6298, country: "United States", country_code: "US" },
+        { name: "Miami", lat: 25.7617, lng: -80.1918, country: "United States", country_code: "US" },
+        { name: "Boston", lat: 42.3601, lng: -71.0589, country: "United States", country_code: "US" }
+      ],
+      // Portugal
+      'PT': [
+        { name: "Lisbon", lat: 38.7223, lng: -9.1393, country: "Portugal", country_code: "PT" },
+        { name: "Porto", lat: 41.1579, lng: -8.6291, country: "Portugal", country_code: "PT" },
+        { name: "Braga", lat: 41.5518, lng: -8.4229, country: "Portugal", country_code: "PT" },
+        { name: "Coimbra", lat: 40.2033, lng: -8.4103, country: "Portugal", country_code: "PT" }
+      ]
+    }
 
-  // Click on dropdown item
-  this.dropdownTarget.addEventListener("click", (e) => this.handleDropdownClick(e))
+    // Detect country based on city name or IP patterns
+    let countryCode = 'IE' // Default to Ireland
 
-  // Close on Escape
-  this.inputTarget.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") this.closeDropdown()
-  })
+    if (detectedCity) {
+      const city = detectedCity.toLowerCase()
+      if (city.includes('dublin') || city.includes('cork') || city.includes('galway') || city.includes('ireland')) {
+        countryCode = 'IE'
+      } else if (city.includes('london') || city.includes('manchester') || city.includes('birmingham') || city.includes('uk')) {
+        countryCode = 'GB'
+      } else if (city.includes('new york') || city.includes('los angeles') || city.includes('chicago') || city.includes('miami')) {
+        countryCode = 'US'
+      } else if (city.includes('lisbon') || city.includes('porto') || city.includes('portugal')) {
+        countryCode = 'PT'
+      }
+    }
 
-  // Close when focus leaves wrapper
-  document.addEventListener("focusin", (e) => {
-    if (!this.wrapTarget.contains(e.target)) this.closeDropdown()
-  })
+    return cityDatabase[countryCode] || cityDatabase['IE']
+  }
 
-  // Close before Turbo cache
-  document.addEventListener("turbo:before-cache", () => this.closeDropdown())
-}
+  // NEW: Fallback major cities (Ireland default)
+  getDefaultMajorCities() {
+    return [
+      { name: "Dublin", lat: 53.3498, lng: -6.2603, country: "Ireland", country_code: "IE" },
+      { name: "Cork", lat: 51.8985, lng: -8.4756, country: "Ireland", country_code: "IE" },
+      { name: "Galway", lat: 53.2707, lng: -9.0568, country: "Ireland", country_code: "IE" },
+      { name: "Limerick", lat: 52.6638, lng: -8.6267, country: "Ireland", country_code: "IE" }
+    ].map(city => ({
+      type: "major_city",
+      icon: '<i class="fa-solid fa-location-dot me-2" style="color: #2c7a7b;"></i>', // Using your brand color
+      label: city.name,
+      lat: city.lat,
+      lng: city.lng,
+      country: city.country_code
+    }))
+  }
+
+  // ENHANCED: Modified bindEvents to include major cities
+  bindEvents() {
+    // Keep focus in input when interacting with dropdown
+    this.dropdownTarget.addEventListener("mousedown", (e) => e.preventDefault(), true)
+
+    // ENHANCED: Show nearby + major cities on focus/click
+    if (this.showNearbyValue) {
+      this.inputTarget.addEventListener("focus", async () => {
+        const nearbyCities = await this.loadNearbyCities()
+        const allOptions = [this.nearbyRow, ...nearbyCities]
+        this.openDropdown(allOptions)
+      })
+
+      this.inputTarget.addEventListener("click", async () => {
+        const nearbyCities = await this.loadNearbyCities()
+        const allOptions = [this.nearbyRow, ...nearbyCities]
+        this.openDropdown(allOptions)
+      })
+    }
+
+    // Typing: Nearby + Mapbox results
+    this.inputTarget.addEventListener("input", () => this.handleInput())
+
+    // Click on dropdown item
+    this.dropdownTarget.addEventListener("click", (e) => this.handleDropdownClick(e))
+
+    // Close on Escape
+    this.inputTarget.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") this.closeDropdown()
+    })
+
+    // Close when focus leaves wrapper
+    document.addEventListener("focusin", (e) => {
+      if (!this.wrapTarget.contains(e.target)) this.closeDropdown()
+    })
+
+    // Close before Turbo cache
+    document.addEventListener("turbo:before-cache", () => this.closeDropdown())
+  }
 
   handleInput() {
-  const q = this.inputTarget.value.trim()
-  clearTimeout(this.timeout)
+    const q = this.inputTarget.value.trim()
+    clearTimeout(this.timeout)
 
-  if (!q) {
-    // Only show dropdown if nearby is enabled, otherwise close it
-    if (this.showNearbyValue) {
-      this.openDropdown([this.nearbyRow])
-    } else {
-      this.closeDropdown()
+    if (!q) {
+      // ENHANCED: Show nearby + major cities when input is empty
+      if (this.showNearbyValue) {
+        this.loadNearbyCities().then(nearbyCities => {
+          const allOptions = [this.nearbyRow, ...nearbyCities]
+          this.openDropdown(allOptions)
+        })
+      } else {
+        this.closeDropdown()
+      }
+      return
     }
-    return
+
+    this.timeout = setTimeout(async () => {
+      const items = this.tokenValue ? await this.fetchCities(q, this.tokenValue) : []
+      const rows = items.map(c => ({
+        type: "city",
+        icon: '<i class="fa-regular fa-building location-icon search me-2"></i>',
+        label: c.label,
+        sub: c.sub,
+        lat: c.lat,
+        lng: c.lng,
+        country: c.country
+      }))
+
+      // Add nearby button only if enabled
+      const finalRows = this.showNearbyValue ? [this.nearbyRow, ...rows] : rows
+      this.openDropdown(finalRows)
+    }, 200)
   }
 
-  this.timeout = setTimeout(async () => {
-    const items = this.tokenValue ? await this.fetchCities(q, this.tokenValue) : []
-    const rows = items.map(c => ({
-      type: "city",
-      icon: '<i class="fa-regular fa-building me-2"></i>',
-      label: c.label,
-      sub: c.sub,
-      lat: c.lat,
-      lng: c.lng,
-      country: c.country
-    }))
-
-    // Add nearby button only if enabled
-    const finalRows = this.showNearbyValue ? [this.nearbyRow, ...rows] : rows
-    this.openDropdown(finalRows)
-  }, 200)
-}
-
+  // ENHANCED: Handle major city clicks
   async handleDropdownClick(e) {
     const btn = e.target.closest("button.dropdown-item")
     if (!btn) return
@@ -186,30 +300,34 @@ static values = { token: String, showNearby: { type: Boolean, default: true }, e
       return
     }
 
-    const label = btn.querySelector("strong")?.textContent?.trim()
-    const fullText = btn.querySelector("small")?.textContent?.trim() || ""
-    const lat = btn.dataset.lat
-    const lng = btn.dataset.lng
-    const country = btn.dataset.country
+    // Handle both regular cities and major cities
+    if (type === "major_city" || type === "city") {
+      const label = btn.querySelector("strong")?.textContent?.trim()
+      const fullText = btn.querySelector("small")?.textContent?.trim() || ""
+      const lat = btn.dataset.lat
+      const lng = btn.dataset.lng
+      const country = btn.dataset.country
 
-    if (label) this.inputTarget.value = label
-    if (lat && this.hasLatTarget) this.latTarget.value = lat
-    if (lng && this.hasLngTarget) this.lngTarget.value = lng
+      if (label) this.inputTarget.value = label
+      if (lat && this.hasLatTarget) this.latTarget.value = lat
+      if (lng && this.hasLngTarget) this.lngTarget.value = lng
 
-    // Set country field
-    if (country) {
-      this.setCountryDirect(country)
-    } else {
-      this.populateCountryField(fullText || label)
+      // Set country field
+      if (country) {
+        this.setCountryDirect(country)
+      } else {
+        this.populateCountryField(fullText || label)
+      }
+
+      // Save location data including country
+      const countryValue = this.hasCountryTarget ? this.countryTarget.value : null
+      if (label && lat && lng) {
+        this.saveLocation(label, lat, lng, countryValue)
+      }
+
+      this.closeDropdown()
+      return
     }
-
-    // Save location data including country
-    const countryValue = this.hasCountryTarget ? this.countryTarget.value : null
-    if (label && lat && lng) {
-      this.saveLocation(label, lat, lng, countryValue)
-    }
-
-    this.closeDropdown()
   }
 
   async doNearby() {
@@ -282,65 +400,67 @@ static values = { token: String, showNearby: { type: Boolean, default: true }, e
     }
   }
 
-async fetchCities(q, token) {
-  if (!token) {
-    console.warn('Mapbox token is missing')
-    return []
-  }
+  async fetchCities(q, token) {
+    if (!token) {
+      console.warn('Mapbox token is missing')
+      return []
+    }
 
-  const u = new URL(this.constructor.FWD)
-  u.searchParams.set("q", q)
-  Object.entries(this.constructor.PARAMS).forEach(([k, v]) => u.searchParams.set(k, v))
-  u.searchParams.set("access_token", token)
+    const u = new URL(this.constructor.FWD)
+    u.searchParams.set("q", q)
+    Object.entries(this.constructor.PARAMS).forEach(([k, v]) => u.searchParams.set(k, v))
+    u.searchParams.set("access_token", token)
 
-  try {
-    const r = await fetch(u)
-    if (!r.ok) return []
-    const j = await r.json()
-    return (j.features || []).map(f => ({
-      label: f?.properties?.name || f?.text || f?.place_name || "",
-      sub: f?.place_name || f?.properties?.full_address || "",
-      lat: f?.properties?.coordinates?.latitude ?? f?.center?.[1],
-      lng: f?.properties?.coordinates?.longitude ?? f?.center?.[0],
-      country: f?.properties?.context?.country?.name || f?.properties?.context?.country?.country_code || ""
-    }))
-  } catch {
-    return []
+    try {
+      const r = await fetch(u)
+      if (!r.ok) return []
+      const j = await r.json()
+      return (j.features || []).map(f => ({
+        label: f?.properties?.name || f?.text || f?.place_name || "",
+        sub: f?.place_name || f?.properties?.full_address || "",
+        lat: f?.properties?.coordinates?.latitude ?? f?.center?.[1],
+        lng: f?.properties?.coordinates?.longitude ?? f?.center?.[0],
+        country: f?.properties?.context?.country?.name || f?.properties?.context?.country?.country_code || ""
+      }))
+    } catch {
+      return []
+    }
   }
-}
 
   fixIrishCities(cityName) {
-  const corkSuburbs = ['Douglas', 'Blackrock', 'Ballincollig', 'Carrigaline', 'Mahon', 'Glanmire']
-  const dublinSuburbs = ['Dun Laoghaire', 'Blackrock', 'Sandyford', 'Tallaght']
+    const corkSuburbs = ['Douglas', 'Blackrock', 'Ballincollig', 'Carrigaline', 'Mahon', 'Glanmire']
+    const dublinSuburbs = ['Dun Laoghaire', 'Blackrock', 'Sandyford', 'Tallaght']
 
-  if (corkSuburbs.includes(cityName)) return 'Cork'
-  if (dublinSuburbs.includes(cityName)) return 'Dublin'
+    if (corkSuburbs.includes(cityName)) return 'Cork'
+    if (dublinSuburbs.includes(cityName)) return 'Dublin'
 
-  return cityName
-}
-
-async reverseToCity(lat, lng, token) {
-  const u = new URL(this.constructor.REV)
-  u.searchParams.set("latitude", lat)
-  u.searchParams.set("longitude", lng)
-  u.searchParams.set("types", "place")
-  u.searchParams.set("limit", "1")
-  u.searchParams.set("language", "pt,en")
-  u.searchParams.set("access_token", token)
-
-  try {
-    const j = await fetch(u).then(x => x.json())
-    const f = j.features?.[0]
-    const cityName = f?.properties?.name || f?.place_name || ""
-
-    // Fix known Irish suburbs
-    const correctedCity = this.fixIrishCities(cityName)
-
-    return { label: correctedCity, lat, lng }
-  } catch {
-    return { label: "", lat, lng }
+    return cityName
   }
-}
+
+  async reverseToCity(lat, lng, token) {
+    const u = new URL(this.constructor.REV)
+    u.searchParams.set("latitude", lat)
+    u.searchParams.set("longitude", lng)
+    u.searchParams.set("types", "place")
+    u.searchParams.set("limit", "1")
+    u.searchParams.set("language", "pt,en")
+    u.searchParams.set("access_token", token)
+
+    try {
+      const j = await fetch(u).then(x => x.json())
+      const f = j.features?.[0]
+      const lat = f?.properties?.coordinates?.latitude ?? f?.center?.[1]
+      const lng = f?.properties?.coordinates?.longitude ?? f?.center?.[0]
+      const cityName = f?.properties?.name || f?.place_name || ""
+
+      // Fix known Irish suburbs
+      const correctedCity = this.fixIrishCities(cityName)
+
+      return { label: correctedCity, lat, lng }
+    } catch {
+      return { label: "", lat, lng }
+    }
+  }
 
   openDropdown(rows) {
     this.dropdownTarget.innerHTML = rows.map(r => `
@@ -395,8 +515,6 @@ async reverseToCity(lat, lng, token) {
   setCountryDirect(country) {
     if (!this.hasCountryTarget) return
 
-    // console.log("Setting country directly:", country)
-
     const countryMappings = {
       'IE': 'Ireland',
       'Ireland': 'Ireland',
@@ -414,16 +532,12 @@ async reverseToCity(lat, lng, token) {
     }
 
     this.countryTarget.value = countryMappings[country] || country
-    // console.log("Country field set to:", this.countryTarget.value)
   }
 
   populateCountryField(locationText) {
     if (!this.hasCountryTarget) {
-      // console.log("No country target found")
       return
     }
-
-    // console.log("Parsing country from location text:", locationText)
 
     const countryMappings = {
       'Ireland': 'Ireland',
@@ -438,13 +552,10 @@ async reverseToCity(lat, lng, token) {
 
     for (const [key, value] of Object.entries(countryMappings)) {
       if (locationText.includes(key)) {
-        // console.log(`Found country match: ${key} -> ${value}`)
         this.countryTarget.value = value
         return
       }
     }
-
-    // console.log("No country match found in:", locationText)
   }
 
   async setCountryFromCoordinates(lat, lng) {
