@@ -3,4 +3,23 @@ class Service < ApplicationRecord
   has_many :worker_services, dependent: :destroy
   has_many :worker_profiles, through: :worker_services
 
+  POPULAR_SERVICE_NAMES = [
+    'Diarista',
+    'Cabeleireiro',
+    'Manicure',
+    'Pedreiro',
+    'Encanador',
+    'Eletricista',
+    'Motorista Particular',
+    'Frete/Carretos',
+    'Babá'
+  ].freeze
+
+  def self.popular_services
+    found = where(name: POPULAR_SERVICE_NAMES).distinct.to_a
+
+    POPULAR_SERVICE_NAMES.map { |name|
+      found.find { |service| service.name == name }
+    }.compact
+  end
 end

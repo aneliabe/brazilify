@@ -106,6 +106,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_17_010357) do
     t.bigint "category_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "service_type"
     t.index ["category_id", "name"], name: "index_services_on_category_id_and_name", unique: true
     t.index ["category_id"], name: "index_services_on_category_id"
   end

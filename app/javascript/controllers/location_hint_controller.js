@@ -6,7 +6,7 @@ static values = { token: String, showNearby: { type: Boolean, default: true }, e
 
   static FWD = "https://api.mapbox.com/search/geocode/v6/forward"
   static REV = "https://api.mapbox.com/search/geocode/v6/reverse"
-  static PARAMS = { types: "place", language: "pt,en", limit: "7", proximity: "ip", country: "IE,PT,BR,GB,US" }
+  static PARAMS = { types: "place", language: "pt,en", limit: "7", proximity: "ip", country: "IE,PT,GB,US" }
 
 
   connect() {
@@ -55,7 +55,7 @@ static values = { token: String, showNearby: { type: Boolean, default: true }, e
 
       // Show subtle indicator that we loaded saved location
       if (data.city) {
-        this.flashStatus("Localização salva carregada", 1000)
+        // this.flashStatus("Localização salva carregada", 1000)
       }
     } else {
       // Data expired, remove it
@@ -221,7 +221,7 @@ static values = { token: String, showNearby: { type: Boolean, default: true }, e
     }
 
     if (navigator.geolocation) {
-      this.flashStatus("Localizando…", 0)
+      // this.flashStatus("Localizando…", 0)
       return new Promise(resolve => {
         navigator.geolocation.getCurrentPosition(async pos => {
           // Cache the position for 5 minutes
@@ -236,9 +236,9 @@ static values = { token: String, showNearby: { type: Boolean, default: true }, e
             if (hint?.city) this.inputTarget.value = hint.city
             if (this.hasLatTarget && hint?.lat) this.latTarget.value = hint.lat
             if (this.hasLngTarget && hint?.lng) this.lngTarget.value = hint.lng
-            this.flashStatus("Detectado")
+            // this.flashStatus("Detectado")
           } catch {
-            this.flashStatus("Sem localização")
+            // this.flashStatus("Sem localização")
           }
           resolve()
         }, {
@@ -253,9 +253,9 @@ static values = { token: String, showNearby: { type: Boolean, default: true }, e
         if (hint?.city) this.inputTarget.value = hint.city
         if (this.hasLatTarget && hint?.lat) this.latTarget.value = hint.lat
         if (this.hasLngTarget && hint?.lng) this.lngTarget.value = hint.lng
-        this.flashStatus("Detectado")
+        // this.flashStatus("Detectado")
       } catch {
-        this.flashStatus("Sem localização")
+        // this.flashStatus("Sem localização")
       }
     }
   }
@@ -276,7 +276,7 @@ static values = { token: String, showNearby: { type: Boolean, default: true }, e
         const countryValue = this.hasCountryTarget ? this.countryTarget.value : null
         this.saveLocation(c.label, lat, lng, countryValue)
       }
-      this.flashStatus("Detectado")
+      // this.flashStatus("Detectado")
     } catch {
       this.flashStatus("Falha ao detectar")
     }
