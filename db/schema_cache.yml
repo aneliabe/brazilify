@@ -247,7 +247,7 @@ columns:
     default_function:
     collation:
     comment:
-  - !ruby/object:ActiveRecord::ConnectionAdapters::PostgreSQL::Column
+  - &12 !ruby/object:ActiveRecord::ConnectionAdapters::PostgreSQL::Column
     serial:
     identity:
     generated: ''
@@ -487,7 +487,7 @@ columns:
     identity:
     generated: ''
     name: rating
-    sql_type_metadata: &12 !ruby/object:ActiveRecord::ConnectionAdapters::PostgreSQL::TypeMetadata
+    sql_type_metadata: &13 !ruby/object:ActiveRecord::ConnectionAdapters::PostgreSQL::TypeMetadata
       delegate_dc_obj: !ruby/object:ActiveRecord::ConnectionAdapters::SqlTypeMetadata
         sql_type: integer
         type: :integer
@@ -599,6 +599,66 @@ columns:
     comment:
   - *3
   - *7
+  subscriptions:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::PostgreSQL::Column
+    serial: true
+    identity:
+    generated: ''
+    name: id
+    sql_type_metadata: *2
+    'null': false
+    default:
+    default_function: nextval('subscriptions_id_seq'::regclass)
+    collation:
+    comment:
+  - *9
+  - !ruby/object:ActiveRecord::ConnectionAdapters::PostgreSQL::Column
+    serial:
+    identity:
+    generated: ''
+    name: stripe_subscription_id
+    sql_type_metadata: *1
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - &14 !ruby/object:ActiveRecord::ConnectionAdapters::PostgreSQL::Column
+    serial:
+    identity:
+    generated: ''
+    name: stripe_customer_id
+    sql_type_metadata: *1
+    'null': true
+    default:
+    default_function:
+    collation:
+    comment:
+  - *12
+  - *3
+  - *7
+  - !ruby/object:ActiveRecord::ConnectionAdapters::PostgreSQL::Column
+    serial:
+    identity:
+    generated: ''
+    name: price_cents
+    sql_type_metadata: *13
+    'null': false
+    default: '0'
+    default_function:
+    collation:
+    comment:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::PostgreSQL::Column
+    serial:
+    identity:
+    generated: ''
+    name: price_currency
+    sql_type_metadata: *1
+    'null': false
+    default: EUR
+    default_function:
+    collation:
+    comment:
   users:
   - !ruby/object:ActiveRecord::ConnectionAdapters::PostgreSQL::Column
     serial: true
@@ -758,7 +818,7 @@ columns:
     identity:
     generated: ''
     name: role
-    sql_type_metadata: *12
+    sql_type_metadata: *13
     'null': true
     default:
     default_function:
@@ -819,6 +879,7 @@ columns:
     default_function:
     collation:
     comment:
+  - *14
   worker_profiles:
   - !ruby/object:ActiveRecord::ConnectionAdapters::PostgreSQL::Column
     serial: true
@@ -875,7 +936,7 @@ columns:
     comment:
   - *3
   - *7
-  - &13 !ruby/object:ActiveRecord::ConnectionAdapters::PostgreSQL::Column
+  - &15 !ruby/object:ActiveRecord::ConnectionAdapters::PostgreSQL::Column
     serial:
     identity:
     generated: ''
@@ -923,7 +984,7 @@ columns:
     default_function:
     collation:
     comment:
-  - *13
+  - *15
 primary_keys:
   active_storage_attachments: id
   active_storage_blobs: id
@@ -936,6 +997,7 @@ primary_keys:
   schema_migrations: version
   services: id
   solid_cable_messages: id
+  subscriptions: id
   users: id
   worker_profiles: id
   worker_services: id
@@ -951,6 +1013,7 @@ data_sources:
   schema_migrations: true
   services: true
   solid_cable_messages: true
+  subscriptions: true
   users: true
   worker_profiles: true
   worker_services: true
@@ -1360,6 +1423,23 @@ indexes:
     nulls_not_distinct: false
     comment:
     valid: true
+  subscriptions:
+  - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
+    table: subscriptions
+    name: index_subscriptions_on_user_id
+    unique: false
+    columns:
+    - user_id
+    lengths: {}
+    orders: {}
+    opclasses: {}
+    where:
+    type:
+    using: :btree
+    include:
+    nulls_not_distinct: false
+    comment:
+    valid: true
   users:
   - !ruby/object:ActiveRecord::ConnectionAdapters::IndexDefinition
     table: users
@@ -1492,5 +1572,5 @@ indexes:
     nulls_not_distinct: false
     comment:
     valid: true
-version: 20250913202822
+version: 20250917010357
 database_version: 140019

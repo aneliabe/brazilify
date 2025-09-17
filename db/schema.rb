@@ -147,8 +147,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_17_010357) do
     t.string "city"
     t.string "avatar"
     t.integer "role"
-    t.float "latitude"
-    t.float "longitude"
     t.string "country_code"
     t.string "confirmation_token"
     t.datetime "confirmed_at"
