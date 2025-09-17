@@ -38,7 +38,7 @@
   }
 
   .svc-card {
-    /* keep the “pill card” size & feel */
+    /* keep the "pill card" size & feel */
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -81,6 +81,7 @@
     .svc-card { width: 100%; min-width: 0; }
   }
 }
+
 .search-hero {
   max-width: 760px;
   margin: 24px auto;
@@ -183,7 +184,7 @@
     &:hover { background: darken($accent, 8%); }
   }
 
-  /* Mapbox dropdown from your location-hint controller */
+  /* FIXED: Mapbox dropdown from your location-hint controller */
   [data-location-hint-target="dropdown"].dropdown-menu {
     border: none !important;
     border-radius: 12px !important;
@@ -192,28 +193,49 @@
     padding: 8px 0 !important;
     margin-top: 8px !important;
 
-    /* NEW: prevent sideways scroll and clamp width to field */
-    overflow-x: hidden;      /* ← added */
-    max-width: 100%;         /* ← added */
+    /* Prevent sideways scroll and clamp width to field */
+    overflow-x: hidden;
+    max-width: 100%;
 
-    > div {
+    /* Location hint icons with custom colors */
+    .location-icon {
+      font-size: 0.9rem !important;
+
+      &.nearby { color: #2c7a7b !important; }      /* Your brand color */
+      &.major { color: #f28c38 !important; }       /* Your accent color */
+      &.search { color: #64748b !important; }      /* Muted gray */
+    }
+
+    button.dropdown-item {
       padding: 10px 16px !important;
       font-size: 14px !important;
       color: #495057 !important;
       border: none !important;
       transition: background-color 0.15s ease !important;
       cursor: pointer !important;
+      display: flex !important;
+      align-items: center !important;
+      width: 100% !important;
 
-      /* NEW: wrap long place names instead of overflowing */
-      white-space: normal !important;  /* ← added */
-      overflow-wrap: anywhere;         /* ← added */
-      word-break: break-word;          /* ← added */
-      display: block !important;       /* ← added */
-      width: 100% !important;          /* ← added */
+      /* Wrap long place names instead of overflowing */
+      white-space: normal !important;
+      overflow-wrap: anywhere;
+      word-break: break-word;
 
-      &:hover { background: #f8f9fa !important; color: #495057 !important; }
-      &:first-child { border-top-left-radius: 12px !important; border-top-right-radius: 12px !important; }
-      &:last-child  { border-bottom-left-radius: 12px !important; border-bottom-right-radius: 12px !important; }
+      &:hover {
+        background: #f8f9fa !important;
+        color: #495057 !important;
+      }
+
+      &:first-child {
+        border-top-left-radius: 12px !important;
+        border-top-right-radius: 12px !important;
+      }
+
+      &:last-child {
+        border-bottom-left-radius: 12px !important;
+        border-bottom-right-radius: 12px !important;
+      }
     }
   }
 
