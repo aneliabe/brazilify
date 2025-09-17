@@ -14,7 +14,7 @@
           <input
             type="text"
             name="city"
-            value="<%= (local_assigns[:city] || params[:city]).to_s %>"
+            value="<%= (local_assigns[:city] || params[:city]) == 'cache' ? '' : (local_assigns[:city] || params[:city]).to_s %>"
             placeholder="Digite a cidade"
             class="search-input"
             autocomplete="off"

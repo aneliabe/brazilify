@@ -1,4 +1,3 @@
-
 <div class="home-compact">
 
   <!-- Hero ribbon + search -->
@@ -14,7 +13,7 @@
           <% @popular_services.each do |svc| %>
             <%= link_to svc.name,
               search_path(
-                # city: current_user&.city || params[:city] || "cache",
+                city: current_user&.city || params[:city] || "cache",
                 category_id: svc.category_id,
                 service_id: svc.id
               ),
@@ -28,8 +27,11 @@
       <% if user_signed_in? %>
         <section class="mb-4">
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
-            <h2 class="section-title m-0">Prestadores de serviços perto de você</h2>
-            <%= link_to "Ver todos" , workers_path, class: "btn btn-link p-0" %>
+            <div style="display:flex; flex-direction:column; align-items:flex-start;">
+              <h2 class="section-title" style="margin:0;">Prestadores de serviços em <%= @current_user.city %></h2>
+              <p style="margin:6px 0 0 0; font-size:0.9rem; color:#6c757d;"><i>(cidade do seu cadastro)</i></p>
+            </div>
+            <%= link_to "Ver todos" , search_path, class: "btn btn-link p-0" %>
           </div>
 
           <% if @top_workers.blank? %>
