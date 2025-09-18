@@ -11,9 +11,11 @@
 
         <div class="svc-grid chips">
           <% @popular_services.each do |svc| %>
-            <%= link_to svc.name,
+              <%= link_to svc.name,
               search_path(
                 city: current_user&.city || params[:city] || "cache",
+                lat: current_user&.latitude,
+                lng: current_user&.longitude,
                 category_id: svc.category_id,
                 service_id: svc.id
               ),
@@ -102,7 +104,11 @@
                     <% end %>
                   </div>
                   <div class="h2 d-flex align-items-center justify-content-center flex-wrap gap-2 mb-2">
-                  <%= link_to "Ver todos", search_path, class: "btn btn-info btn-sm px-5 rounded-3 shadow-sm mt-4" %>
+                  <%= link_to "Ver todos",
+    current_user&.latitude && current_user&.longitude ?
+      search_path(lat: current_user.latitude, lng: current_user.longitude) :
+      search_path(city: current_user&.city),
+    class: "btn btn-info btn-sm px-5 rounded-3 shadow-sm mt-4" %>
                     </div>
                   </div>
 
