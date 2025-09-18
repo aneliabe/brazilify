@@ -54,6 +54,7 @@ gem "solid_cable"
 gem "cloudinary"
 gem "stripe"
 gem "money-rails"
+gem 'kaminari'
 
 group :development, :test do
   gem "dotenv-rails"

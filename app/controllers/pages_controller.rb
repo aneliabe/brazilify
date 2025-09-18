@@ -7,56 +7,56 @@ class PagesController < ApplicationController
     @categories = Category.includes(:services).order(:name)
   end
 
-def search
-  raw_city = params[:city].to_s.strip
-  @q = params[:q].to_s.strip
-  @category_id = params[:category_id].to_s.strip
-  @service_id = params[:service_id].to_s.strip
+  def search
+    raw_city = params[:city].to_s.strip
+    @q = params[:q].to_s.strip
+    @category_id = params[:category_id].to_s.strip
+    @service_id = params[:service_id].to_s.strip
 
-  # If city is "cache", let JavaScript handle it by rendering the page first
-  if raw_city == "cache"
-    @check_cache = true
-    city_token = ""  # Don't parse "cache" as a city
-  else
-    city_token, _country_hint = parse_city_label(raw_city)
-  end
-
-  scope = WorkerProfile
-            .includes(:user, :services, :reviews)
-            .joins(:user)
-
-  # CRITICAL: For non-logged users, require city or return empty results
-  if !user_signed_in? && city_token.blank?
-    @workers = WorkerProfile.none  # Return empty scope whether checking cache or not
-  else
-    # Apply city filter (either from params or from logged user)
-    target_city = city_token.present? ? city_token : current_user&.city
-    scope = scope.where("LOWER(users.city) LIKE LOWER(?)", "%#{target_city}%") if target_city.present?
-
-    # Apply service filters - UPDATED LOGIC
-    if @service_id.present?
-      # Exact service match (from popular services)
-      scope = scope.joins(:services)
-                  .where(services: { id: @service_id })
-                  .distinct
-    elsif @q.present?
-      # Text-based service search (from manual search)
-      scope = scope.joins(:services)
-                  .where("services.name ILIKE ?", "%#{@q}%")
-                  .distinct
+    # If city is "cache", let JavaScript handle it by rendering the page first
+    if raw_city == "cache"
+      @check_cache = true
+      city_token = ""  # Don't parse "cache" as a city
+    else
+      city_token, _country_hint = parse_city_label(raw_city)
     end
 
-    if @category_id.present?
-      scope = scope.joins(:services)
-                  .where(services: { category_id: @category_id })
-                  .distinct
+    scope = WorkerProfile
+              .includes(:user, :services, :reviews)
+              .joins(:user)
+
+    # CRITICAL: For non-logged users, require city or return empty results
+    if !user_signed_in? && city_token.blank?
+      @workers = WorkerProfile.none.page(params[:page]).per(12)  # Return empty paginated scope
+    else
+      # Apply city filter (either from params or from logged user)
+      target_city = city_token.present? ? city_token : current_user&.city
+      scope = scope.where("LOWER(users.city) LIKE LOWER(?)", "%#{target_city}%") if target_city.present?
+
+      # Apply service filters - UPDATED LOGIC
+      if @service_id.present?
+        # Exact service match (from popular services)
+        scope = scope.joins(:services)
+                    .where(services: { id: @service_id })
+                    .distinct
+      elsif @q.present?
+        # Text-based service search (from manual search)
+        scope = scope.joins(:services)
+                    .where("services.name ILIKE ?", "%#{@q}%")
+                    .distinct
+      end
+
+      if @category_id.present?
+        scope = scope.joins(:services)
+                    .where(services: { category_id: @category_id })
+                    .distinct
+      end
+
+      @workers = scope.page(params[:page]).per(12)  # ← Add pagination here
     end
 
-    @workers = scope
+    @categories = Category.includes(:services).order(:name)
   end
-
-  @categories = Category.includes(:services).order(:name)
-end
 
   private
 
