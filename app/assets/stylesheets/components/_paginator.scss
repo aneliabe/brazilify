@@ -1,0 +1,53 @@
+/* Modern pagination styling - Override Bootstrap */
+.pagination {
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 1rem 0;
+  list-style: none;
+  padding: 0;
+  border: none;
+}
+
+.pagination a,
+.pagination span,
+.pagination .page-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 40px !important;
+  height: 40px !important;
+  padding: 0.5rem !important;
+  text-decoration: none !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  color: #64748b !important;
+  font-weight: 500 !important;
+  font-size: 0.9rem !important;
+  transition: all 0.2s !important;
+  margin: 0 !important;
+}
+
+.pagination a:hover,
+.pagination .page-link:hover {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+.pagination .current,
+.pagination .page-link.active,
+.pagination .active > .page-link {
+  background: #84dfb9 !important;
+  border-color: #84dfb9  !important;
+  color: white !important;
+  z-index: 1 !important;
+}
+
+.pagination .gap {
+  border: none !important;
+  background: transparent !important;
+  color: #94a3b8 !important;
+}

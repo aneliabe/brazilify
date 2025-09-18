@@ -27,7 +27,7 @@ def search
 
   # CRITICAL: For non-logged users, require city or return empty results
   if !user_signed_in? && city_token.blank?
-    @workers = WorkerProfile.none  # Return empty scope whether checking cache or not
+    @workers = WorkerProfile.none.page(params[:page]).per(9)  # Return empty paginated scope
   else
     # Apply city filter (either from params or from logged user)
     target_city = city_token.present? ? city_token : current_user&.city
@@ -52,7 +52,7 @@ def search
                   .distinct
     end
 
-    @workers = scope
+    @workers = scope.page(params[:page]).per(9)  # ← Add pagination here
   end
 
   @categories = Category.includes(:services).order(:name)
