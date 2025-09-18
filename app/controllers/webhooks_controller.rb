@@ -49,16 +49,6 @@ class WebhooksController < ApplicationController
 
     record.update(status: 'canceled')
 
-    user = record.user
-    return unless user&.worker_profile
-
-    worker_services = user.worker_profile.worker_services
-
-    # Mantém apenas o primeiro serviço, apaga os outros
-    if worker_services.count > 1
-      worker_services.offset(1).destroy_all
-    end
-
     # record.user.update(role: :client)
   end
 end
