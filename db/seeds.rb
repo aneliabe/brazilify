@@ -76,22 +76,42 @@ def lshort(t)
   I18n.l(t, format: :short) rescue t.strftime("%d/%m %H:%M")
 end
 
-# --------- Geo (country, city, time zone) ---------
+# --------- Geo (country, city, time zone) — only IE, PT, BR, GB, US ----------
 WORLD_CITIES = [
-  ["Brasil",          "São Paulo",        "America/Sao_Paulo"],
-  ["Brasil",          "Rio de Janeiro",   "America/Sao_Paulo"],
-  ["Portugal",        "Lisboa",           "Europe/Lisbon"],
-  ["Estados Unidos",  "New York",         "America/New_York"],
-  ["Canadá",          "Toronto",          "America/Toronto"],
-  ["Reino Unido",     "London",           "Europe/London"],
-  ["Alemanha",        "Berlin",           "Europe/Berlin"],
-  ["Espanha",         "Madrid",           "Europe/Madrid"],
-  ["Argentina",       "Buenos Aires",     "America/Argentina/Buenos_Aires"],
-  ["México",          "Cidade do México", "America/Mexico_City"],
-  ["Chile",           "Santiago",         "America/Santiago"],
-  ["Japão",           "Tóquio",           "Asia/Tokyo"],
-  ["Austrália",       "Sydney",           "Australia/Sydney"],
-  ["Índia",           "Mumbai",           "Asia/Kolkata"]
+  # Brazil (BR)
+  ["Brazil", "São Paulo",       "America/Sao_Paulo"],
+  ["Brazil", "Rio de Janeiro",  "America/Sao_Paulo"],
+  ["Brazil", "Belo Horizonte",  "America/Sao_Paulo"],
+  ["Brazil", "Curitiba",        "America/Sao_Paulo"],
+  ["Brazil", "Porto Alegre",    "America/Sao_Paulo"],
+  ["Brazil", "Recife",          "America/Recife"],
+  ["Brazil", "Salvador",        "America/Bahia"],
+  ["Brazil", "Brasília",        "America/Sao_Paulo"],
+  ["Brazil", "Fortaleza",       "America/Fortaleza"],
+
+  # Portugal (PT)
+  ["Portugal", "Lisboa",  "Europe/Lisbon"],
+  ["Portugal", "Porto",   "Europe/Lisbon"],
+  ["Portugal", "Coimbra", "Europe/Lisbon"],
+
+  # Ireland (IE)
+  ["Ireland", "Dublin", "Europe/Dublin"],
+  ["Ireland", "Cork",   "Europe/Dublin"],
+
+  # United Kingdom (GB)
+  ["United Kingdom", "London",     "Europe/London"],
+  ["United Kingdom", "Manchester", "Europe/London"],
+  ["United Kingdom", "Edinburgh",  "Europe/London"],
+
+  # United States (US)
+  ["United States", "New York",      "America/New_York"],
+  ["United States", "Boston",        "America/New_York"],
+  ["United States", "Miami",         "America/New_York"],
+  ["United States", "Chicago",       "America/Chicago"],
+  ["United States", "Austin",        "America/Chicago"],
+  ["United States", "Seattle",       "America/Los_Angeles"],
+  ["United States", "San Francisco", "America/Los_Angeles"],
+  ["United States", "Los Angeles",   "America/Los_Angeles"]
 ].freeze
 
 def sample_geo
@@ -242,19 +262,32 @@ ActiveRecord::Base.transaction do
   end
   workers << wp
 
-  # +15 more pros with diverse geos
-  (1..15).each do |i|
+  # +30 more pros with diverse geos, but ~12 fixed to the client's city (to populate home)
+  home_city    = client.try(:city)
+  home_country = client.try(:country)
+  home_tz      = client.try(:time_zone)
+
+  (1..30).each do |i|
     email = "pro%02d@demo.com" % i
     owner = User.find_or_initialize_by(email: email)
     owner.password ||= "password"
     set_brazilian_name!(owner, force: true)
-    geo = sample_geo
-    set_if_has(owner, :city,      owner.try(:city).presence    || geo[:city])
-    set_if_has(owner, :country,   owner.try(:country).presence || geo[:country])
-    set_if_has(owner, :time_zone, geo[:time_zone]) if owner.has_attribute?(:time_zone)
+
+    # First 12 pros: same city/timezone as main client → home shows a lot of locals
+    if i <= 12 && home_city.present?
+      set_if_has(owner, :city,      home_city)
+      set_if_has(owner, :country,   home_country)
+      set_if_has(owner, :time_zone, home_tz)    if owner.has_attribute?(:time_zone)
+    else
+      geo = sample_geo
+      set_if_has(owner, :city,      owner.try(:city).presence    || geo[:city])
+      set_if_has(owner, :country,   owner.try(:country).presence || geo[:country])
+      set_if_has(owner, :time_zone, geo[:time_zone])             if owner.has_attribute?(:time_zone)
+    end
+
     set_if_has(owner, :role, "worker") if owner.respond_to?(:role)
     set_if_has(owner, :worker, true)   if owner.has_attribute?(:worker)
-    set_if_has(owner, :avatar,   owner.try(:avatar).presence   || stable_avatar_for(email))
+    set_if_has(owner, :avatar, owner.try(:avatar).presence || stable_avatar_for(email))
     owner.save!
 
     cat = non_empty_categories.sample
@@ -283,14 +316,31 @@ ActiveRecord::Base.transaction do
   puts "📅 Criando agendamentos…"
   def make_appt!(client:, worker:, at:, status:)
     tz = worker.user.try(:time_zone) || client.try(:time_zone) || "America/Sao_Paulo"
-    attrs = { user: client, worker_profile: worker, starts_at: at, status: status }
-    appt = Appointment.new(attrs)
+
+    # If 'at' is in the past, create a temporary future time to satisfy validations
+    temp_start = at < Time.zone.now ? (Time.zone.now + 5.minutes) : at
+
+    appt = Appointment.new(
+      user:           client,
+      worker_profile: worker,
+      starts_at:      temp_start,
+      status:         status
+    )
     set_if_has(appt, :time_zone, tz)
-    # optional ends_at (~1h)
-    if appt.respond_to?(:ends_at) && at.present?
-      set_if_has(appt, :ends_at, at + 1.hour)
+
+    if appt.respond_to?(:ends_at) && temp_start.present?
+      set_if_has(appt, :ends_at, temp_start + 1.hour)
     end
-    appt.save!
+
+    appt.save!  # passes model validations
+
+    # If we wanted a past time, move it there after save (skips validations/callbacks)
+    if at < Time.zone.now
+      updates = { starts_at: at }
+      updates[:ends_at] = (at + 1.hour) if appt.respond_to?(:ends_at)
+      appt.update_columns(updates)
+    end
+
     appt
   end
 
@@ -334,15 +384,18 @@ ActiveRecord::Base.transaction do
   appts.each do |appt|
     c = appt.user
     w = appt.worker_profile.user
-    msgs = rand(6..10)
+
+    # more messages per chat
+    msgs = rand(12..20)
     author = [c, w].sample
+
     msgs.times do |i|
       author = (author == c) ? w : c
       txt = if i.zero?
         "Olá! Podemos confirmar #{lshort(appt.starts_at)}?"
       else
         if defined?(Faker) && Faker.const_defined?("Lorem")
-          Faker::Lorem.sentence(word_count: rand(6..14))
+          Faker::Lorem.sentence(word_count: rand(7..16))
         else
           "Mensagem de demonstração."
         end
@@ -350,7 +403,7 @@ ActiveRecord::Base.transaction do
       make_message!(appt, author, txt)
     end
 
-    # unread flags if columns exist (make index 'ping' light up)
+    # unread flags if columns exist (to acender o 'ping' no index)
     if appt.starts_at > now && %w[pending accepted].include?(appt.status.to_s)
       if [true, false].sample
         appt.update_column(:client_last_read_at, now)  if appt.respond_to?(:client_last_read_at)
@@ -361,6 +414,40 @@ ActiveRecord::Base.transaction do
       end
     end
   end
+
+  # ---------- Extra appointments to create more chats in the list ----------
+  puts "➕ Gerando mais agendamentos para popular a lista…"
+  more = []
+  (1..25).each do
+    wp   = workers.sample
+    cli  = ([client] + extra_clients).sample
+    day  = rand(-5..10) # alguns no passado, outros futuro
+    hour = [9, 10, 11, 14, 15, 16, 18, 19].sample
+    t    = (now + day.days).change(hour: hour)
+    st   = %w[accepted pending declined].sample
+
+    more << make_appt!(client: cli, worker: wp, at: t, status: st)
+  end
+
+  # add messages to these new ones too
+  (more).each do |appt|
+    c = appt.user
+    w = appt.worker_profile.user
+    msgs = rand(8..14)
+    author = [c, w].sample
+    msgs.times do |i|
+      author = (author == c) ? w : c
+      txt = if defined?(Faker) && Faker.const_defined?("Lorem")
+        Faker::Lorem.sentence(word_count: rand(6..14))
+      else
+        "Mensagem de demonstração."
+      end
+      make_message!(appt, author, txt)
+    end
+  end
+
+  # update appts list so summary counts include 'more'
+  appts.concat(more)
 
   # ---------- Reviews ----------
   if defined?(Review)
