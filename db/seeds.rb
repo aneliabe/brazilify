@@ -1,32 +1,52 @@
-# db/seeds.rb — Brazilify demo seed (global users, workers, chats, reviews)
+# db/seeds.rb — Brazilify demo (150 workers focados em 5 cidades + ~50 clients)
 require "securerandom"
 require "digest/md5"
 
-# ---------------- Optional Faker (pt-BR) ----------------
+# ---------- Optional Faker ----------
 begin
   require "faker"
   Faker::Config.locale = "pt-BR"
 rescue LoadError
-  puts "⚠️  Gem 'faker' not found. Adicione no Gemfile (grupo :development) para textos melhores."
+  puts "⚠️  Gem 'faker' não encontrada (opcional; melhora textos)."
 end
 
-# ---------------- Helpers ----------------
-BR_NAMES = %w[
-  Ana\ Paula Bruno\ Souza Camila\ Ribeiro Daniel\ Almeida Eduardo\ Nunes
-  Fernanda\ Rocha Gabriel\ Martins Helena\ Carvalho Igor\ Pereira
-  Juliana\ Ferreira Karina\ Souza Leonardo\ Gomes Mariana\ Silva
-  Natália\ Costa Otávio\ Azevedo Patrícia\ Mello Rafael\ Lima
-  Sabrina\ Duarte Tiago\ Barros Vanessa\ Moreira Wagner\ Cardoso
-  Yasmin\ Araújo Zé\ Roberto Jorge\ Aragão Paula\ Fernandes
-  João\ Pedro Felipe\ Ramos Beatriz\ Albuquerque
+# ---------- Helpers de nomes/avatares ----------
+MALE_FIRST = %w[
+  André Bruno Carlos Daniel Eduardo Felipe Gabriel Henrique Igor Jorge
+  Kleber Lucas Marcelo Natan Otávio Paulo Rafael Sérgio Tiago Vinícius Wagner
 ].freeze
 
-def brazilian_name
-  if defined?(Faker) && Faker.const_defined?("Name")
-    Faker::Name.name
+FEMALE_FIRST = %w[
+  Ana Bruna Camila Daniela Elisa Fernanda Gabriela Helena Isabela Júlia
+  Karina Larissa Mariana Natália Olivia Patrícia Rafaela Sofia Thaís Vanessa Yasmin
+].freeze
+
+LAST_NAMES = %w[
+  Silva Santos Oliveira Souza Rodrigues Almeida Nunes Lima Araújo Gomes
+  Carvalho Rocha Barros Ribeiro Monteiro Duarte Batista Azevedo Correia Martins
+].freeze
+
+def person_name(gender)
+  if defined?(Faker)
+    first = (gender == :male) ? (Faker::Name.male_first_name rescue Faker::Name.first_name) :
+                                (Faker::Name.female_first_name rescue Faker::Name.first_name)
+    last  = Faker::Name.last_name
   else
-    BR_NAMES.sample
+    first = (gender == :male) ? MALE_FIRST.sample : FEMALE_FIRST.sample
+    last  = LAST_NAMES.sample
   end
+  "#{first} #{last}"
+end
+
+def gender_avatar_url(gender, index)
+  base = (gender == :male) ? "men" : "women"
+  n = index % 100
+  "https://randomuser.me/api/portraits/#{base}/#{n}.jpg"
+end
+
+def stable_avatar_for(seed)
+  n = (Digest::MD5.hexdigest(seed.to_s).to_i(16) % 70) + 1
+  "https://i.pravatar.cc/150?img=#{n}"
 end
 
 def set_if_has(record, field, value)
@@ -36,32 +56,6 @@ def set_if_has(record, field, value)
   elsif record.has_attribute?(field)
     record[field] = value
   end
-end
-
-def set_brazilian_name!(user, force: false)
-  current =
-    if user.respond_to?(:full_name) && user.full_name.present?
-      user.full_name
-    else
-      [user.try(:first_name), user.try(:last_name)].compact.join(" ")
-    end
-
-  needs = force || current.blank? || current.match?(/\A(Usuário|User)\s+Demo\b/i)
-  if needs
-    name = brazilian_name
-    if user.respond_to?(:full_name=)
-      user.full_name = name
-    else
-      first, last = name.split(" ", 2)
-      set_if_has(user, :first_name, first || "Nome")
-      set_if_has(user, :last_name,  last  || "Sobrenome")
-    end
-  end
-end
-
-def stable_avatar_for(seed)
-  n = (Digest::MD5.hexdigest(seed.to_s).to_i(16) % 70) + 1 # 1..70 (pravatar)
-  "https://i.pravatar.cc/150?img=#{n}"
 end
 
 def uniq_cpf(n)
@@ -76,50 +70,55 @@ def lshort(t)
   I18n.l(t, format: :short) rescue t.strftime("%d/%m %H:%M")
 end
 
-# --------- Geo (country, city, time zone) — only IE, PT, BR, GB, US ----------
+# ---------- GEO fixo (somente 5 cidades foco) ----------
+# country, city, time_zone, latitude, longitude
 WORLD_CITIES = [
-  # Brazil (BR)
-  ["Brazil", "São Paulo",       "America/Sao_Paulo"],
-  ["Brazil", "Rio de Janeiro",  "America/Sao_Paulo"],
-  ["Brazil", "Belo Horizonte",  "America/Sao_Paulo"],
-  ["Brazil", "Curitiba",        "America/Sao_Paulo"],
-  ["Brazil", "Porto Alegre",    "America/Sao_Paulo"],
-  ["Brazil", "Recife",          "America/Recife"],
-  ["Brazil", "Salvador",        "America/Bahia"],
-  ["Brazil", "Brasília",        "America/Sao_Paulo"],
-  ["Brazil", "Fortaleza",       "America/Fortaleza"],
-
-  # Portugal (PT)
-  ["Portugal", "Lisboa",  "Europe/Lisbon"],
-  ["Portugal", "Porto",   "Europe/Lisbon"],
-  ["Portugal", "Coimbra", "Europe/Lisbon"],
-
-  # Ireland (IE)
-  ["Ireland", "Dublin", "Europe/Dublin"],
-  ["Ireland", "Cork",   "Europe/Dublin"],
-
-  # United Kingdom (GB)
-  ["United Kingdom", "London",     "Europe/London"],
-  ["United Kingdom", "Manchester", "Europe/London"],
-  ["United Kingdom", "Edinburgh",  "Europe/London"],
-
-  # United States (US)
-  ["United States", "New York",      "America/New_York"],
-  ["United States", "Boston",        "America/New_York"],
-  ["United States", "Miami",         "America/New_York"],
-  ["United States", "Chicago",       "America/Chicago"],
-  ["United States", "Austin",        "America/Chicago"],
-  ["United States", "Seattle",       "America/Los_Angeles"],
-  ["United States", "San Francisco", "America/Los_Angeles"],
-  ["United States", "Los Angeles",   "America/Los_Angeles"]
+  ["Portugal",        "Lisboa",   "Europe/Lisbon",  38.722252,   -9.139337],
+  ["Portugal",        "Porto",    "Europe/Lisbon",  41.157944,   -8.629105],
+  ["Ireland",         "Dublin",   "Europe/Dublin",  53.349805,   -6.260310],
+  ["Ireland",         "Cork",     "Europe/Dublin",  51.898514,   -8.475604],
+  ["United Kingdom",  "London",   "Europe/London",  51.507351,   -0.127758]
 ].freeze
 
-def sample_geo
-  country, city, tz = WORLD_CITIES.sample
-  { country: country, city: city, time_zone: tz }
+# índice para (country,city) -> tz/lat/lon
+GEO_INDEX = WORLD_CITIES.each_with_object({}) do |(country, city, tz, lat, lon), h|
+  h[[country.downcase, city.downcase]] = { time_zone: tz, latitude: lat, longitude: lon }
 end
 
-# --------- Catalog (categories & services) ----------
+def geo_for(country:, city:)
+  GEO_INDEX[[country.to_s.downcase, city.to_s.downcase]]
+end
+
+# aplica country/city e força lat/lon exatos (bypass callbacks de geocoder)
+def apply_geo!(user, country:, city:)
+  g = geo_for(country: country, city: city)
+  raise "Cidade não mapeada: #{city}, #{country}" unless g
+
+  set_if_has(user, :country, country)
+  set_if_has(user, :city,    city)
+  user.save!
+  user.update_columns(latitude: g[:latitude], longitude: g[:longitude])
+end
+
+# distribuição por peso (Lisboa 30%, London 25%, Dublin 20%, Porto 15%, Cork 10)
+CITY_WEIGHTS = [
+  ["Portugal","Lisboa",        30],
+  ["United Kingdom","London",  25],
+  ["Ireland","Dublin",         20],
+  ["Portugal","Porto",         15],
+  ["Ireland","Cork",           10]
+].freeze
+
+def pick_city_weighted
+  total = CITY_WEIGHTS.sum { |_,_,w| w }
+  x = rand(1..total)
+  CITY_WEIGHTS.each do |country, city, w|
+    return [country, city] if (x -= w) <= 0
+  end
+  ["Portugal","Lisboa"]
+end
+
+# ---------- Catálogo ----------
 CATEGORIES = [
   "Construção", "Tecnologia", "Beleza / Estética", "Serviços Automotivos",
   "Manutenção Residencial", "Saúde e Bem-estar", "Educação",
@@ -165,23 +164,22 @@ SERVICES_BY_CATEGORY = {
   "Arte e Artesanato" => ["Costureira", "Bordado", "Artesanato Personalizado", "Restauração de Móveis", "Designer de Joias"]
 }.freeze
 
-# ======================================================
-# ================ SEED EXECUTION ======================
-# ======================================================
+# ===================== EXECUÇÃO ======================
 ActiveRecord::Base.transaction do
   now = Time.zone.now
 
-  # ---------- Clean (dev): rebuild dynamic data ----------
+  # -- Limpa dados dinâmicos em dev --
   if Rails.env.development?
-    puts "🧹 Limpando dados de demo (mantendo tabela de usuários e catálogo)…"
+    puts "🧹 Limpando dados (mantendo catálogo)…"
     Message.destroy_all        if defined?(Message)
     Review.destroy_all         if defined?(Review)
     Appointment.destroy_all    if defined?(Appointment)
     WorkerService.destroy_all  if defined?(WorkerService)
     WorkerProfile.destroy_all  if defined?(WorkerProfile)
+    # não limpamos User pra manter logins se quiser
   end
 
-  # ---------- Categories & Services ----------
+  # -- Catálogo --
   puts "📚 Populando catálogo…"
   CATEGORIES.each { |name| Category.find_or_create_by!(name: name) }
   SERVICES_BY_CATEGORY.each do |cat_name, list|
@@ -194,111 +192,60 @@ ActiveRecord::Base.transaction do
   non_empty_categories = catalog.select { |_c, svcs| svcs.any? }.keys
   raise "Não há categorias com serviços." if non_empty_categories.empty?
 
-  # ---------- Users ----------
-  puts "👤 Criando usuários…"
-
-  # Main client
+  # -- Clients (~50 não-workers) --
+  puts "👤 Criando clients…"
   client = User.find_or_initialize_by(email: "cliente@demo.com")
   client.password = "password"
-  client.full_name = "Cliente Demo" if client.respond_to?(:full_name=)
-  geo = sample_geo
-  set_if_has(client, :city,       client.try(:city).presence    || geo[:city])
-  set_if_has(client, :country,    client.try(:country).presence || geo[:country])
-  set_if_has(client, :time_zone,  geo[:time_zone]) if client.has_attribute?(:time_zone)
-  set_if_has(client, :avatar,     client.try(:avatar).presence  || stable_avatar_for(client.email))
+  client.full_name = "Cliente Demo"
+  apply_geo!(client, country: "Portugal", city: "Lisboa")
+  set_if_has(client, :avatar, client.try(:avatar).presence || stable_avatar_for(client.email))
   client.save!
 
-  # Demo professional (owner of first WorkerProfile)
-  pro_user = User.find_or_initialize_by(email: "pro@demo.com")
-  pro_user.password = "password"
-  pro_user.full_name = "Pro Test" if pro_user.respond_to?(:full_name=)
-  geo = sample_geo
-  set_if_has(pro_user, :city,      pro_user.try(:city).presence    || geo[:city])
-  set_if_has(pro_user, :country,   pro_user.try(:country).presence || geo[:country])
-  set_if_has(pro_user, :time_zone, geo[:time_zone]) if pro_user.has_attribute?(:time_zone)
-  set_if_has(pro_user, :role, "worker") if pro_user.respond_to?(:role)
-  set_if_has(pro_user, :worker, true)   if pro_user.has_attribute?(:worker)
-  set_if_has(pro_user, :avatar,   pro_user.try(:avatar).presence   || stable_avatar_for(pro_user.email))
-  pro_user.save!
-
-  # Extra clients
-  extra_clients = []
-  (1..30).each do |i|
-    email = "user%02d@demo.com" % i
+  client_pool = [client]
+  (1..49).each do |i|
+    email = "client%02d@demo.com" % i
     u = User.find_or_initialize_by(email: email)
     u.password ||= "password"
-    set_brazilian_name!(u, force: true)
-    geo = sample_geo
-    set_if_has(u, :city,      u.try(:city).presence    || geo[:city])
-    set_if_has(u, :country,   u.try(:country).presence || geo[:country])
-    set_if_has(u, :time_zone, geo[:time_zone]) if u.has_attribute?(:time_zone)
-    set_if_has(u, :avatar,    u.try(:avatar).presence  || stable_avatar_for(email))
-    u.save!
-    extra_clients << u
-  end
+    gen = i.odd? ? :female : :male
+    u.full_name = person_name(gen)
 
-  # ---------- Worker Profiles ----------
-  puts "🧑‍🔧 Criando perfis de prestadores…"
+    country, city = pick_city_weighted
+    apply_geo!(u, country: country, city: city)
+    set_if_has(u, :avatar, u.try(:avatar).presence || gender_avatar_url(gen, 200 + i))
+    u.save!
+    client_pool << u
+  end
+  puts "✅ Clients criados: #{client_pool.size}"
+
+  # -- 150 Workers (75 M + 75 F) --
+  puts "🛠️ Criando 150 prestadores (75 M + 75 F)…"
   workers = []
 
-  # Demo pro profile
-  demo_cat = non_empty_categories.sample
-  wp = WorkerProfile.find_or_initialize_by(user: pro_user)
-  set_if_has(wp, :cpf,         wp.try(:cpf).presence         || uniq_cpf(1))
-  desc = if defined?(Faker)
-    "#{Faker::Job.title}. #{Faker::Company.buzzword.capitalize} • #{Faker::Lorem.sentence(word_count: 10)}"
-  else
-    "Profissional experiente. Atendimento de qualidade."
-  end
-  set_if_has(wp, :description, wp.try(:description).presence || desc)
-  set_if_has(wp, :category_id, wp.try(:category_id).presence || demo_cat.id)
-  wp.save!
-
-  catalog[demo_cat].sample(3).each do |srv|
-    WorkerService.find_or_create_by!(worker_profile: wp, service: srv) do |ws|
-      ws.category     = demo_cat if ws.respond_to?(:category=)
-      ws.service_type = %w[presencial remoto estabelecimento].sample if ws.respond_to?(:service_type=)
-    end
-  end
-  workers << wp
-
-  # +30 more pros with diverse geos, but ~12 fixed to the client's city (to populate home)
-  home_city    = client.try(:city)
-  home_country = client.try(:country)
-  home_tz      = client.try(:time_zone)
-
-  (1..30).each do |i|
-    email = "pro%02d@demo.com" % i
-    owner = User.find_or_initialize_by(email: email)
-    owner.password ||= "password"
-    set_brazilian_name!(owner, force: true)
-
-    # First 12 pros: same city/timezone as main client → home shows a lot of locals
-    if i <= 12 && home_city.present?
-      set_if_has(owner, :city,      home_city)
-      set_if_has(owner, :country,   home_country)
-      set_if_has(owner, :time_zone, home_tz)    if owner.has_attribute?(:time_zone)
-    else
-      geo = sample_geo
-      set_if_has(owner, :city,      owner.try(:city).presence    || geo[:city])
-      set_if_has(owner, :country,   owner.try(:country).presence || geo[:country])
-      set_if_has(owner, :time_zone, geo[:time_zone])             if owner.has_attribute?(:time_zone)
-    end
-
-    set_if_has(owner, :role, "worker") if owner.respond_to?(:role)
-    set_if_has(owner, :worker, true)   if owner.has_attribute?(:worker)
-    set_if_has(owner, :avatar, owner.try(:avatar).presence || stable_avatar_for(email))
-    owner.save!
-
-    cat = non_empty_categories.sample
-    profile = WorkerProfile.find_or_initialize_by(user: owner)
-    set_if_has(profile, :cpf,         profile.try(:cpf).presence         || uniq_cpf(i + 1))
-    desc = if defined?(Faker)
+  make_desc = ->(cat) do
+    if defined?(Faker)
       "#{cat.name} com experiência. #{Faker::Lorem.sentence(word_count: 12)}"
     else
       "#{cat.name} com experiência. Atuação em diversos serviços."
     end
-    set_if_has(profile, :description, profile.try(:description).presence || desc)
+  end
+
+  def build_worker!(index:, gender:, non_empty_categories:, catalog:, make_desc:)
+    email = "user%03d@demo.com" % index # user001..user150
+    owner = User.find_or_initialize_by(email: email)
+    owner.password ||= "password"
+    owner.full_name = person_name(gender)
+
+    # geo (pesos nas 5 cidades)
+    country, city = pick_city_weighted
+    apply_geo!(owner, country: country, city: city)
+
+    set_if_has(owner, :avatar, owner.try(:avatar).presence || gender_avatar_url(gender, index))
+    owner.save!
+
+    cat = non_empty_categories.sample
+    profile = WorkerProfile.find_or_initialize_by(user: owner)
+    set_if_has(profile, :cpf,         profile.try(:cpf).presence || uniq_cpf(index))
+    set_if_has(profile, :description, profile.try(:description).presence || make_desc.call(cat))
     set_if_has(profile, :category_id, profile.try(:category_id).presence || cat.id)
     profile.save!
 
@@ -309,86 +256,79 @@ ActiveRecord::Base.transaction do
       end
     end
 
-    workers << profile
+    profile
   end
 
-  # ---------- Appointments ----------
+  (1..75).each  { |i| workers << build_worker!(index: i,    gender: :male,   non_empty_categories: non_empty_categories, catalog: catalog, make_desc: make_desc) }
+  (76..150).each{ |i| workers << build_worker!(index: i,    gender: :female, non_empty_categories: non_empty_categories, catalog: catalog, make_desc: make_desc) }
+  puts "✅ Workers: #{WorkerProfile.count}"
+
+  # -- Appointments (muitos para buscas e chats) --
   puts "📅 Criando agendamentos…"
+
   def make_appt!(client:, worker:, at:, status:)
-    tz = worker.user.try(:time_zone) || client.try(:time_zone) || "America/Sao_Paulo"
+    g = geo_for(country: worker.user.country, city: worker.user.city)
+    tz = g ? g[:time_zone] : "Europe/Lisbon"
 
-    # If 'at' is in the past, create a temporary future time to satisfy validations
-    temp_start = at < Time.zone.now ? (Time.zone.now + 5.minutes) : at
-
-    appt = Appointment.new(
-      user:           client,
-      worker_profile: worker,
-      starts_at:      temp_start,
-      status:         status
-    )
+    tmp = at < Time.zone.now ? (Time.zone.now + 5.minutes) : at
+    appt = Appointment.new(user: client, worker_profile: worker, starts_at: tmp, status: status)
     set_if_has(appt, :time_zone, tz)
+    set_if_has(appt, :ends_at, tmp + 1.hour) if appt.respond_to?(:ends_at) && tmp.present?
+    appt.save!
 
-    if appt.respond_to?(:ends_at) && temp_start.present?
-      set_if_has(appt, :ends_at, temp_start + 1.hour)
-    end
-
-    appt.save!  # passes model validations
-
-    # If we wanted a past time, move it there after save (skips validations/callbacks)
     if at < Time.zone.now
       updates = { starts_at: at }
-      updates[:ends_at] = (at + 1.hour) if appt.respond_to?(:ends_at)
-      appt.update_columns(updates)
+      updates[:ends_at] = at + 1.hour if appt.respond_to?(:ends_at)
+      appt.update_columns(updates) # bypass validations
     end
-
     appt
   end
 
   appts = []
-  clients_pool = [client] + extra_clients
+  # base grande de agendas variadas
+  220.times do
+    wp   = workers.sample
+    cli  = client_pool.sample
+    day  = rand(-5..10)
+    hour = [9,10,11,14,15,16,18,19].sample
+    t    = (now + day.days).change(hour: hour)
 
-  # 6 accepted: 2 past, 2 today/tomorrow, 2 next week
-  appts << make_appt!(client: clients_pool.sample, worker: workers[0],  at: (now - 3.days).change(hour: 10), status: "accepted")
-  appts << make_appt!(client: clients_pool.sample, worker: workers[2],  at: (now - 1.day).change(hour: 15), status: "accepted")
-  appts << make_appt!(client: client,              worker: workers[3],  at: now.change(hour: 17),            status: "accepted")
-  appts << make_appt!(client: clients_pool.sample, worker: workers[4],  at: (now + 1.day).change(hour: 11),  status: "accepted")
-  appts << make_appt!(client: clients_pool.sample, worker: workers[5],  at: (now + 6.days).change(hour: 10), status: "accepted")
-  appts << make_appt!(client: clients_pool.sample, worker: workers[6],  at: (now + 7.days).change(hour: 14), status: "accepted")
+    status = case rand
+             when 0.0...0.55 then "accepted"
+             when 0.55...0.85 then "pending"
+             else "declined"
+             end
 
-  # 6 pending (2 with proposals)
-  p1 = make_appt!(client: client,               worker: workers[7],  at: (now + 2.days).change(hour: 12), status: "pending")
-  p2 = make_appt!(client: clients_pool.sample,  worker: workers[8],  at: (now + 3.days).change(hour: 9),  status: "pending")
-  p3 = make_appt!(client: clients_pool.sample,  worker: workers[9],  at: (now + 4.days).change(hour: 18), status: "pending")
-  p4 = make_appt!(client: clients_pool.sample,  worker: workers[10], at: (now + 5.days).change(hour: 16), status: "pending")
-  p5 = make_appt!(client: clients_pool.sample,  worker: workers[11], at: (now + 2.days).change(hour: 13), status: "pending")
-  p6 = make_appt!(client: clients_pool.sample,  worker: workers[12], at: (now + 3.days).change(hour: 19), status: "pending")
-
-  # 3 declined
-  appts << make_appt!(client: clients_pool.sample, worker: workers[13], at: (now + 2.days).change(hour: 15), status: "declined")
-  appts << make_appt!(client: clients_pool.sample, worker: workers[1],  at: (now + 3.days).change(hour: 13), status: "declined")
-  appts << make_appt!(client: clients_pool.sample, worker: workers[0],  at: (now + 4.days).change(hour: 10), status: "declined")
-
-  # conflict for same worker (visual demo)
-  conflict_a = make_appt!(client: clients_pool.sample, worker: workers[0], at: (now + 1.day).change(hour: 10),     status: "accepted")
-  conflict_b = make_appt!(client: clients_pool.sample, worker: workers[0], at: (now + 1.day).change(hour: 10, min: 30), status: "accepted")
-  appts += [p1, p2, p3, p4, p5, p6, conflict_a, conflict_b]
-
-  # Proposals (if fields exist)
-  if Appointment.new.respond_to?(:proposed_starts_at)
-    p1.update!(proposed_starts_at: p1.starts_at + 2.hours, proposed_by_id: p1.worker_profile.user_id)
-    p2.update!(proposed_starts_at: p2.starts_at - 1.hour, proposed_by_id: p2.user_id)
+    appts << make_appt!(client: cli, worker: wp, at: t, status: status)
   end
 
-  # ---------- Messages ----------
+  # conflitos visuais (mesmo worker com overlap)
+  12.times do
+    wp   = workers.sample
+    cli1 = client_pool.sample
+    cli2 = (client_pool - [cli1]).sample
+    base = (now + rand(1..3).days).change(hour: [10,11,14,15].sample)
+    appts << make_appt!(client: cli1, worker: wp, at: base,              status: "accepted")
+    appts << make_appt!(client: cli2, worker: wp, at: base + 30.minutes, status: "accepted")
+  end
+
+  # propostas (se colunas existirem)
+  if Appointment.new.respond_to?(:proposed_starts_at)
+    appts.sample(20).each do |a|
+      next unless a.status.to_s == "pending"
+      proposed_by_id = [a.user_id, a.worker_profile.user_id].sample
+      a.update!(proposed_starts_at: a.starts_at + [1.hour, -1.hour, 2.hours].sample,
+                proposed_by_id: proposed_by_id)
+    end
+  end
+
+  # -- Mensagens (chats) --
   puts "💬 Criando conversas…"
   appts.each do |appt|
     c = appt.user
     w = appt.worker_profile.user
-
-    # more messages per chat
-    msgs = rand(12..20)
+    msgs = rand(10..20)
     author = [c, w].sample
-
     msgs.times do |i|
       author = (author == c) ? w : c
       txt = if i.zero?
@@ -403,7 +343,7 @@ ActiveRecord::Base.transaction do
       make_message!(appt, author, txt)
     end
 
-    # unread flags if columns exist (to acender o 'ping' no index)
+    # unread flags (pra 'ping' no index)
     if appt.starts_at > now && %w[pending accepted].include?(appt.status.to_s)
       if [true, false].sample
         appt.update_column(:client_last_read_at, now)  if appt.respond_to?(:client_last_read_at)
@@ -415,43 +355,9 @@ ActiveRecord::Base.transaction do
     end
   end
 
-  # ---------- Extra appointments to create more chats in the list ----------
-  puts "➕ Gerando mais agendamentos para popular a lista…"
-  more = []
-  (1..25).each do
-    wp   = workers.sample
-    cli  = ([client] + extra_clients).sample
-    day  = rand(-5..10) # alguns no passado, outros futuro
-    hour = [9, 10, 11, 14, 15, 16, 18, 19].sample
-    t    = (now + day.days).change(hour: hour)
-    st   = %w[accepted pending declined].sample
-
-    more << make_appt!(client: cli, worker: wp, at: t, status: st)
-  end
-
-  # add messages to these new ones too
-  (more).each do |appt|
-    c = appt.user
-    w = appt.worker_profile.user
-    msgs = rand(8..14)
-    author = [c, w].sample
-    msgs.times do |i|
-      author = (author == c) ? w : c
-      txt = if defined?(Faker) && Faker.const_defined?("Lorem")
-        Faker::Lorem.sentence(word_count: rand(6..14))
-      else
-        "Mensagem de demonstração."
-      end
-      make_message!(appt, author, txt)
-    end
-  end
-
-  # update appts list so summary counts include 'more'
-  appts.concat(more)
-
-  # ---------- Reviews ----------
+  # -- Reviews --
   if defined?(Review)
-    puts "⭐ Criando reviews realistas…"
+    puts "⭐ Criando reviews…"
     base_comments = [
       "Ótimo atendimento!", "Excelente comunicação e qualidade.",
       "Resolveu meu problema rapidamente.", "Profissional pontual e atencioso.",
@@ -465,13 +371,14 @@ ActiveRecord::Base.transaction do
 
     shaped_rating = -> do
       r = rand
-      r < 0.10 ? 3 : (r < 0.65 ? 5 : 4) # mais 4–5, às vezes 3
+      r < 0.10 ? 3 : (r < 0.65 ? 5 : 4)
     end
 
     workers.each do |wp|
-      author_pool = ([client] + extra_clients).reject { |u| u.id == wp.user_id }.shuffle
+      # 4–7 reviews por worker
       target = rand(4..7)
-      used_ids = Review.where(worker_profile_id: wp.id).pluck(:user_id).to_set
+      authors = client_pool.shuffle.take(target)
+
       srv_names = wp.services.limit(3).pluck(:name)
       comment_for = -> do
         base = base_comments.sample
@@ -482,33 +389,22 @@ ActiveRecord::Base.transaction do
         end
       end
 
-      author_pool.each do |author|
-        break if Review.where(worker_profile_id: wp.id).count >= target
-        next if used_ids.include?(author.id)
-        rev = Review.find_or_initialize_by(worker_profile_id: wp.id, user_id: author.id)
-        rev.rating  = shaped_rating.call
-        rev.comment = comment_for.call
-        # attach to most recent accepted appt (if you track appointment_id)
-        appt_id = Appointment.where(worker_profile_id: wp.id, status: "accepted").order(:starts_at).last&.id
-        set_if_has(rev, :appointment_id, appt_id)
-        t = recent_time.call
-        rev.created_at = t
-        rev.updated_at = t
-        rev.save!
-        used_ids << author.id
-      end
+      authors.each do |author|
+        pair_appt = Appointment.where(user_id: author.id, worker_profile_id: wp.id, status: "accepted").order(:starts_at).last
+        unless pair_appt
+          t = (now - rand(3..20).days).change(hour: [10, 14, 16, 18].sample)
+          pair_appt = make_appt!(client: author, worker: wp, at: t, status: "accepted")
+        end
 
-      while Review.where(worker_profile_id: wp.id).count < 3
-        author = ([client] + extra_clients).sample
-        next if author.id == wp.user_id
         next if Review.exists?(worker_profile_id: wp.id, user_id: author.id)
+
         t = recent_time.call
         Review.create!(
           worker_profile: wp,
           user: author,
           rating: shaped_rating.call,
-          comment: base_comments.sample,
-          appointment_id: Appointment.where(worker_profile_id: wp.id, status: "accepted").order(:starts_at).last&.id,
+          comment: comment_for.call,
+          appointment_id: pair_appt.id,
           created_at: t,
           updated_at: t
         )
@@ -516,16 +412,29 @@ ActiveRecord::Base.transaction do
     end
   end
 
-  # ---------- Summary ----------
+  # -- Resumo / Logins --
+  total_users = User.count
+  total_workers = WorkerProfile.count
+  total_clients = client_pool.size
   puts "\n✅ Seeds prontos!"
-  puts "Users:        #{User.count}"
-  puts "Workers:      #{WorkerProfile.count}"
-  puts "Appointments: #{Appointment.count}  "\
-       "(accepted: #{Appointment.where(status:'accepted').count}, "\
-       "pending: #{Appointment.where(status:'pending').count}, "\
+  puts "Users (total): #{total_users}"
+  puts "Workers:       #{total_workers}"
+  puts "Clients (não-workers): #{total_clients}"
+  puts "Appointments:  #{Appointment.count}  " \
+       "(accepted: #{Appointment.where(status:'accepted').count}, " \
+       "pending: #{Appointment.where(status:'pending').count}, " \
        "declined: #{Appointment.where(status:'declined').count})"
-  puts "Messages:     #{defined?(Message) ? Message.count : 0}"
-  puts "Services:     #{Service.count}"
-  puts "Categories:   #{Category.count}"
-  puts "Reviews:      #{defined?(Review) ? Review.count : 0}"
+  puts "Messages:      #{defined?(Message) ? Message.count : 0}"
+  puts "Services:      #{Service.count}"
+  puts "Categories:    #{Category.count}"
+  puts "Reviews:       #{defined?(Review) ? Review.count : 0}"
+
+  puts <<~LOGINS
+
+  🔐 Logins de demo
+  • Client principal:   cliente@demo.com / password
+  • Clients extras:     client01@demo.com … client49@demo.com / password
+  • Workers (M 1..75):  user001@demo.com … user075@demo.com / password
+  • Workers (F 76..150): user076@demo.com … user150@demo.com / password
+  LOGINS
 end
