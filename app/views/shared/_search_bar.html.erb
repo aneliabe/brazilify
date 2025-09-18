@@ -2,7 +2,7 @@
          data-controller="search-enhancement location-hint search"
          data-location-hint-token-value="<%= ENV.fetch('MAPBOX_PUBLIC_TOKEN', '') %>">
 
-  <h1>Encontre profissionais brasileiros na sua cidade</h1>
+  <h3 class="mb-3">Encontre profissionais brasileiros na sua cidade</h3>
 
   <div data-location-hint-target="wrap">
     <%= form_with url: search_path, method: :get, html: { class: "searchbar", role: "search" } do %>
