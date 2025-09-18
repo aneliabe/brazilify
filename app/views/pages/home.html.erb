@@ -6,7 +6,7 @@
     <div class="container" style="max-width:1100px;">
 
       <!-- Serviços Populares (keeps your sizing, just polished) -->
-      <section class="glass-card p-3 p-md-4 mb-4">
+ <section class="glass-card p-3 p-md-4 mb-4">
         <h2 class="section-title">Serviços Populares</h2>
 
         <div class="svc-grid chips">
@@ -20,18 +20,19 @@
               class: "chip svc-card text-decoration-none" %>
             <% end %>
         </div>
-
-      </section>
-
+      <!--<div class="text-end mt-3">
+        <%= link_to "Ver todos os serviços", categories_path, class: "btn btn-light" %> -->
+      </div>
+</section>
       <!-- Destaques (logged in) OR your explainer (guest) -->
       <% if user_signed_in? %>
         <section class="mb-4">
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
             <div style="display:flex; flex-direction:column; align-items:flex-start;">
-              <h2 class="section-title" style="margin:0;">Prestadores de serviços em <%= @current_user.city %></h2>
-              <p style="margin:6px 0 0 0; font-size:0.9rem; color:#6c757d;"><i>(cidade do seu cadastro)</i></p>
+              <h2 class="section-title" style="margin:0;">Prestadores de serviços em <%= @current_user.city %> - <%= link_to "Ver todos" , search_path, class: "btn btn-info btn-sm" %></h2>
+              <p style="margin:6px 0 0 0; font-size:0.9rem; color:#6c757d;"><i>(cidade cadastrada)</i></p>
             </div>
-            <%= link_to "Ver todos" , search_path, class: "btn btn-link p-0" %>
+            <!--<%= link_to "Ver todos" , search_path, class: "btn btn-link p-0" %> -->
           </div>
 
           <% if @top_workers.blank? %>
