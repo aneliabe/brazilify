@@ -14,4 +14,5 @@ class WorkerProfile < ApplicationRecord
   def average_rating
     reviews.average(:rating)&.round(2) || 0
   end
+  
 end

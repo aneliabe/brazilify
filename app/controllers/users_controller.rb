@@ -34,11 +34,7 @@ class UsersController < ApplicationController
     end
 
     @worker_profile = @user.worker_profile
-      if @user.latest_subscription&.status == "canceled"
-        @visible_services = [@worker_profile.worker_services.first].compact
-      else
-        @visible_services = @worker_profile.worker_services
-      end
+    @worker_services = @worker_profile.worker_services.includes(:category, :service)
 
     # @worker_services = @worker_profile.worker_services.includes(:category, :service)
   end
@@ -49,15 +45,7 @@ class UsersController < ApplicationController
     @worker_profile = @user.worker_profile
     @service_types = WorkerService.service_types.keys
 
-    latest_sub = @user.subscriptions.order(created_at: :desc).first
-
-      if latest_sub&.status == "canceled"
-        # Keep only the first service visible in the form
-        @visible_services = [@worker_profile.worker_services.first].compact
-      else
-        # Show all services if subscription is active
-        @visible_services = @worker_profile.worker_services
-      end
+    @worker_profile.worker_services = []
 
     render :become_worker
   end

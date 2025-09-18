@@ -46,9 +46,9 @@
       <div class="glass-card p-3 p-md-4 h-100">
         <h2 class="h6 fw-bold mb-2">Serviços oferecidos</h2>
 
-        <% if @user.role == "worker" && @visible_services.present? %>
+        <% if @user.role == "worker" && @worker_services.present? %>
           <div class="chips">
-            <% @visible_services.each do |ws| %>
+            <% @worker_services.each do |ws| %>
               <span class="chip d-inline-flex align-items-center gap-1">
                 <i class="fa-solid fa-briefcase"></i>
                 <span class="text-truncate">
@@ -104,7 +104,7 @@
   <% end %>
 
   <% if latest_sub&.status == "active" %>
-    <%= button_to "Cancel Subscription",
+    <%= button_to "Voltar para o plano básico",
                   cancel_subscription_path(latest_sub),
                   method: :patch,
                   data: { confirm: "Are you sure?" },
