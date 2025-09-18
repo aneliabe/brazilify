@@ -18,7 +18,7 @@
   <!-- Container where service rows will be added -->
   <div id="worker-services" data-worker-form-target="servicesContainer">
     <% if @worker_profile.worker_services.any? %>
-      <%= f.simple_fields_for :worker_services, @visible_services do |ws| %>
+      <%= f.simple_fields_for :worker_services do |ws| %>
         <%= render "worker_service_fields", f: ws, categories: @categories, service_types: @service_types %>
       <% end %>
     <% else %>
