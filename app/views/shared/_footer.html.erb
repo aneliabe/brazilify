@@ -2,21 +2,19 @@
   <div class="container footer-content">
     <div class="brand">
       <%= link_to "Brazilify", root_path, class: "logo" %>
-      <p>Conectando brasileiros qualificados pelo mundo 🌎</p>
+      <p>Conectando profissionais e clientes brasileiros pelo mundo 🌎</p>
     </div>
 
     <div class="links">
-      <h5>Descubra</h5>
+      <h5><strong>Descubra</strong></h5>
       <ul>
-        <li><%= link_to "Serviços Populares", search_path %></li>
-        <li><%= link_to "Prestadores", workers_path %></li>
-        <li><%= link_to "Ajuda", root_path %></li>
         <li><%= link_to "Ver todas as categorias", categories_path %></li>
+        <li><%= link_to "Suporte", root_path %></li>
       </ul>
     </div>
 
     <div class="links">
-      <h5>Conta</h5>
+      <h5><strong>Conta</strong></h5>
       <ul>
         <li><%= link_to "Entrar", new_user_session_path %></li>
         <li><%= link_to "Cadastrar", new_user_registration_path %></li>
@@ -27,8 +25,8 @@
       <h5>Siga-nos</h5>
       <div class="icons">
         <a href="https://www.instagram.com/thebrazilify/"><i class="fa-brands fa-instagram"></i></a>
-        <a href="#"><i class="fa-brands fa-facebook"></i></a>
-        <a href="#"><i class="fa-brands fa-linkedin"></i></a>
+        <%# <a href="#"><i class="fa-brands fa-facebook"></i></a> %>
+        <a href="https://www.linkedin.com/in/brazilify-app-9b7150385/"><i class="fa-brands fa-linkedin"></i></a>
       </div>
     </div>
   </div>

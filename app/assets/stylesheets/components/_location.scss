@@ -1,0 +1,9 @@
+.location-icon {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  color: #f59e0b;
+
+  &.nearby { color: #10b981; }
+  &.major { color: #f59e0b; }
+  &.search { color: #64748b; }
+}

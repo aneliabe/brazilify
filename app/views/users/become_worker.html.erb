@@ -1,3 +1,5 @@
+<% latest_sub = current_user.latest_subscription %>
+
 <%= simple_form_for @worker_profile, url: become_worker_user_path(@user), method: :post, html: { multipart: true }, data: { controller: "worker-form", worker_form_max_photos_value: 9 } do |f| %>
   <% if @worker_profile.errors.any? %>
     <div class="alert alert-danger" role="alert">
@@ -9,7 +11,7 @@
       </ul>
     </div>
   <% end %>
-
+  <br>
   <%= f.input :cpf, label: "CPF", input_html: { class: "form-control" } %>
   <%= f.input :description, as: :text, label: "Descrição", input_html: { class: "form-control", rows: 3 } %>
 
@@ -33,9 +35,14 @@
     <% end %>
   </template>
 
-  <div class="mt-2">
+  <!-- <div class="mt-2">
     <%= link_to "Adicionar serviço", "#", class: "btn btn-outline-secondary", data: { action: "click->worker-form#addServiceRow" } %>
-  </div>
+  </div> -->
+  <% if latest_sub&.status == "active" %>
+    <div class="mt-2">
+      <%= link_to "Adicionar serviço", "#", class: "btn btn-outline-secondary", data: { action: "click->worker-form#addServiceRow" } %>
+    </div>
+  <% end %>
 
   <div class="mb-3 mt-3">
     <%= f.label :services_photos, "Adicione até 9 fotos dos seus trabalhos realizados", class: "form-label" %>

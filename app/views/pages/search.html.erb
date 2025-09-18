@@ -1,15 +1,15 @@
 <%= render "shared/search_bar", city: params[:city] %>
 
-<section class="search-results container" style="max-width:1100px;margin:1.25rem auto;">
+<section class="search-results container"
+         style="max-width:1100px;margin:1.25rem auto;"
+         <% if @check_cache %>data-controller="cache-redirect"<% end %>>
 
-  <%# ------- Header ------- %>
   <div class="search-header glass-card p-3 p-md-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
     <div>
       <h1 class="h5 m-0">Resultados</h1>
 
-      <%# active filter chips %>
       <div class="filter-chips mt-2">
-        <% if params[:city].present? %>
+        <% if params[:city].present? && params[:city] != "cache" %>
           <span class="chip tone-2"><i class="fa-solid fa-location-dot"></i> <%= params[:city] %></span>
         <% end %>
 
@@ -24,7 +24,7 @@
         <% end %>
 
         <% if params[:q].present? %>
-          <span class="chip tone-1"><i class="fa-solid fa-magnifying-glass"></i> “<%= params[:q] %>”</span>
+          <span class="chip tone-1"><i class="fa-solid fa-magnifying-glass"></i> "<%= params[:q] %>"</span>
         <% end %>
       </div>
     </div>
@@ -37,46 +37,53 @@
     </div>
   </div>
 
-  <%# ------- Results / Empty ------- %>
   <% if @workers.present? && @workers.any? %>
-    <div class="d-flex align-items-center justify-content-between mt-3 mb-2">
-      <span class="count-pill">
-        <%= @workers.size %>
-        <%= @workers.size == 1 ? "profissional encontrado" : "profissionais encontrados" %>
-      </span>
-    </div>
-
-    <div class="result-grid">
-      <% @workers.each do |w| %>
-        <%= render "shared/results_card", w: w %>
+  <div class="d-flex align-items-center justify-content-between mt-3 mb-2">
+    <span class="count-pill">
+      <%= @workers.total_count %>
+      <%= @workers.total_count == 1 ? "profissional encontrado" : "profissionais encontrados" %>
+      <% if @workers.total_pages > 1 %>
+        (página <%= @workers.current_page %> de <%= @workers.total_pages %>)
       <% end %>
-    </div>
-  <% else %>
-  <% if !user_signed_in? && params[:city].blank? %>
-    <!-- Special message for non-logged users without city -->
-    <div class="empty-state glass-card p-4 text-center mt-3">
-      <div class="display-6 mb-2">📍</div>
-      <h2 class="h6">Especifique sua cidade para ver os resultados</h2>
-      <p class="text-muted mb-3">Para encontrar profissionais perto de você, informe a cidade no campo de busca acima.</p>
-      <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
-        <button type="button" class="btn btn-primary" onclick="document.querySelector('input[name=city]').focus()">
-          <i class="fa-solid fa-location-dot"></i> Informar cidade
-        </button>
-        <%= link_to "Cadastrar-se", new_user_registration_path, class: "btn btn-outline-primary" %>
-      </div>
-      <small class="text-muted mt-2 d-block">Exemplo: "Dublin, IE" ou "São Paulo, BR"</small>
-    </div>
-  <% else %>
-    <!-- Original empty state for other cases -->
-    <div class="empty-state glass-card p-4 text-center mt-3">
-      <div class="display-6 mb-2">😕</div>
-      <h2 class="h6">Nenhum profissional encontrado</h2>
-      <p class="text-muted mb-2">Tente ajustar os filtros ou a cidade para ampliar os resultados.</p>
-      <ul class="text-muted small m-0" style="list-style: disc; padding-left: 1.2rem;">
-        <li class="list-unstyled">Tente outra cidade (ex.: "Dublin, IE").</li>
-        <li class="list-unstyled">Remova o serviço ou categoria.</li>
-      </ul>
+    </span>
+  </div>
+
+  <div class="result-grid">
+    <% @workers.each do |w| %>
+      <%= render "shared/results_card", w: w %>
+    <% end %>
+  </div>
+
+  <% if @workers.total_pages > 1 %>
+    <div class="d-flex justify-content-center mt-4">
+      <%= paginate @workers %>
     </div>
   <% end %>
-<% end %>
+
+<% else %>
+    <% if !user_signed_in? && (params[:city].blank? || params[:city] == "cache") %>
+      <div class="empty-state glass-card p-4 text-center mt-3">
+        <div class="display-6 mb-2">📍</div>
+        <h2 class="h6">Para encontrar profissionais perto de você, informe a cidade no campo de busca acima.</h2>
+        <p class="text-muted mb-3"></p>
+        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
+          <button type="button" class="btn btn-primary" onclick="document.querySelector('input[name=city]').focus()">
+            <i class="fa-solid fa-location-dot"></i> Informar cidade
+          </button>
+          <%= link_to "Cadastrar-se", new_user_registration_path, class: "btn btn-outline-primary" %>
+        </div>
+        <small class="text-muted mt-2 d-block">Exemplo: "Dublin, IE" ou "São Paulo, BR"</small>
+      </div>
+    <% else %>
+      <div class="empty-state glass-card p-4 text-center mt-3">
+        <div class="display-6 mb-2">😕</div>
+        <h2 class="h6">Nenhum profissional encontrado</h2>
+        <p class="text-muted mb-2">Tente ajustar os filtros ou a cidade para ampliar os resultados.</p>
+        <ul class="text-muted small m-0" style="list-style: disc; padding-left: 1.2rem;">
+          <li class="list-unstyled">Tente outra cidade (ex.: "Dublin, IE").</li>
+          <li class="list-unstyled">Remova o serviço ou categoria.</li>
+        </ul>
+      </div>
+    <% end %>
+  <% end %>
 </section>

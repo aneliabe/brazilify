@@ -6,6 +6,7 @@ class User < ApplicationRecord
 
   enum role: { client: 0, worker: 1, admin: 2 }
 
+  has_many :subscriptions, dependent: :destroy
   has_one :worker_profile, dependent: :destroy
   has_many :reviews, dependent: :nullify
   has_many :appointments, dependent: :destroy
@@ -14,6 +15,16 @@ class User < ApplicationRecord
 
 
   after_initialize :set_default_role, if: :new_record?
+
+  def setup_stripe_customer
+    return if stripe_customer_id.present?
+    customer = Stripe::Customer.create(email: email)
+    update(stripe_customer_id: customer.id)
+  end
+
+  def latest_subscription
+    subscriptions.order(created_at: :desc).first
+  end
 
   private
 

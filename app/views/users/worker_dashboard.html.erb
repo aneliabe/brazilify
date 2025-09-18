@@ -1,3 +1,4 @@
+<% latest_sub = current_user.latest_subscription %>
 <div class="container dashboard" style="max-width:1100px;margin:2rem auto;">
 
   <!-- Header: avatar + name + quick actions -->
@@ -63,22 +64,55 @@
       </div>
     </div>
 
-    <!-- Dados do prestador -->
-    <div class="col-12 col-lg-6">
-      <div class="glass-card p-3 p-md-4 h-100">
-        <h2 class="h6 fw-bold mb-2">Informações do prestador</h2>
+      <!-- Descrição -->
+  <div class="col-12 col-lg-6">
+    <div class="glass-card p-3 p-md-4 h-100">
+      <h2 class="h6 fw-bold mb-2">Descrição dos serviços</h2>
 
-        <dl class="info-grid">
-          <div><dt>Nome completo</dt><dd><%= @user.full_name %></dd></div>
-          <div><dt>Data de nascimento</dt><dd><%= @user.birth_date.presence || "—" %></dd></div>
-          <div><dt>Endereço</dt><dd><%= @user.address.presence || "—" %></dd></div>
-          <div><dt>Cidade</dt><dd><%= @user.city.presence || "—" %></dd></div>
-          <div><dt>País</dt><dd><%= @user.country.presence || "—" %></dd></div>
-          <div><dt>Código do país</dt><dd><%= @user.country_code.presence || "—" %></dd></div>
-          <div><dt>Telefone</dt><dd><%= @user.phone.presence || "—" %></dd></div>
-          <div><dt>Email</dt><dd><%= @user.email %></dd></div>
-        </dl>
-      </div>
+      <dl class="info-grid">
+        <div>
+          <dd><%= @worker_profile.description.presence || "—" %></dd>
+        </div>
+      </dl>
     </div>
   </div>
+
+    <!-- Dados do prestador -->
+  <div class="col-12 col-lg-6">
+    <div class="glass-card p-3 p-md-4 h-100">
+      <h2 class="h6 fw-bold mb-2">Informações do prestador</h2>
+
+      <dl class="info-grid">
+        <div><dt>Nome completo</dt><dd><%= @user.full_name %></dd></div>
+        <div><dt>Data de nascimento</dt><dd><%= @user.birth_date.presence || "—" %></dd></div>
+        <div><dt>CPF</dt><dd><%= @worker_profile.cpf.presence || "—" %></dd></div>
+        <div><dt>Endereço</dt><dd><%= @user.address.presence || "—" %></dd></div>
+        <div><dt>Cidade</dt><dd><%= @user.city.presence || "—" %></dd></div>
+        <div><dt>País</dt><dd><%= @user.country.presence || "—" %></dd></div>
+        <div><dt>Código do país</dt><dd><%= @user.country_code.presence || "—" %></dd></div>
+        <div><dt>Telefone</dt><dd><%= @user.phone.presence || "—" %></dd></div>
+        <div><dt>Email</dt><dd><%= @user.email %></dd></div>
+      </dl>
+    </div>
+  </div>
+</div>
+  <br>
+  <% if latest_sub.nil? || latest_sub.status == "canceled" %>
+    <%= form_with url: subscriptions_path, method: :post, data: { turbo: false } do %>
+      <%= submit_tag "Upgrade", class: "btn btn-primary" %>
+    <% end %>
+  <% end %>
+
+  <% if latest_sub&.status == "active" %>
+    <%= button_to "Voltar para o plano básico",
+                  cancel_subscription_path(latest_sub),
+                  method: :patch,
+                  data: { confirm: "Are you sure?" },
+                  class: "btn btn-danger" %>
+  <% end %>
+
+
+ <!-- <%= form_with url: subscriptions_path, method: :post, data: { turbo: false } do %>
+    <%= submit_tag "Upgrade", class: "btn btn-primary" %>
+  <% end %> -->
 </div>

@@ -2,7 +2,7 @@ class PagesController < ApplicationController
   skip_before_action :authenticate_user!, only: [:home, :search]
 
   def home
-    @popular_services = Service.order("RANDOM()").limit(8)
+    @popular_services = Service.popular_services
     @top_workers = find_top_workers
     @categories = Category.includes(:services).order(:name)
   end
@@ -13,28 +13,48 @@ class PagesController < ApplicationController
     @category_id = params[:category_id].to_s.strip
     @service_id = params[:service_id].to_s.strip
 
-    city_token, _country_hint = parse_city_label(raw_city)
+    # If city is "cache", let JavaScript handle it by rendering the page first
+    if raw_city == "cache"
+      @check_cache = true
+      city_token = ""  # Don't parse "cache" as a city
+    else
+      city_token, _country_hint = parse_city_label(raw_city)
+    end
 
     scope = WorkerProfile
               .includes(:user, :services, :reviews)
               .joins(:user)
 
-    scope = scope.where("LOWER(users.city) LIKE LOWER(?)", "%#{city_token}%") if city_token.present?
-    scope = scope.joins(:services).where("services.name ILIKE ?", "%#{@q}%").distinct if @q.present?
+    # CRITICAL: For non-logged users, require city or return empty results
+    if !user_signed_in? && city_token.blank?
+      @workers = WorkerProfile.none.page(params[:page]).per(12)  # Return empty paginated scope
+    else
+      # Apply city filter (either from params or from logged user)
+      target_city = city_token.present? ? city_token : current_user&.city
+      scope = scope.where("LOWER(users.city) LIKE LOWER(?)", "%#{target_city}%") if target_city.present?
 
-    if @category_id.present?
-      scope = scope.joins(:services)
-                  .where(services: { category_id: @category_id })
-                  .distinct
+      # Apply service filters - UPDATED LOGIC
+      if @service_id.present?
+        # Exact service match (from popular services)
+        scope = scope.joins(:services)
+                    .where(services: { id: @service_id })
+                    .distinct
+      elsif @q.present?
+        # Text-based service search (from manual search)
+        scope = scope.joins(:services)
+                    .where("services.name ILIKE ?", "%#{@q}%")
+                    .distinct
+      end
+
+      if @category_id.present?
+        scope = scope.joins(:services)
+                    .where(services: { category_id: @category_id })
+                    .distinct
+      end
+
+      @workers = scope.page(params[:page]).per(12)  # ← Add pagination here
     end
 
-    if @service_id.present?
-      scope = scope.joins(:services)
-                  .where(services: { id: @service_id })
-                  .distinct
-    end
-
-    @workers = scope
     @categories = Category.includes(:services).order(:name)
   end
 
@@ -42,12 +62,7 @@ class PagesController < ApplicationController
 
   def find_top_workers
     target_city = get_target_city
-
-    if target_city.present?
-      workers_by_city(target_city)
-    else
-      random_workers
-    end
+    target_city.present? ? workers_by_city(target_city) : random_workers
   end
 
   def get_target_city
@@ -56,12 +71,23 @@ class PagesController < ApplicationController
     search_city.present? ? search_city : user_city
   end
 
+  # def get_search_city(city_token)
+  #   city_token.present? ? city_token : current_user&.city
+  # end
+
   def workers_by_city(city)
-    WorkerProfile
-      .includes(:user, :services, :reviews)
+    # First get the IDs with random order
+    worker_ids = WorkerProfile
       .joins(:user)
       .where("LOWER(users.city) LIKE LOWER(?)", "%#{city}%")
+      .order("RANDOM()")
       .limit(6)
+      .pluck(:id)
+
+
+    WorkerProfile
+      .includes(:user, :services, :reviews)
+      .where(id: worker_ids)
   end
 
   def random_workers
@@ -72,7 +98,7 @@ class PagesController < ApplicationController
   end
 
   def parse_city_label(label)
-    parts = label.split(",").map { |s| s.strip }.reject(&:blank?)
+    parts = label.split(",").map(&:strip).reject(&:blank?)
     return [nil, nil] if parts.empty?
 
     if parts.size == 1
