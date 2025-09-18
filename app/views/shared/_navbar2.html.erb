@@ -24,16 +24,12 @@
             </li>
           <% end %>
 
-          <!-- Worker/Client Link -->
-          <!-- <% if current_user.worker? %>
-            <li class="nav-item">
-              <%= link_to "Solicitações", my_requests_path, class: "nav-link" %>
-            </li>
-          <% else %>
+
+          <% if current_user.client? %>
             <li class="nav-item">
               <%= link_to "Torne-se Prestador", become_worker_user_path(current_user), class: "nav-link" %>
             </li>
-          <% end %> -->
+          <% end %>
 
           <li class="nav-item">
             <span class="nav-link navbar-text">
