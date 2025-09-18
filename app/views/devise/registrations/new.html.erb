@@ -32,6 +32,9 @@
           data-location-hint-token-value="<%= ENV.fetch('MAPBOX_PUBLIC_TOKEN', '') %>"
           data-location-hint-show-nearby-value="false"
           data-location-hint-enable-cache-value="false">
+            <%= f.input :latitude, as: :hidden, input_html: { data: { "location-hint-target": "lat" } } %>
+            <%= f.input :longitude, as: :hidden, input_html: { data: { "location-hint-target": "lng" } } %>
+
 
       <div data-location-hint-target="wrap" class="position-relative">
         <%= f.input :city,
