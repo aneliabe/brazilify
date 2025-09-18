@@ -12,7 +12,7 @@ class SubscriptionsController < ApplicationController
         quantity: 1
       }],
       mode: 'subscription',
-      success_url: worker_user_url(current_user),
+      success_url: edit_worker_user_url(current_user),
       cancel_url: root_url
     )
     redirect_to session.url, allow_other_host: true
@@ -24,7 +24,7 @@ class SubscriptionsController < ApplicationController
     return redirect_to users_worker_path(current_user), alert: "No subscription found" unless subscription
 
     subscription.update(status: "canceled")
-    redirect_to worker_user_url(current_user), notice: "Subscription canceled."
+    redirect_to edit_worker_user_url(current_user), notice: "Subscription canceled."
   end
 
   private

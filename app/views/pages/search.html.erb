@@ -38,19 +38,29 @@
   </div>
 
   <% if @workers.present? && @workers.any? %>
-    <div class="d-flex align-items-center justify-content-between mt-3 mb-2">
-      <span class="count-pill">
-        <%= @workers.size %>
-        <%= @workers.size == 1 ? "profissional encontrado" : "profissionais encontrados" %>
-      </span>
-    </div>
-
-    <div class="result-grid">
-      <% @workers.each do |w| %>
-        <%= render "shared/results_card", w: w %>
+  <div class="d-flex align-items-center justify-content-between mt-3 mb-2">
+    <span class="count-pill">
+      <%= @workers.total_count %>
+      <%= @workers.total_count == 1 ? "profissional encontrado" : "profissionais encontrados" %>
+      <% if @workers.total_pages > 1 %>
+        (página <%= @workers.current_page %> de <%= @workers.total_pages %>)
       <% end %>
+    </span>
+  </div>
+
+  <div class="result-grid">
+    <% @workers.each do |w| %>
+      <%= render "shared/results_card", w: w %>
+    <% end %>
+  </div>
+
+  <% if @workers.total_pages > 1 %>
+    <div class="d-flex justify-content-center mt-4">
+      <%= paginate @workers %>
     </div>
-  <% else %>
+  <% end %>
+
+<% else %>
     <% if !user_signed_in? && (params[:city].blank? || params[:city] == "cache") %>
       <div class="empty-state glass-card p-4 text-center mt-3">
         <div class="display-6 mb-2">📍</div>

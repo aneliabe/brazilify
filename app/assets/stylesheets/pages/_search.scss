@@ -1,7 +1,0 @@
-/* results card tweaks */
-.search-results {
-  .result-card .stars i { margin-right: 2px; }
-  .result-card .chips { display:flex; gap:.5rem; flex-wrap:wrap; }
-  .result-card .chip { padding:.3rem .55rem; border-radius:10px; font-weight:600; }
-  .clamp-2 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-}
