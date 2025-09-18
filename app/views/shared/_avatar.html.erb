@@ -8,8 +8,13 @@
         width: s, height: s, crop: :fill, gravity: :face,
         dpr: 2, quality: "auto", fetch_format: "auto",
         class: classes, alt: alt_text, style: "object-fit:cover;" %>
+<% elsif user&.avatar.present? %> <!-- ✅ fallback to URL from seeds -->
+  <img src="<%= user.avatar %>"
+       class="<%= classes %>"
+       alt="<%= alt_text %>"
+       style="object-fit:cover;width:<%= s %>px;height:<%= s %>px;">
 <% else %>
-  <!-- 2x placeholder, scaled down via CSS for crispness -->
+  <!-- crisp placeholder -->
   <img src="https://placehold.co/<%= s*2 %>x<%= s*2 %>"
        class="<%= classes %>"
        alt="<%= alt_text %>"

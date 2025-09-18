@@ -30,7 +30,7 @@ class PagesController < ApplicationController
       current_user&.city.present?
 
     if !has_location
-      @workers = WorkerProfile.none.page(params[:page]).per(12)
+      @workers = WorkerProfile.none.page(params[:page]).per(9)
     else
       if @lat && @lng && @lat != 0 && @lng != 0
         radius_km = 50
@@ -65,7 +65,7 @@ class PagesController < ApplicationController
         scope = scope.joins(:services).where(services: { category_id: @category_id }).distinct
       end
 
-      @workers = scope.page(params[:page]).per(12)
+      @workers = scope.page(params[:page]).per(9)
     end
 
     @categories = Category.includes(:services).order(:name)
