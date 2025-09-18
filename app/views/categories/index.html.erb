@@ -20,15 +20,17 @@
             <!-- services list (keeps your target + inline display so no JS change) -->
             <div class="services" data-categories-target="services" style="display:none;">
               <div class="chips">
-<% category.services.order(:name).each do |service| %>
-  <%= link_to service.name,
-              search_path(
-                category_id: category.id,   # ← Add this line
-                service_id: service.id,
-                city: current_user&.city || params[:city] || "cache"
-              ),
-              class: "chip chip-link" %>
-<% end %>
+                <% category.services.order(:name).each do |service| %>
+                  <%= link_to service.name,
+                              search_path(
+                                category_id: category.id,
+                                service_id: service.id,
+                                city: current_user&.city || params[:city] || "cache",
+                                lat: current_user&.latitude,
+                                lng: current_user&.longitude
+                              ),
+                              class: "chip chip-link" %>
+                <% end %>
               </div>
             </div>
           </div>
