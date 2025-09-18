@@ -1,4 +1,4 @@
-<% latest_sub = current_user.latest_subscription %>
+<% latest_sub = current_user&.latest_subscription %>
 
 <div class="navbar navbar-expand-sm navbar-light navbar-lewagon">
   <div class="container-fluid">
@@ -16,7 +16,7 @@
           <!-- <li class="nav-item active">
             <%= link_to "Encontrar Serviços", workers_path, class: "nav-link"%>
           </li> -->
-        <% if current_user.worker? && (latest_sub.nil? || latest_sub.status == "canceled") %>
+        <% if user_signed_in? && current_user.worker? && (latest_sub.nil? || latest_sub.status == "canceled") %>
           <%= form_with url: subscriptions_path, method: :post, data: { turbo: false } do %>
             <%= submit_tag "Upgrade", class: "nav-link" %>
           <% end %>
