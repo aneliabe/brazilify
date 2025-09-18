@@ -1,5 +1,4 @@
-
-<% latest_sub = current_user&.latest_subscription %>
+<% latest_sub = current_user&.latest_subscription if user_signed_in? %>
 
 <div class="navbar navbar-expand-sm navbar-light navbar-lewagon">
   <div class="container-fluid">
@@ -15,26 +14,6 @@
       <ul class="navbar-nav me-auto align-items-start align-items-md-center gap-3">
         <% if user_signed_in? %>
           <!-- Modern Greeting -->
-
-
-          <!-- <li class="nav-item active">
-            <%= link_to "Encontrar Serviços", workers_path, class: "nav-link"%>
-          </li> -->
-        <% if user_signed_in? && current_user.worker? && (latest_sub.nil? || latest_sub.status == "canceled") %>
-          <%= form_with url: subscriptions_path, method: :post, data: { turbo: false } do %>
-            <%= submit_tag "Upgrade", class: "nav-link" %>
-          <% end %>
-        <% end %>
-          <% if user_signed_in? %>
-            <% if current_user.worker? %>
-              <li class="nav-item">
-                <%= link_to "Solicitações", my_requests_path, class: "nav-link" %>
-              </li>
-            <% else %>
-              <li class="nav-item">
-                <%= link_to "Torne-se Prestador", become_worker_user_path(current_user), class: "nav-link" %>
-              </li>
-            <% end %>
 
           <!-- Elegant Upgrade Button -->
           <% if current_user.worker? && (latest_sub.nil? || latest_sub.status == "canceled") %>
