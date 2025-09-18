@@ -21,9 +21,6 @@
             <% end %>
         </div>
 
-              <!--<div class="text-end mt-3">
-        <%= link_to "Ver todos os serviços", categories_path, class: "btn btn-light" %> -->
-
       </section>
 
       <!-- Destaques (logged in) OR your explainer (guest) -->
@@ -31,8 +28,11 @@
         <section class="mb-4">
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
             <div style="display:flex; flex-direction:column; align-items:flex-start;">
-              <h2 class="section-title" style="margin:0;">Prestadores de serviços em <%= current_user.city %></h2>
-              <p style="margin:6px 0 0 0; font-size:0.9rem; color:#6c757d;"><i>(cidade cadastrada)</i></p>
+              <h2 class="section-title" style="margin:0;">Prestadores de serviços em <%= @current_user.city %></h2>
+              <p style="margin:6px 0 0 0; font-size:0.9rem; color:#6c757d;"><i>(cidade do seu cadastro)</i></p>
+            </div>
+            <!--<%= link_to "Ver todos" , search_path, class: "btn btn-link p-0" %>-->
+          </div>
 
           <% if @top_workers.blank? %>
             <div class="glass-card p-4 text-center text-muted">Sem prestadores ainda.</div>
@@ -100,10 +100,12 @@
                       </div>
                     </div>
                     <% end %>
-                    <div class="h2 d-flex align-items-center justify-content-center flex-wrap gap-2 mb-2">
+                  </div>
+                  <div class="h2 d-flex align-items-center justify-content-center flex-wrap gap-2 mb-2">
                   <%= link_to "Ver todos", search_path, class: "btn btn-info btn-sm px-5 rounded-3 shadow-sm" %>
                     </div>
                   </div>
+
                   <% end %>
         </section>
         <% else %>
