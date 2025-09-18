@@ -71,16 +71,23 @@ class PagesController < ApplicationController
     search_city.present? ? search_city : user_city
   end
 
-  def get_search_city(city_token)
-    city_token.present? ? city_token : current_user&.city
-  end
+  # def get_search_city(city_token)
+  #   city_token.present? ? city_token : current_user&.city
+  # end
 
   def workers_by_city(city)
-    WorkerProfile
-      .includes(:user, :services, :reviews)
+    # First get the IDs with random order
+    worker_ids = WorkerProfile
       .joins(:user)
       .where("LOWER(users.city) LIKE LOWER(?)", "%#{city}%")
+      .order("RANDOM()")
       .limit(6)
+      .pluck(:id)
+
+
+    WorkerProfile
+      .includes(:user, :services, :reviews)
+      .where(id: worker_ids)
   end
 
   def random_workers

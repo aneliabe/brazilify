@@ -1,80 +1,107 @@
-<% latest_sub = current_user.latest_subscription %>
+<% latest_sub = current_user&.latest_subscription if user_signed_in? %>
 
 <div class="navbar navbar-expand-sm navbar-light navbar-lewagon">
   <div class="container-fluid">
     <%= link_to root_path, class: "navbar-brand" do %>
       <%= image_tag "logo_brazilify.png", class: "navbar-img" %>
-    <%end%>
-</a>
+    <% end %>
+
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto align-items-start align-items-md-center gap-3">
+        <% if user_signed_in? %>
+          <!-- Modern Greeting -->
 
-          <!-- <li class="nav-item active">
-            <%= link_to "Encontrar Serviços", workers_path, class: "nav-link"%>
-          </li> -->
-        <% if current_user.worker? && (latest_sub.nil? || latest_sub.status == "canceled") %>
-          <%= form_with url: subscriptions_path, method: :post, data: { turbo: false } do %>
-            <%= submit_tag "Upgrade", class: "nav-link" %>
+          <!-- Elegant Upgrade Button -->
+          <% if current_user.worker? && (latest_sub.nil? || latest_sub.status == "canceled") %>
+            <li class="nav-item">
+              <%= form_with url: subscriptions_path, method: :post, data: { turbo: false }, local: true, class: "d-inline" do %>
+                <%= submit_tag "💎 Upgrade", class: "btn-premium" %>
+              <% end %>
+            </li>
           <% end %>
-        <% end %>
-          <% if user_signed_in? %>
-            <% if current_user.worker? %>
-              <li class="nav-item">
-                <%= link_to "Solicitações", my_requests_path, class: "nav-link" %>
-              </li>
-            <% else %>
-              <li class="nav-item">
-                <%= link_to "Torne-se Prestador", become_worker_user_path(current_user), class: "nav-link" %>
-              </li>
-            <% end %>
-          <% end %>
-          <% if user_signed_in? %>
-          <%= if current_user.photo.attached?
-                cl_image_tag current_user.photo.key,
-                  width: 56, height: 56, dpr: 2, crop: :fill, gravity: :face,
-                  quality: "auto", fetch_format: "auto",
-                  class: "dropdown-toggle rounded-circle ms-md-auto", id: "navbarDropdown",
-                  role: "button", data: { bs_toggle: "dropdown" },
-                  aria: { haspopup: "true", expanded: "false" }, style: "object-fit:cover;"
-              else
-                image_tag "default-avatar.png",
-                  width: 56, height: 56,
-                  class: "dropdown-toggle rounded-circle ms-md-auto", id: "navbarDropdown",
-                  role: "button", data: { bs_toggle: "dropdown" },
-                  aria: { haspopup: "true", expanded: "false" }, style: "object-fit:cover;"
-              end %>
 
-
-<div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-  <% if user_signed_in? && current_user.worker? %>
-    <%= link_to "Dashboard", worker_user_path(current_user), class: "dropdown-item" %>
-  <% elsif user_signed_in? && current_user.client? %>
-    <%= link_to "Meu Perfil", profile_user_path(current_user), class: "dropdown-item" %>
-  <% end %>
-  <%= link_to "Meus agendamentos", my_appointments_path, class: "dropdown-item" %>
-  <%= link_to "Log out", destroy_user_session_path,
-            method: :delete,
-            class: "dropdown-item",
-            data: { turbo_method: :delete } %>
-</div>
-              </div>
+          <!-- Worker/Client Link -->
+          <!-- <% if current_user.worker? %>
+            <li class="nav-item">
+              <%= link_to "Solicitações", my_requests_path, class: "nav-link" %>
             </li>
           <% else %>
             <li class="nav-item">
-              <%= link_to "Entre ou cadastre-se", new_user_session_path, class: "btn btn-outline-primary" %>
+              <%= link_to "Torne-se Prestador", become_worker_user_path(current_user), class: "nav-link" %>
             </li>
-          <% end %>
-          <!--li class="nav-item"-->
-          <!--/li-->
+          <% end %> -->
+
+          <li class="nav-item">
+            <span class="nav-link navbar-text">
+              👋 Olá, <span class="fw-bold text-dark"><%= current_user.full_name.present? ? current_user.full_name.split.first : "Usuário" %></span>!
+            </span>
+          </li>
+          <!-- User Dropdown with Arrow -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button"
+               data-bs-toggle="dropdown" aria-expanded="false" id="navbarDropdown">
+              <% if current_user.photo.attached? %>
+                <%= cl_image_tag current_user.photo.key,
+                    width: 56, height: 56, dpr: 2, crop: :fill, gravity: :face,
+                    quality: "auto", fetch_format: "auto",
+                    class: "rounded-circle me-2", style: "object-fit:cover;" %>
+              <% else %>
+                <%= image_tag "default-avatar.png",
+                    width: 56, height: 56,
+                    class: "rounded-circle me-2", style: "object-fit:cover;" %>
+              <% end %>
+            </a>
+
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="navbarDropdown">
+              <li class="dropdown-header">
+                <small class="text-muted">Minha conta</small>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+
+              <% if current_user.worker? %>
+                <li>
+                  <%= link_to worker_user_path(current_user), class: "dropdown-item" do %>
+                    <i class="fa-solid fa-tachometer-alt me-2 text-primary"></i> Dashboard
+                  <% end %>
+                </li>
+              <% else %>
+                <li>
+                  <%= link_to profile_user_path(current_user), class: "dropdown-item" do %>
+                    <i class="fa-solid fa-user me-2 text-primary"></i> Meu Perfil
+                  <% end %>
+                </li>
+              <% end %>
+
+              <li>
+                <%= link_to my_appointments_path, class: "dropdown-item" do %>
+                  <i class="fa-solid fa-calendar me-2 text-success"></i> Meus Agendamentos
+                <% end %>
+              </li>
+
+              <li><hr class="dropdown-divider"></li>
+
+              <li>
+                <%= link_to destroy_user_session_path, method: :delete, class: "dropdown-item text-danger",
+                    data: { turbo_method: :delete } do %>
+                  <i class="fa-solid fa-sign-out-alt me-2"></i> Sair
+                <% end %>
+              </li>
+            </ul>
+          </li>
+
+        <% else %>
+          <li class="nav-item">
+            <%= link_to "Entre ou cadastre-se", new_user_session_path, class: "btn btn-outline-primary" %>
+          </li>
+        <% end %>
       </ul>
     </div>
   </div>
 </div>
-
 
 <section class="info-bar">
   <div class="container d-flex justify-content-center gap-4 flex-wrap py-2">

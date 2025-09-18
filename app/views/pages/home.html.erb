@@ -31,7 +31,7 @@
         <section class="mb-4">
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
             <div style="display:flex; flex-direction:column; align-items:flex-start;">
-              <h2 class="section-title" style="margin:0;">Prestadores de serviços em <%= @current_user.city %> - <%= link_to "Ver todos" , search_path, class: "btn btn-info btn-sm" %></h2>
+              <h2 class="section-title" style="margin:0;">Prestadores de serviços em <%= current_user.city %></h2>
               <p style="margin:6px 0 0 0; font-size:0.9rem; color:#6c757d;"><i>(cidade cadastrada)</i></p>
 
           <% if @top_workers.blank? %>
@@ -100,6 +100,9 @@
                       </div>
                     </div>
                     <% end %>
+                    <div class="h2 d-flex align-items-center justify-content-center flex-wrap gap-2 mb-2">
+                  <%= link_to "Ver todos", search_path, class: "btn btn-info btn-sm px-5 rounded-3 shadow-sm" %>
+                    </div>
                   </div>
                   <% end %>
         </section>
