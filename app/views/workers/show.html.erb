@@ -162,10 +162,20 @@
           </div>
 
           <div class="d-grid">
+            <%= f.hidden_field :time_zone, id: "appt-time-zone" %>
             <button type="submit" class="btn btn-primary">Enviar solicitação</button>
           </div>
         <% end %>
       </div>
+      <script>
+        document.addEventListener("DOMContentLoaded", function() {
+          var input = document.getElementById("appt-time-zone");
+          if (input) {
+            var tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+            input.value = tz;
+          }
+        });
+      </script>
     </div>
   </div>
 </div>
