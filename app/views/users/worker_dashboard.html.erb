@@ -95,6 +95,7 @@
       </dl>
     </div>
   </div>
+  <%= render "worker_dashboard_photos", worker_profile: @worker_profile %>
 </div>
   <br>
   <% if latest_sub.nil? || latest_sub.status == "canceled" %>
