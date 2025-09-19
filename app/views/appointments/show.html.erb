@@ -5,7 +5,8 @@
 
     <!-- Header -->
     <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
-      <!-- esquerda: voltar -->
+
+      <!-- Left: back -->
       <div class="d-flex align-items-center">
         <%= link_to my_appointments_path, class: "btn-line d-inline-flex align-items-center gap-2" do %>
           <i class="fa-solid fa-arrow-left"></i>
@@ -13,12 +14,17 @@
         <% end %>
       </div>
 
-      <!-- centro: título + data -->
-      <div class="d-flex flex-column flex-grow-1 min-w-0" style="max-width: 720px;">
-        <h1 class="h5 m-0 text-truncate">
-          Seu agendamento com <%= @appointment.worker_profile.user.full_name %>
-        </h1>
-        <div class="small text-muted mt-1 d-flex align-items-center gap-2 flex-wrap">
+      <!-- Center: title + date/time -->
+      <div class="flex-grow-1 d-flex flex-column align-items-stretch" style="min-width:280px;">
+        <!-- make the title look like a pill -->
+        <div class="px-3 py-2 rounded-3 border bg-white shadow-sm mx-auto" style="max-width: 760px;">
+          <h1 class="h5 m-0 text-truncate">
+            Seu agendamento com <%= @appointment.worker_profile.user.full_name %>
+          </h1>
+        </div>
+
+        <!-- centered date/time row -->
+        <div class="small text-muted mt-2 d-flex justify-content-center align-items-center gap-2 flex-wrap">
           <i class="fa-regular fa-clock"></i>
           <% appt_local = @appointment.starts_at.in_time_zone(@appointment.time_zone) %>
           <span><%= l(appt_local, format: :long) rescue appt_local %></span>
@@ -31,7 +37,7 @@
         </div>
       </div>
 
-      <!-- direita: ações -->
+      <!-- Right: propose / accept / decline -->
       <div class="d-flex align-items-center gap-2">
         <button type="button"
                 class="btn-line"
