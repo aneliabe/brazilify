@@ -12,7 +12,8 @@ class Service < ApplicationRecord
     'Eletricista',
     'Motorista Particular',
     'Frete/Carretos',
-    'Babá'
+    'Babá',
+    'Pintura'
   ].freeze
 
   def self.popular_services
