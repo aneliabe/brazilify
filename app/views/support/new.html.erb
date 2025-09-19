@@ -1,0 +1,93 @@
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="text-center mb-5">
+        <h1 class="display-6 fw-bold text-primary mb-3">Suporte Brazilify</h1>
+        <p class="lead text-muted">Precisa de ajuda? Nossa equipe está pronta para te ajudar.</p>
+        <div class="d-flex justify-content-center">
+          <div style="width: 60px; height: 3px; background: linear-gradient(90deg, #2c7a7b, #1f6feb); border-radius: 2px;"></div>
+        </div>
+      </div>
+
+      <div class="glass-card p-5 shadow-sm">
+        <%= form_with url: support_index_path, method: :post, local: true do |f| %>
+
+          <div class="row g-4 mb-4">
+            <div class="col-md-6">
+              <div class="form-floating">
+                <%= f.text_field :name, value: current_user&.full_name,
+                    class: "form-control", required: true,
+                    placeholder: "Seu nome completo" %>
+                <%= f.label :name, "Nome completo" %>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-floating">
+                <%= f.email_field :email, value: current_user&.email,
+                    class: "form-control", required: true,
+                    placeholder: "seu@email.com" %>
+                <%= f.label :email, "E-mail" %>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold mb-2">
+              <i class="fa-solid fa-tag me-2 text-primary"></i>Assunto
+            </label>
+            <%= f.select :subject,
+                [
+                  ['🔧 Problema técnico', 'problema-tecnico'],
+                  ['❓ Dúvida sobre serviços', 'duvida-servicos'],
+                  ['💳 Problema com pagamento', 'problema-pagamento'],
+                  ['💡 Sugestão', 'sugestao'],
+                  ['📝 Outro', 'outro']
+                ],
+                { prompt: 'Selecione o tipo de solicitação' },
+                { class: "form-select form-select-lg", required: true } %>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold mb-2">
+              <i class="fa-solid fa-message me-2 text-primary"></i>Mensagem
+            </label>
+            <div class="form-floating">
+              <%= f.text_area :message,
+                  class: "form-control", required: true,
+                  style: "min-height: 150px",
+                  placeholder: "Descreva sua dúvida ou problema em detalhes..." %>
+              <%= f.label :message, "Descreva sua dúvida ou problema em detalhes..." %>
+            </div>
+            <div class="form-text">
+              <i class="fa-solid fa-info-circle me-1"></i>
+              Quanto mais detalhes você fornecer, melhor poderemos te ajudar.
+            </div>
+          </div>
+
+          <div class="d-flex flex-column flex-sm-row gap-3 justify-content-between align-items-center pt-3">
+            <div class="d-flex align-items-center text-muted small">
+              <i class="fa-solid fa-shield-halved me-2 text-success"></i>
+              Suas informações são seguras conosco
+            </div>
+
+            <div class="d-flex gap-2">
+              <%= link_to root_path, class: "btn btn-light px-4" do %>
+                <i class="fa-solid fa-arrow-left me-2"></i>Voltar
+              <% end %>
+              <%= f.submit "Enviar mensagem", class: "btn btn-primary px-4 fw-semibold" %>
+            </div>
+          </div>
+
+        <% end %>
+      </div>
+
+      <div class="text-center mt-4">
+        <p class="text-muted small mb-2">Ou entre em contato diretamente:</p>
+        <div class="d-flex justify-content-center gap-4 small">
+          <span><i class="fa-solid fa-envelope text-primary me-2"></i>suporte@brazilify.app</span>
+          <span><i class="fa-solid fa-clock text-primary me-2"></i>Resposta em até 24h</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

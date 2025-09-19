@@ -50,6 +50,8 @@ Rails.application.routes.draw do
 
   get "location_hint", to: "locations#hint"
 
+  resources :support, only: [:new, :create], path: 'suporte'
+
   resources :subscriptions, only: [:create] do
     member do
       patch :cancel
@@ -58,7 +60,7 @@ Rails.application.routes.draw do
   # post   "/subscriptions",          to: "subscriptions#create",  as: :subscriptions
   # delete "/subscriptions/:id",      to: "subscriptions#destroy", as: :subscription
   post "/stripe/webhook", to: "webhooks#stripe"
-  
+
   #redirect to avoid GET /subscriptions errors
   get "/subscriptions", to: redirect("/")
 
