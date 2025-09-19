@@ -99,9 +99,9 @@ class PagesController < ApplicationController
       radius_km = 50
       scope = scope.where(
         "users.latitude IS NOT NULL AND users.longitude IS NOT NULL AND
-         (6371 * acos(cos(radians(?)) * cos(radians(users.latitude)) *
-         cos(radians(users.longitude) - radians(?)) +
-         sin(radians(?)) * sin(radians(users.latitude)))) <= ?",
+        (6371 * acos(cos(radians(?)) * cos(radians(users.latitude)) *
+        cos(radians(users.longitude) - radians(?)) +
+        sin(radians(?)) * sin(radians(users.latitude)))) <= ?",
         user_or_city.latitude, user_or_city.longitude, user_or_city.latitude, radius_km
       )
     elsif user_or_city.is_a?(String)
@@ -110,7 +110,17 @@ class PagesController < ApplicationController
       scope = scope.where("LOWER(users.city) LIKE LOWER(?)", "%#{user_or_city.city}%") if user_or_city.city
     end
 
-    scope.order("RANDOM()").limit(limit)
+    # Keep original random approach but ensure exactly 6 results
+    result = scope.order("RANDOM()").limit(limit)
+
+    if result.count < limit
+      additional_needed = limit - result.count
+      used_ids = result.pluck(:id)
+      additional_workers = scope.where.not(id: used_ids).order("RANDOM()").limit(additional_needed)
+      result = result.to_a + additional_workers.to_a
+    end
+
+    result
   end
 
   def random_workers

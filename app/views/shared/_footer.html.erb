@@ -13,20 +13,22 @@
       </ul>
     </div>
 
-    <div class="links">
-      <h5><strong>Conta</strong></h5>
-      <ul>
-        <li><%= link_to "Entrar", new_user_session_path %></li>
-        <li><%= link_to "Cadastrar", new_user_registration_path %></li>
-      </ul>
-    </div>
+    <% unless user_signed_in? %>
+      <div class="links">
+        <h5><strong>Conta</strong></h5>
+        <ul>
+          <li><%= link_to "Entrar", new_user_session_path %></li>
+          <li><%= link_to "Cadastrar", new_user_registration_path %></li>
+        </ul>
+      </div>
+    <% end %>
 
     <div class="social">
       <h5>Siga-nos</h5>
       <div class="icons">
         <a href="https://www.instagram.com/thebrazilify/"><i class="fa-brands fa-instagram"></i></a>
         <%# <a href="#"><i class="fa-brands fa-facebook"></i></a> %>
-        <a href="https://www.linkedin.com/in/brazilify-app-9b7150385/"><i class="fa-brands fa-linkedin"></i></a>
+        <%# <a href="https://www.linkedin.com/in/brazilify-app-9b7150385/"><i class="fa-brands fa-linkedin"></i></a> %>
       </div>
     </div>
   </div>
