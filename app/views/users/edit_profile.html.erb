@@ -75,6 +75,8 @@
           <%= f.input :email, required: true, input_html: { autocomplete: "email" } %>
         </div>
 
+        <%= f.input :photo, as: :file %>
+
         <div class="form-actions mt-3">
           <%= f.button :submit, "Atualizar Perfil", class: "btn btn-primary" %>
         </div>

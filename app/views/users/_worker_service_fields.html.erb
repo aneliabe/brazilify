@@ -15,7 +15,7 @@
 
   <!-- Serviço -->
   <%= f.input :service_id,
-              collection: (f.object.category.present? ? f.object.category.services : []),
+            collection: (f.object.category_id.present? && f.object.category.present? ? f.object.category.services : Service.none),
               prompt: "Selecione o serviço",
               label: false,
               input_html: { class: "form-select service-select" },
