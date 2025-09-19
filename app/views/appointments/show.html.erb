@@ -125,6 +125,53 @@
 <%= render "review_modal", appointment: @appointment %>
 <%= render "review_edit_modal", appointment: @appointment, my_review: my_review %>
 
+
+<!-- Propose new time modal -->
+<div class="modal fade" id="proposeModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-narrow modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          Propor novo horário
+          <small class="text-muted d-block mt-1">
+            Fuso do atendimento: <%= @appointment.time_zone %>
+          </small>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+
+      <div class="modal-body">
+        <%= form_with url: propose_time_appointment_path(@appointment), method: :post do %>
+          <div class="mb-3">
+            <label class="form-label">Novo dia e hora</label>
+            <input
+              type="text"
+              name="proposed_starts_at"
+              id="proposed_starts_at"
+              class="form-control"
+              placeholder="Selecione dia e hora"
+              autocomplete="off"
+              data-controller="flatpickr"
+              data-flatpickr-enable-time-value="true"
+              data-flatpickr-time-24hr-value="true"
+              data-flatpickr-minute-increment-value="15"
+              data-flatpickr-date-format-value="Y-m-d H:i"
+              data-flatpickr-min-date-value="today"
+            >
+            <small class="text-muted">
+              O horário será interpretado no fuso do atendimento (<%= @appointment.time_zone %>).
+            </small>
+          </div>
+
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary">Enviar proposta</button>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   // keep auto-scroll
   function scrollChatTail() {
