@@ -55,26 +55,34 @@ class AppointmentsController < ApplicationController
 
   # POST /workers/:worker_id/appointments
   def create
-    worker = WorkerProfile.find(params[:worker_id]) # from nested route
+    worker = WorkerProfile.find(params[:worker_id])
     @appointment = Appointment.new
     @appointment.worker_profile = worker
     @appointment.user           = current_user
     @appointment.status         = "pending" if @appointment.status.blank?
 
-    # 🔹 choose the appointment clock (worker's TZ if you have it, else SP)
-    @appointment.time_zone = worker.user.try(:time_zone).presence || "America/Sao_Paulo"
+    # 1) escolha da TZ (ordem de preferência)
+    zone =
+      params.dig(:appointment, :time_zone).presence ||        # vem do form (browser ou escolha)
+      tz_from_city_country(worker.user) ||                    # fuso do profissional
+      tz_from_city_country(current_user) ||                   # fuso do cliente
+      "UTC"                                                   # fallback neutro
 
-    # 🔹 parse the picker string inside that zone
+    @appointment.time_zone = zone
+
+    # 2) parse do horário digitado dentro dessa TZ
     raw_start = params.dig(:appointment, :starts_at)
-    Time.use_zone(@appointment.time_zone) do
+    Time.use_zone(zone) do
       @appointment.starts_at = Time.zone.parse(raw_start) if raw_start.present?
     end
 
+    # # (opcional) se tiver :ends_at, defina uma duração padrão
+    # if @appointment.respond_to?(:ends_at) && @appointment.starts_at.present? && @appointment.ends_at.blank?
+    #   @appointment.ends_at = @appointment.starts_at + 1.hour
+    # end
+
     if @appointment.save
-      # optional first message
-      if params[:message].present?
-        Message.create!(appointment: @appointment, user: current_user, content: params[:message])
-      end
+      Message.create!(appointment: @appointment, user: current_user, content: params[:message]) if params[:message].present?
       redirect_to @appointment, notice: "Solicitação criada. Conversem por aqui para alinhar detalhes."
     else
       redirect_to worker_path(worker), alert: @appointment.errors.full_messages.to_sentence
@@ -215,6 +223,37 @@ class AppointmentsController < ApplicationController
 
   private
 
+  TZ_BY_CITY_COUNTRY = {
+    ["Cork",          "Ireland"]        => "Europe/Dublin",
+    ["Dublin",        "Ireland"]        => "Europe/Dublin",
+    ["Lisboa",        "Portugal"]       => "Europe/Lisbon",
+    ["Porto",         "Portugal"]       => "Europe/Lisbon",
+    ["London",        "United Kingdom"] => "Europe/London",
+    ["Manchester",    "United Kingdom"] => "Europe/London",
+    ["Edinburgh",     "United Kingdom"] => "Europe/London",
+    ["São Paulo",     "Brazil"]         => "America/Sao_Paulo",
+    ["Rio de Janeiro","Brazil"]         => "America/Sao_Paulo",
+    ["Recife",        "Brazil"]         => "America/Recife",
+    ["Fortaleza",     "Brazil"]         => "America/Fortaleza",
+    ["Salvador",      "Brazil"]         => "America/Bahia",
+    ["New York",      "United States"]  => "America/New_York",
+    ["Boston",        "United States"]  => "America/New_York",
+    ["Miami",         "United States"]  => "America/New_York",
+    ["Chicago",       "United States"]  => "America/Chicago",
+    ["Austin",        "United States"]  => "America/Chicago",
+    ["Seattle",       "United States"]  => "America/Los_Angeles",
+    ["San Francisco", "United States"]  => "America/Los_Angeles",
+    ["Los Angeles",   "United States"]  => "America/Los_Angeles"
+  }.freeze
+
+  def tz_from_city_country(user)
+    return nil unless user
+    city    = user.try(:city).to_s.strip
+    country = user.try(:country).to_s.strip
+    return nil if city.blank? || country.blank?
+    TZ_BY_CITY_COUNTRY[[city, country]]
+  end
+
   def set_appointment
     @appointment = Appointment.find(params[:id])
   end
@@ -233,7 +272,8 @@ class AppointmentsController < ApplicationController
 
   # start-only: user picks just day+time
   def appointment_params
-    params.require(:appointment).permit(:starts_at)
+    # agora aceitamos :time_zone vindo do form
+    params.require(:appointment).permit(:starts_at, :time_zone)
   end
 
   # Treat no ends_at as 1h window for conflict detection
