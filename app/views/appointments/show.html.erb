@@ -1,32 +1,59 @@
 <%= turbo_stream_from "appointment_#{@appointment.id}_messages" %>
 
 <div class="container" style="max-width:1040px; margin:2rem auto;">
-  <div class="chat appt-chat-page"><!-- 🔵 put .chat back so _chat.scss applies -->
+  <div class="chat appt-chat-page"><!-- 🔵 keep .chat so _chat.scss applies -->
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center">
-      <h1 class="h5 m-0">
-        Your appointment for <%= @appointment.worker_profile.user.full_name %>
-      </h1>
-      <div class="small text-muted">
-        <i class="fa-regular fa-clock"></i>
-        <% appt_local = @appointment.starts_at.in_time_zone(@appointment.time_zone) %>
-        <%= l(appt_local, format: :long) rescue appt_local %>
-        <span class="badge bg-light text-dark border ms-1"><%= @appointment.time_zone %></span>
-        <div
-          data-controller="local-time"
-          data-local-time-iso-value="<%= @appointment.starts_at.utc.iso8601 %>"
-          data-local-time-label-value="<%= @appointment.time_zone %>">
+    <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
+      <!-- esquerda: voltar -->
+      <div class="d-flex align-items-center">
+        <%= link_to my_appointments_path, class: "btn-line d-inline-flex align-items-center gap-2" do %>
+          <i class="fa-solid fa-arrow-left"></i>
+          Meus agendamentos
+        <% end %>
+      </div>
+
+      <!-- centro: título + data -->
+      <div class="d-flex flex-column flex-grow-1 min-w-0" style="max-width: 720px;">
+        <h1 class="h5 m-0 text-truncate">
+          Seu agendamento com <%= @appointment.worker_profile.user.full_name %>
+        </h1>
+        <div class="small text-muted mt-1 d-flex align-items-center gap-2 flex-wrap">
+          <i class="fa-regular fa-clock"></i>
+          <% appt_local = @appointment.starts_at.in_time_zone(@appointment.time_zone) %>
+          <span><%= l(appt_local, format: :long) rescue appt_local %></span>
+          <span class="badge bg-light text-dark border"><%= @appointment.time_zone %></span>
+          <div
+            data-controller="local-time"
+            data-local-time-iso-value="<%= @appointment.starts_at.utc.iso8601 %>"
+            data-local-time-label-value="<%= @appointment.time_zone %>">
+          </div>
         </div>
       </div>
 
+      <!-- direita: ações -->
+      <div class="d-flex align-items-center gap-2">
+        <button type="button"
+                class="btn-line"
+                data-bs-toggle="modal" data-bs-target="#proposeModal">
+          <i class="fa-regular fa-calendar-plus"></i>
+          Propor novo horário
+        </button>
 
-      <button type="button"
-              class="btn-line"
-              data-bs-toggle="modal" data-bs-target="#proposeModal">
-        <i class="fa-regular fa-calendar-plus"></i>
-        Propor novo horário
-      </button>
+        <% if current_user.id == @appointment.worker_profile.user_id && @appointment.status.to_s == "pending" %>
+          <%= button_to "Aceitar",
+                accept_appointment_path(@appointment),
+                method: :patch,
+                class: "btn-line btn-accept" %>
+
+          <button type="button"
+                  class="btn-line btn-decline"
+                  data-bs-toggle="modal"
+                  data-bs-target="#declineModalShow">
+            Recusar
+          </button>
+        <% end %>
+      </div>
     </div>
 
     <!-- Messages -->
@@ -62,7 +89,7 @@
         </div>
       <% end %>
 
-      <%# ---- review actions bubble ---- %>
+      <%# ---- review actions bubble (como já existia) ---- %>
       <% my_review   = Review.where(worker_profile_id: @appointment.worker_profile_id, user_id: current_user.id).order(created_at: :desc).first %>
       <% past = @appointment.starts_at.present? && @appointment.starts_at < Time.current - 15.minutes %>
       <% valid_stat  = %w[accepted pending].include?(@appointment.status.to_s) %>
@@ -121,50 +148,27 @@
   </div>
 </div>
 
-<!-- modals unchanged (review create/edit + propose) ... keep your current modals here -->
+<!-- Review modals (já existentes) -->
 <%= render "review_modal", appointment: @appointment %>
 <%= render "review_edit_modal", appointment: @appointment, my_review: my_review %>
 
-
-<!-- Propose new time modal -->
-<div class="modal fade" id="proposeModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-narrow modal-dialog-centered">
+<!-- Decline (show) -->
+<div class="modal fade" id="declineModalShow" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">
-          Propor novo horário
-          <small class="text-muted d-block mt-1">
-            Fuso do atendimento: <%= @appointment.time_zone %>
-          </small>
-        </h5>
+        <h5 class="modal-title">Recusar agendamento</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
-
       <div class="modal-body">
-        <%= form_with url: propose_time_appointment_path(@appointment), method: :post do %>
+        <%= form_with url: decline_appointment_path(@appointment), method: :patch do %>
           <div class="mb-3">
-            <label class="form-label">Novo dia e hora</label>
-            <input
-              type="text"
-              name="proposed_starts_at"
-              id="proposed_starts_at"
-              class="form-control"
-              placeholder="Selecione dia e hora"
-              autocomplete="off"
-              data-controller="flatpickr"
-              data-flatpickr-enable-time-value="true"
-              data-flatpickr-time-24hr-value="true"
-              data-flatpickr-minute-increment-value="15"
-              data-flatpickr-date-format-value="Y-m-d H:i"
-              data-flatpickr-min-date-value="today"
-            >
-            <small class="text-muted">
-              O horário será interpretado no fuso do atendimento (<%= @appointment.time_zone %>).
-            </small>
+            <label class="form-label">Motivo (opcional)</label>
+            <textarea name="reason" class="form-control" rows="3"
+                      placeholder="Ex.: Já tenho um compromisso nesse horário"></textarea>
           </div>
-
           <div class="d-grid">
-            <button type="submit" class="btn btn-primary">Enviar proposta</button>
+            <button type="submit" class="btn btn-danger">Confirmar recusa</button>
           </div>
         <% end %>
       </div>
