@@ -80,12 +80,12 @@
                                            (last_read || Time.at(0)), current_user.id).exists? %>
 
           <% other = (a.user_id == current_user.id) ? a.worker_profile.user : a.user %>
-          <% avatar_url = other.respond_to?(:avatar) && other.avatar.present? ? other.avatar : "https://placehold.co/80x80" %>
+          <% avatar_url = nil # not needed anymore %>
 
           <div class="appt-card <%= 'conflict' if conflict %>">
             <!-- left -->
             <div class="who">
-              <img class="avatar" src="<%= avatar_url %>" alt="">
+              <%= render "shared/avatar", user: other, size: 80 %>
               <div class="truncate">
                 <div class="name">
                   <%= other.full_name.presence || other.email %>
