@@ -1,118 +1,126 @@
 <%= turbo_stream_from "appointment_#{@appointment.id}_messages" %>
 
 <div class="container" style="max-width:1040px; margin:2rem auto;">
-  <div class="chat appt-chat-page"><!-- 🔵 keep .chat so _chat.scss applies -->
 
-    <!-- Header -->
-    <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
+  <!-- Header (compact & clean) -->
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
+    <!-- left: back -->
+    <div class="flex-shrink-0">
+      <%= link_to my_appointments_path,
+            class: "btn bg-white border rounded-pill d-flex align-items-center gap-2 px-3 py-2 shadow-sm" do %>
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>Meus agendamentos</span>
+      <% end %>
+    </div>
 
-      <!-- Left: back -->
-      <div class="d-flex align-items-center">
-        <%= link_to my_appointments_path, class: "btn-line d-inline-flex align-items-center gap-2" do %>
-          <i class="fa-solid fa-arrow-left"></i>
-          Meus agendamentos
-        <% end %>
+    <!-- center: compact title + time -->
+    <div class="flex-grow-1 text-center">
+      <div class="fw-semibold text-body" style="font-size:1rem;">
+        Seu agendamento com <%= @appointment.worker_profile.user.full_name %>
       </div>
 
-      <!-- Center: title + date/time -->
-      <div class="flex-grow-1 d-flex flex-column align-items-stretch" style="min-width:280px;">
-        <!-- make the title look like a pill -->
-        <div class="px-3 py-2 rounded-3 border bg-white shadow-sm mx-auto" style="max-width: 760px;">
-          <h1 class="h5 m-0 text-truncate">
-            Seu agendamento com <%= @appointment.worker_profile.user.full_name %>
-          </h1>
+      <div class="small text-muted mt-1 d-flex align-items-center justify-content-center gap-2">
+        <i class="fa-regular fa-clock"></i>
+        <% appt_local = @appointment.starts_at.in_time_zone(@appointment.time_zone) %>
+        <%= l(appt_local, format: :long) rescue appt_local %>
+        <span class="badge bg-light text-dark border"><%= @appointment.time_zone %></span>
+        <div
+          data-controller="local-time"
+          data-local-time-iso-value="<%= @appointment.starts_at.utc.iso8601 %>"
+          data-local-time-label-value="<%= @appointment.time_zone %>">
         </div>
-
-        <!-- centered date/time row -->
-        <div class="small text-muted mt-2 d-flex justify-content-center align-items-center gap-2 flex-wrap">
-          <i class="fa-regular fa-clock"></i>
-          <% appt_local = @appointment.starts_at.in_time_zone(@appointment.time_zone) %>
-          <span><%= l(appt_local, format: :long) rescue appt_local %></span>
-          <span class="badge bg-light text-dark border"><%= @appointment.time_zone %></span>
-          <div
-            data-controller="local-time"
-            data-local-time-iso-value="<%= @appointment.starts_at.utc.iso8601 %>"
-            data-local-time-label-value="<%= @appointment.time_zone %>">
-          </div>
-        </div>
-      </div>
-
-      <!-- Right: propose / accept / decline -->
-      <div class="d-flex align-items-center gap-2">
-        <button type="button"
-                class="btn-line"
-                data-bs-toggle="modal" data-bs-target="#proposeModal">
-          <i class="fa-regular fa-calendar-plus"></i>
-          Propor novo horário
-        </button>
-
-        <% if current_user.id == @appointment.worker_profile.user_id && @appointment.status.to_s == "pending" %>
-          <%= button_to "Aceitar",
-                accept_appointment_path(@appointment),
-                method: :patch,
-                class: "btn-line btn-accept" %>
-
-          <button type="button"
-                  class="btn-line btn-decline"
-                  data-bs-toggle="modal"
-                  data-bs-target="#declineModalShow">
-            Recusar
-          </button>
-        <% end %>
       </div>
     </div>
 
-    <!-- Messages -->
+    <!-- right: propose button -->
+    <div class="flex-shrink-0">
+      <button type="button"
+              class="btn bg-white border rounded-pill d-flex align-items-center gap-2 px-3 py-2 shadow-sm"
+              data-bs-toggle="modal" data-bs-target="#proposeModal">
+        <i class="fa-regular fa-calendar-plus"></i>
+        <span>Propor novo horário</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Chat card START -->
+  <div class="chat appt-chat-page">
+
+    <!-- Messages (single loop) -->
     <div id="messages" class="messages">
       <% @appointment.messages.order(:created_at).each do |message| %>
         <%= render "messages/message", message: message, user: current_user %>
       <% end %>
 
-      <%# ---- proposal bubble (optional) ---- %>
+      <%# ---------------- system bubbles rendered AFTER messages ---------------- %>
+
+      <%# 1) worker-only accept/decline (pending) -------------------------------- %>
+      <% if current_user.id == @appointment.worker_profile.user_id && @appointment.status.to_s == "pending" %>
+        <div class="system-bubble text-center mb-3">
+          <div class="mb-2 text-muted small">
+            Este atendimento está <strong>pendente</strong>. Você deseja aceitar ou recusar?
+          </div>
+          <div class="d-flex gap-2 justify-content-center">
+            <%= button_to "Aceitar",
+                  accept_appointment_path(@appointment),
+                  method: :patch,
+                  class: "btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm",
+                  form:  { class: "d-inline m-0 p-0 bg-transparent border-0" } %>
+
+            <button type="button"
+                    class="btn btn-danger rounded-pill px-4 py-2 fw-semibold shadow-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#declineModalShow">
+              Recusar
+            </button>
+          </div>
+        </div>
+      <% end %>
+
+      <%# 2) reschedule proposal bubble ----------------------------------------- %>
       <% if @appointment.proposed_starts_at.present? %>
         <% proposer_name =
              (@appointment.proposed_by_id == @appointment.user_id ?
                (@appointment.user.full_name.presence || @appointment.user.email) :
                (@appointment.worker_profile.user.full_name.presence || @appointment.worker_profile.user.email)) %>
-        <div class="system-bubble text-center">
+        <div class="system-bubble text-center mb-3">
           <div class="mb-2">
             <strong>Proposta de novo horário:</strong>
             <%= l(@appointment.proposed_starts_at, format: :long) rescue @appointment.proposed_starts_at %>
             <small class="text-muted d-block">por <%= proposer_name %></small>
           </div>
-          <div class="actions">
+          <div class="d-flex gap-2 justify-content-center">
             <% if @appointment.proposed_by_id != current_user.id %>
               <%= button_to "Aceitar", accept_proposed_appointment_path(@appointment),
-                            method: :patch, class: "btn btn-success btn-sm" %>
+                            method: :patch,
+                            class: "btn btn-success rounded-pill px-4 py-2 fw-semibold shadow-sm",
+                            form:  { class: "d-inline m-0 p-0 bg-transparent border-0" } %>
               <%= button_to "Recusar", decline_proposed_appointment_path(@appointment),
-                            method: :patch, class: "btn btn-outline-danger btn-sm" %>
+                            method: :patch,
+                            class: "btn btn-outline-danger rounded-pill px-4 py-2 fw-semibold shadow-sm",
+                            form:  { class: "d-inline m-0 p-0 bg-transparent border-0" } %>
             <% else %>
-              <span class="badge badge-pill bg-secondary-subtle text-secondary border border-secondary">
-                Aguardando resposta
-              </span>
+              <span class="badge bg-secondary-subtle text-secondary border">Aguardando resposta</span>
             <% end %>
           </div>
         </div>
       <% end %>
 
-      <%# ---- review actions bubble (como já existia) ---- %>
-      <% my_review   = Review.where(worker_profile_id: @appointment.worker_profile_id, user_id: current_user.id).order(created_at: :desc).first %>
-      <% past = @appointment.starts_at.present? && @appointment.starts_at < Time.current - 15.minutes %>
-      <% valid_stat  = %w[accepted pending].include?(@appointment.status.to_s) %>
-      <% is_client   = current_user.id == @appointment.user_id %>
-      <% can_review  = is_client && past && valid_stat %>
+      <%# 3) review action bubble (client; past; accepted/pending) --------------- %>
+      <% past       = @appointment.starts_at.present? && @appointment.starts_at < Time.current - 15.minutes %>
+      <% valid_stat = %w[accepted pending].include?(@appointment.status.to_s) %>
+      <% is_client  = current_user.id == @appointment.user_id %>
+      <% can_review = is_client && past && valid_stat %>
 
       <% if can_review %>
-        <div class="system-bubble text-center">
+        <% my_review = Review.find_by(appointment_id: @appointment.id, user_id: current_user.id) %>
+        <div class="system-bubble text-center mb-3">
           <div class="actions">
             <% if my_review.present? %>
-              <span class="badge badge-pill bg-success-subtle text-success border border-success">Avaliação feita</span>
-
               <button type="button" class="btn btn-outline-secondary btn-sm"
                       data-bs-toggle="modal" data-bs-target="#editReviewModal">
-                Editar
+                Editar avaliação
               </button>
-
               <%= button_to "Excluir",
                     review_path(my_review, return_to: appointment_path(@appointment)),
                     method: :delete,
@@ -131,6 +139,7 @@
 
       <div id="chat-tail" class="py-1"></div>
     </div>
+    <!-- Messages END -->
 
     <!-- Composer -->
     <% other_user = current_user == @appointment.worker_profile.user ? @appointment.user : @appointment.worker_profile.user %>
@@ -152,9 +161,14 @@
     <% end %>
 
   </div>
+  <!-- Chat card END -->
+
 </div>
 
-<!-- Review modals (já existentes) -->
+<%# Make sure my_review exists for the modals below %>
+<% my_review ||= Review.find_by(appointment_id: @appointment.id, user_id: current_user.id) %>
+
+<!-- Review modals -->
 <%= render "review_modal", appointment: @appointment %>
 <%= render "review_edit_modal", appointment: @appointment, my_review: my_review %>
 
@@ -182,11 +196,52 @@
   </div>
 </div>
 
+<!-- Propose new time (show) -->
+<div class="modal fade" id="proposeModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Propor novo horário</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+
+      <div class="modal-body">
+        <%= form_with url: propose_time_appointment_path(@appointment), method: :post, html: { class: "propose-time-form" } do %>
+          <div class="mb-3">
+            <label class="form-label">Novo dia e hora</label>
+            <input
+              type="text"
+              name="proposed_starts_at"
+              id="proposed_starts_at"
+              class="form-control"
+              placeholder="Selecione dia e hora"
+              autocomplete="off"
+              data-controller="flatpickr"
+              data-flatpickr-enable-time-value="true"
+              data-flatpickr-time-24hr-value="true"
+              data-flatpickr-minute-increment-value="15"
+              data-flatpickr-date-format-value="Y-m-d H:i"
+              data-flatpickr-min-date-value="today"
+            >
+            <small class="text-muted">
+              Será salvo no fuso do agendamento (<%= @appointment.time_zone %>).
+            </small>
+          </div>
+
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary">Enviar proposta</button>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   // keep auto-scroll
   function scrollChatTail() {
     const tail = document.getElementById('chat-tail');
-    tail && tail.scrollIntoView({ behavior: 'auto' });
+    if (tail) tail.scrollIntoView({ behavior: 'auto' });
   }
   document.addEventListener('turbo:load', scrollChatTail);
   document.addEventListener('turbo:frame-load', scrollChatTail);
