@@ -76,7 +76,7 @@
     border: 1px solid var(--stroke); background: #ffffff; color: #0f172a;
     text-decoration: none; display: inline-flex; align-items: center; gap: .45rem; transition: .2s;
   }
-  .btn-line:hover { background: #f8fafc; }
+  .btn-line:hover { background: #1cd8047a; }
   .btn-accept  { background: var(--success); color: #fff; border-color: transparent; }
   .btn-accept:hover { filter: brightness(1.05); }
   .btn-decline { color: #dc3545; background: #fff; border-color: #f5c2c7; }
