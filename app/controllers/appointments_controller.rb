@@ -56,24 +56,28 @@ class AppointmentsController < ApplicationController
   # POST /workers/:worker_id/appointments
   def create
     worker = WorkerProfile.find(params[:worker_id])
-    @appointment = Appointment.new
+
+    @appointment              = Appointment.new
     @appointment.worker_profile = worker
     @appointment.user           = current_user
     @appointment.status         = "pending" if @appointment.status.blank?
 
     # 1) escolha da TZ (ordem de preferência)
-    zone =
-      params.dig(:appointment, :time_zone).presence ||        # vem do form (browser ou escolha)
-      tz_from_city_country(worker.user) ||                    # fuso do profissional
-      tz_from_city_country(current_user) ||                   # fuso do cliente
-      "UTC"                                                   # fallback neutro
-
+    # 1) timezone preferida
+    zone = params.dig(:appointment, :time_zone).presence ||
+          tz_from_city_country(worker.user) ||
+          tz_from_city_country(current_user) ||
+          "UTC"
     @appointment.time_zone = zone
 
-    # 2) parse do horário digitado dentro dessa TZ
+    # 2) parse do starts_at dentro desse fuso
     raw_start = params.dig(:appointment, :starts_at)
     Time.use_zone(zone) do
       @appointment.starts_at = Time.zone.parse(raw_start) if raw_start.present?
+    end
+
+    if @appointment.starts_at.blank?
+      return redirect_to worker_path(worker), alert: "Informe dia e hora válidos."
     end
 
     # # (opcional) se tiver :ends_at, defina uma duração padrão
@@ -272,7 +276,6 @@ class AppointmentsController < ApplicationController
 
   # start-only: user picks just day+time
   def appointment_params
-    # agora aceitamos :time_zone vindo do form
     params.require(:appointment).permit(:starts_at, :time_zone)
   end
 
