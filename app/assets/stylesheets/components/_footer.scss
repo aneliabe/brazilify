@@ -9,20 +9,30 @@ body {
 main { flex: 1 0 auto; }     /* ocupa o espaço e empurra o footer para baixo */
 
 /* 2) Footer (sem fixo) */
+html, body { height: 100%; }
+
+body {
+  min-height: 100vh;         /* use 100dvh se quiser lidar melhor com mobile */
+  display: flex;
+  flex-direction: column;
+}
+
+main { flex: 1 0 auto; }     /* ocupa o espaço e empurra o footer para baixo */
+
+/* 2) Footer (sem fixo) */
 .site-footer {
   background: linear-gradient(90deg, $brand, #1f6feb);
   color: #f1f5f9;
   font-size: .95rem;
   margin-top: auto;
 
-
   .footer-content {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr 1fr;
-    gap: 20px;
+    gap: 40px; // Increased from 20px for more horizontal spacing
     max-width: 1100px;
     margin: 0 auto;
-    padding: 1rem 1rem;
+    padding: 1rem 1rem; // Back to original padding
 
     @media (max-width: 768px) { grid-template-columns: 1fr 1fr; }
     @media (max-width: 500px) { grid-template-columns: 1fr; text-align: center; }
@@ -33,7 +43,7 @@ main { flex: 1 0 auto; }     /* ocupa o espaço e empurra o footer para baixo */
 
   .links h5, .social h5 { font-size: 1rem; margin-bottom: .5rem; }
   .links ul { list-style: none; padding: 0; margin: 0; }
-  .links li { margin: .3rem 0; }
+  .links li { margin: .3rem 0; } // Back to original vertical spacing
   .links a { color: #e2e8f0; text-decoration: none; &:hover { color: #fff; } }
 
   .social .icons a { margin-right: 10px; font-size: 1.2rem; color: #e2e8f0; &:hover { color: #fff; } }
@@ -41,7 +51,7 @@ main { flex: 1 0 auto; }     /* ocupa o espaço e empurra o footer para baixo */
   .footer-bottom {
     border-top: 1px solid rgba(255,255,255,.2);
     text-align: center;
-    padding: 0.5rem;
+    padding: 0.5rem; // Back to original
     color: #e2e8f0;
     font-size: .85rem;
   }
