@@ -5,23 +5,8 @@
       <div class="row g-4 align-items-center">
         <div class="col-auto">
           <div class="profile-avatar">
-          <!-- <% u = @user || @worker_profile&.user || @worker&.user %>
-
-          <% if u&.photo&.attached? %>
-            <%= cl_image_tag u.photo.key,
-                  width: 96, height: 96, crop: :fill, gravity: :face,
-                  class: "rounded-circle border",
-                  alt: (u.full_name || "Avatar"),
-                  style: "object-fit: cover;" %>
-                <% else %>
-                  <img src="https://placehold.co/96x96"
-                      class="rounded-circle border"
-                      alt="Avatar"
-                      style="object-fit: cover;">
-                <% end %> -->
-
-                <%= render "shared/avatar", user: @worker.user, size: 96 %>
-        </div>
+            <%= render "shared/avatar", user: @worker.user, size: 96 %>
+          </div>
         </div>
 
         <div class="col">
@@ -76,7 +61,7 @@
       </div>
     </div>
 
-      <%= render "shared/worker_service_photos" if @worker.services_photos.attached? %>
+    <%= render "shared/worker_service_photos" if @worker.services_photos.attached? %>
 
     <!-- REVIEWS CARD -->
     <div class="glass-card p-3 p-md-4 mt-3">
@@ -126,56 +111,60 @@
   </div>
 </div>
 
-<!-- Modal to request time (unchanged) -->
-<div class="modal fade" id="requestTimeModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Solicitar horário</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+<!-- Modal to request time -->
+  <div class="modal fade" id="requestTimeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Solicitar horário</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+
+        <div class="modal-body">
+          <%# IMPORTANTE: capturar o form builder como |f| %>
+          <%= form_with url: worker_appointments_path(@worker), method: :post, html: { class: "appointment-request-form" } do |f| %>
+            <div class="mb-3">
+              <label class="form-label">Dia e hora</label>
+              <input
+                type="text"
+                name="appointment[starts_at]"
+                id="appointment_starts_at"
+                class="form-control"
+                placeholder="Selecione dia e hora"
+                autocomplete="off"
+                data-controller="flatpickr"
+                data-flatpickr-enable-time-value="true"
+                data-flatpickr-time-24hr-value="true"
+                data-flatpickr-minute-increment-value="15"
+                data-flatpickr-date-format-value="Y-m-d H:i"
+                data-flatpickr-min-date-value="today"
+              >
+              <small class="text-muted">Você poderá combinar a duração no chat.</small>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Mensagem (opcional)</label>
+              <textarea name="message" class="form-control" rows="3" placeholder="Descreva o serviço, endereço/online, urgência…"></textarea>
+            </div>
+
+            <div class="d-grid">
+              <%# Campo oculto para levar a TZ do navegador do cliente %>
+              <%= hidden_field_tag "appointment[time_zone]", "", id: "appt-time-zone" %>
+              <button type="submit" class="btn btn-primary">Enviar solicitação</button>
+            </div>
+          <% end %>
+
+          <script>
+            (function setTZOnce(){
+              function setTZ() {
+                var el = document.getElementById("appt-time-zone");
+                if (el) el.value = (Intl.DateTimeFormat().resolvedOptions().timeZone || "");
+              }
+              document.addEventListener("turbo:load", setTZ);
+              document.addEventListener("DOMContentLoaded", setTZ);
+            })();
+          </script>
+        </div>
       </div>
-
-      <div class="modal-body">
-        <%= form_with url: worker_appointments_path(@worker), method: :post, html: { class: "appointment-request-form" } do %>
-          <div class="mb-3">
-            <label class="form-label">Dia e hora</label>
-            <input
-              type="text"
-              name="appointment[starts_at]"
-              id="appointment_starts_at"
-              class="form-control"
-              placeholder="Selecione dia e hora"
-              autocomplete="off"
-              data-controller="flatpickr"
-              data-flatpickr-enable-time-value="true"
-              data-flatpickr-time-24hr-value="true"
-              data-flatpickr-minute-increment-value="15"
-              data-flatpickr-date-format-value="Y-m-d H:i"
-              data-flatpickr-min-date-value="today"
-            >
-            <small class="text-muted">Você poderá combinar a duração no chat.</small>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Mensagem (opcional)</label>
-            <textarea name="message" class="form-control" rows="3" placeholder="Descreva o serviço, endereço/online, urgência…"></textarea>
-          </div>
-
-          <div class="d-grid">
-            <%= f.hidden_field :time_zone, id: "appt-time-zone" %>
-            <button type="submit" class="btn btn-primary">Enviar solicitação</button>
-          </div>
-        <% end %>
-      </div>
-      <script>
-        document.addEventListener("DOMContentLoaded", function() {
-          var input = document.getElementById("appt-time-zone");
-          if (input) {
-            var tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
-            input.value = tz;
-          }
-        });
-      </script>
     </div>
   </div>
-</div>
