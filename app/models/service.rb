@@ -7,7 +7,6 @@ class Service < ApplicationRecord
     'Diarista',
     'Cabeleireiro',
     'Manicure',
-    'Pedreiro',
     'Encanador',
     'Eletricista',
     'Motorista Particular',
