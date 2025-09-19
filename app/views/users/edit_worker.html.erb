@@ -13,7 +13,8 @@
     </div>
   <% end %>
   <br>
-  <%= f.input :cpf, label: "CPF", input_html: { class: "form-control" } %>
+  <%= f.input :cpf, label: "CPF (não editável)", input_html: { class: "form-control", readonly: true, style: "background-color: #f8f9fa;" } %>
+
   <%= f.input :description, as: :text, label: "Descrição", input_html: { class: "form-control", rows: 3 } %>
 
   <!-- Container where service rows will be added -->
