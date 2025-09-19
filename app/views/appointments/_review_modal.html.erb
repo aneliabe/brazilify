@@ -1,5 +1,8 @@
+<%# locals: appointment:, modal_id: (opcional) %>
+<% mid = (local_assigns[:modal_id].presence || "reviewModal") %>
+
 <!-- Review CREATE modal -->
-<div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="<%= mid %>" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-narrow modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
@@ -8,7 +11,7 @@
       </div>
 
       <div class="modal-body">
-        <%= form_with url: reviews_path, method: :post, id: "review-create-form" do %>
+        <%= form_with url: reviews_path, method: :post, id: "review-create-form-#{appointment.id}" do %>
           <%= hidden_field_tag :worker_profile_id, appointment.worker_profile_id %>
           <%= hidden_field_tag :appointment_id,    appointment.id %>
 
@@ -18,8 +21,8 @@
                 <label class="form-label d-block">Nota</label>
                 <div class="rating mb-1">
                   <% 5.downto(1).each do |r| %>
-                    <input id="new-rating-<%= r %>" type="radio" name="rating" value="<%= r %>" required>
-                    <label for="new-rating-<%= r %>" aria-label="<%= r %> estrelas">★</label>
+                    <input id="new-rating-<%= appointment.id %>-<%= r %>" type="radio" name="rating" value="<%= r %>" required>
+                    <label for="new-rating-<%= appointment.id %>-<%= r %>" aria-label="<%= r %> estrelas">★</label>
                   <% end %>
                 </div>
                 <br>
@@ -37,7 +40,7 @@
       </div>
 
       <div class="modal-footer justify-content-center">
-        <button type="submit" class="btn btn-primary btn-lg" form="review-create-form">
+        <button type="submit" class="btn btn-primary btn-lg" form="review-create-form-<%= appointment.id %>">
           Enviar avaliação
         </button>
       </div>

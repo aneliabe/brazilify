@@ -1,6 +1,10 @@
-<!-- Review EDIT modal -->
+<%# locals: appointment:, my_review:, modal_id: (optional) %>
+<%# Guard: if there's no review, don't render anything %>
 <% if my_review.present? %>
-  <div class="modal fade" id="editReviewModal" tabindex="-1" aria-hidden="true">
+  <% mid = (local_assigns[:modal_id].presence || "editReviewModal") %>
+
+  <!-- Review EDIT modal -->
+  <div class="modal fade" id="<%= mid %>" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-narrow modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
@@ -9,27 +13,27 @@
         </div>
 
         <div class="modal-body">
-          <%= form_with url: review_path(my_review, return_to: appointment_path(appointment)),
-                        method: :patch, id: "review-edit-form" do %>
+          <%= form_with url: review_path(my_review), method: :patch, id: "review-edit-form-#{appointment.id}" do %>
+            <%= hidden_field_tag :return_to, appointment_path(appointment) %>
+
             <div class="form-shell">
               <div class="row g-4">
                 <div class="col-12 col-md-5">
                   <label class="form-label d-block">Nota</label>
                   <div class="rating mb-1">
-                    <% current = my_review.rating.to_i %>
                     <% 5.downto(1).each do |r| %>
-                      <input id="edit-rating-<%= r %>" type="radio" name="rating" value="<%= r %>"
-                             <%= "checked" if r == current %> required>
-                      <label for="edit-rating-<%= r %>" aria-label="<%= r %> estrelas">★</label>
+                      <input id="edit-rating-<%= appointment.id %>-<%= r %>"
+                             type="radio" name="rating" value="<%= r %>"
+                             <%= "checked" if my_review.rating.to_i == r %>>
+                      <label for="edit-rating-<%= appointment.id %>-<%= r %>" aria-label="<%= r %> estrelas">★</label>
                     <% end %>
                   </div>
-                  <br>
-                  <small class="text-muted small nowrap">Clique nas estrelas</small>
                 </div>
 
                 <div class="col-12 col-md-7">
-                  <label class="form-label">Comentário</label>
-                  <textarea name="comment" class="form-control" rows="5"><%= my_review.comment %></textarea>
+                  <label class="form-label">Comentário <span class="text-muted">(opcional)</span></label>
+                  <textarea name="comment" class="form-control" rows="5"
+                            placeholder="Como foi o atendimento?"><%= my_review.comment %></textarea>
                 </div>
               </div>
             </div>
@@ -37,7 +41,7 @@
         </div>
 
         <div class="modal-footer justify-content-center">
-          <button type="submit" class="btn btn-primary btn-lg" form="review-edit-form">
+          <button type="submit" class="btn btn-primary btn-lg" form="review-edit-form-<%= appointment.id %>">
             Salvar alterações
           </button>
         </div>
