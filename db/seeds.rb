@@ -127,7 +127,6 @@ CATEGORIES = [
 ].freeze
 
 SERVICES_BY_CATEGORY = {
-  "Construção" => ["Pedreiro", "Pintura", "Eletricista"],
   "Tecnologia" => ["Suporte de TI", "Criação de Sites", "Designer"],
   "Beleza / Estética" => [
     "Cabeleireiro", "Manicure", "Maquiagem",
@@ -161,7 +160,7 @@ SERVICES_BY_CATEGORY = {
   "Eventos" => ["Fotógrafo", "Filmagem", "DJ", "Buffet", "Decorador"],
   "Animais de Estimação" => ["Passeador de Cães", "Adestrador", "Pet Sitter", "Banho e Tosa", "Hospedagem"],
   "Administração / Negócios" => ["Consultoria Financeira", "Contador", "Marketing Digital", "Redes Sociais", "Consultoria Jurídica"],
-  "Arte e Artesanato" => ["Costureira", "Bordado", "Artesanato Personalizado", "Restauração de Móveis", "Designer de Joias"]
+  "Arte e Artesanato" => ["Patchwork/Costura Criativa","Costureira", "Bordado", "Artesanato Personalizado", "Restauração de Móveis", "Designer de Joias"]
 }.freeze
 
 # ===================== EXECUÇÃO ======================
