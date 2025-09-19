@@ -45,9 +45,9 @@ class UsersController < ApplicationController
     @worker_profile = @user.worker_profile
     @service_types = WorkerService.service_types.keys
 
-    @worker_profile.worker_services = []
+    # @worker_profile.worker_services = []
 
-    render :become_worker
+    # render :become_worker
   end
 
   def update_worker
