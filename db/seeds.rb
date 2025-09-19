@@ -120,7 +120,7 @@ end
 
 # ---------- Catálogo ----------
 CATEGORIES = [
-  "Construção", "Tecnologia", "Beleza / Estética", "Serviços Automotivos",
+  "Tecnologia", "Beleza / Estética", "Serviços Automotivos",
   "Manutenção Residencial", "Saúde e Bem-estar", "Educação",
   "Transporte e Logística", "Serviços Domésticos", "Eventos",
   "Animais de Estimação", "Administração / Negócios", "Arte e Artesanato"
