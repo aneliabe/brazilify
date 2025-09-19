@@ -1,5 +1,4 @@
     services_by_category = {
-      "Construção" => ["Pedreiro", "Pintura", "Eletricista"],
 
       "Tecnologia" => ["Suporte de TI", "Criação de Sites", "Designer"],
 
@@ -126,6 +125,7 @@
       ],
 
       "Arte e Artesanato" => [
+        "Patchwork/Costura Criativa",
         "Costureira",
         "Bordado/Pintura em Tecido",
         "Artesanato Personalizado",
