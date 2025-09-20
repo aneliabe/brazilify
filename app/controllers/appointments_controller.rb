@@ -113,7 +113,9 @@ class AppointmentsController < ApplicationController
 
     @appointment.update!(status: "accepted")
 
-    tstr = @appointment.starts_at ? I18n.l(@appointment.starts_at, format: :short) : "sem data"
+    # tstr = @appointment.starts_at ? I18n.l(@appointment.starts_at, format: :short) : "sem data"
+    t_local = @appointment.starts_at&.in_time_zone(@appointment.time_zone)
+    tstr    = t_local.present? ? (I18n.l(t_local, format: :short) rescue t_local) : "sem data"
     Message.create!(appointment: @appointment, user: current_user,
                     content: "Agendamento ACEITO para #{tstr}. Vamos confirmar os detalhes por aqui.")
 
